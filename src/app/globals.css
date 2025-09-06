@@ -1,0 +1,76 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%; /* White */
+    --foreground: 0 0% 9%; /* Dark black */
+    --card: 0 0% 100%; /* White cards */
+    --card-foreground: 0 0% 9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 9%;
+    --primary: 0 0% 9%; /* Black for primary actions */
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 96%; /* Light gray */
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96%; /* Light gray for muted elements */
+    --muted-foreground: 0 0% 45%; /* Medium gray text */
+    --accent: 0 0% 96%;
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 90%; /* Light gray borders */
+    --input: 0 0% 96%; /* Light gray inputs */
+    --ring: 0 0% 9%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  /* Standardized typography classes */
+  .heading-1 {
+    @apply text-3xl font-bold text-foreground;
+  }
+  .heading-2 {
+    @apply text-2xl font-semibold text-foreground;
+  }
+  .heading-3 {
+    @apply text-xl font-semibold text-foreground;
+  }
+  .body-large {
+    @apply text-lg text-foreground;
+  }
+  .body-base {
+    @apply text-base text-foreground;
+  }
+  .body-small {
+    @apply text-sm text-foreground;
+  }
+  .caption {
+    @apply text-xs text-muted-foreground;
+  }
+  
+  /* Standardized spacing */
+  .section-padding {
+    @apply px-4 py-6;
+  }
+  .card-padding {
+    @apply p-4;
+  }
+}
