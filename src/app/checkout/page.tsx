@@ -129,7 +129,7 @@ function AddOnsForm() {
   )
 }
 
-export default function CheckoutPage() {
+function CheckoutContent() {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <Header isTransparent={false} />
@@ -139,5 +139,13 @@ export default function CheckoutPage() {
         </Suspense>
       </main>
     </div>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading...</div>}>
+      <CheckoutContent />
+    </Suspense>
   );
 }

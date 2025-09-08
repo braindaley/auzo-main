@@ -183,7 +183,7 @@ function PaymentForm() {
   )
 }
 
-export default function PaymentPage() {
+function PaymentContent() {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <Header isTransparent={false} />
@@ -193,5 +193,13 @@ export default function PaymentPage() {
         </Suspense>
       </main>
     </div>
+  );
+}
+
+export default function PaymentPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading...</div>}>
+      <PaymentContent />
+    </Suspense>
   );
 }

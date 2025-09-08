@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -23,7 +23,7 @@ const termsSchema = z.object({
   }),
 });
 
-export default function TermsOfServicePage() {
+function TermsOfServiceContent() {
   const router = useRouter();
   const { toast } = useToast();
   const searchParams = useSearchParams();
@@ -115,5 +115,13 @@ export default function TermsOfServicePage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function TermsOfServicePage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading...</div>}>
+      <TermsOfServiceContent />
+    </Suspense>
   );
 }

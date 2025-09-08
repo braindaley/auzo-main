@@ -116,10 +116,18 @@ function VehicleDetailsForm() {
   )
 }
 
-export default function VehicleDetailsPage() {
+function VehicleDetailsContent() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <VehicleDetailsForm />
+    </Suspense>
+  );
+}
+
+export default function VehicleDetailsPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading...</div>}>
+      <VehicleDetailsContent />
     </Suspense>
   );
 }

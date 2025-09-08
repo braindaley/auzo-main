@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, Suspense, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -61,7 +61,7 @@ const GoogleLogo = () => (
 );
 
 
-export default function UserSignupPage() {
+function UserSignupContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isSocialSignupOpen, setIsSocialSignupOpen] = useState(false);
@@ -269,5 +269,13 @@ export default function UserSignupPage() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+export default function UserSignupPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading...</div>}>
+      <UserSignupContent />
+    </Suspense>
   );
 }

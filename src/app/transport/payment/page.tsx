@@ -212,10 +212,18 @@ function PaymentForm() {
   )
 }
 
-export default function PaymentPage() {
+function PaymentContent() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <PaymentForm />
+    </Suspense>
+  );
+}
+
+export default function PaymentPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading...</div>}>
+      <PaymentContent />
     </Suspense>
   );
 }

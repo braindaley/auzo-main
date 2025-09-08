@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useRef, ChangeEvent, KeyboardEvent } from 'react';
+import { useState, Suspense, useRef, ChangeEvent, KeyboardEvent } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -18,7 +18,7 @@ const verificationSchema = z.object({
   code: z.array(z.string()).length(4, "Code must be 4 digits.").refine(data => data.every(s => s.length === 1), "All fields must be filled"),
 });
 
-export default function VerificationPage() {
+function VerificationContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const phone = searchParams.get('phone');
@@ -115,5 +115,13 @@ export default function VerificationPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function VerificationPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading...</div>}>
+      <VerificationContent />
+    </Suspense>
   );
 }
