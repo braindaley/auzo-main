@@ -25,6 +25,7 @@ export function WalletCreditCardList({ userId }: WalletCreditCardListProps) {
   const [creditCards, setCreditCards] = useState<CreditCardType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showAddForm, setShowAddForm] = useState(false);
 
   const loadCreditCards = async () => {
     if (!userId) {
@@ -82,6 +83,7 @@ export function WalletCreditCardList({ userId }: WalletCreditCardListProps) {
 
       await addCreditCard(userId, cardInput);
       await loadCreditCards(); // Reload the list
+      setShowAddForm(false); // Hide the form after successful submission
     } catch (error) {
       console.error('Error adding credit card:', error);
       throw error; // Re-throw to let the form handle the error
@@ -123,7 +125,7 @@ export function WalletCreditCardList({ userId }: WalletCreditCardListProps) {
               <CreditCard className="h-5 w-5 text-gray-700" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">Payment Methods</h2>
+              <h2 className="text-xl font-semibold text-gray-900">Payment</h2>
               <p className="text-sm text-gray-600">
                 Manage your credit cards and payment methods
               </p>
@@ -151,65 +153,60 @@ export function WalletCreditCardList({ userId }: WalletCreditCardListProps) {
                 <CreditCard className="h-5 w-5 text-gray-700" />
               </div>
               <div>
-                <h2 className="text-xl font-semibold text-gray-900">Payment Methods</h2>
+                <h2 className="text-xl font-semibold text-gray-900">Payment</h2>
                 <p className="text-sm text-gray-600">
                   {creditCards.length === 0 ? 'No cards added' : `${creditCards.length} card${creditCards.length === 1 ? '' : 's'}`}
                 </p>
               </div>
             </div>
+            <button
+              onClick={() => setShowAddForm(!showAddForm)}
+              className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
+            >
+              <Plus className="h-4 w-4" />
+              Add
+            </button>
           </div>
         </div>
         
         <div className="p-6">
-          {creditCards.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="p-4 bg-gray-50 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                <CreditCard className="h-8 w-8 text-gray-400" />
+          <div className="space-y-6">
+            {creditCards.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="p-4 bg-gray-50 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                  <CreditCard className="h-8 w-8 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">No payment methods</h3>
+                <p className="text-gray-600 mb-6 max-w-sm mx-auto">
+                  Add a credit card to make payments easier and faster
+                </p>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No payment methods</h3>
-              <p className="text-gray-600 mb-6 max-w-sm mx-auto">
-                Add a credit card to make payments easier and faster
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {creditCards.map((card) => (
-                <WalletCreditCardItem
-                  key={card.id}
-                  card={card}
-                  onSetDefault={handleSetDefault}
-                  onDelete={handleDeleteCard}
+            ) : (
+              <div className="space-y-3">
+                {creditCards.map((card) => (
+                  <WalletCreditCardItem
+                    key={card.id}
+                    card={card}
+                    onSetDefault={handleSetDefault}
+                    onDelete={handleDeleteCard}
+                    isLoading={isSubmitting}
+                  />
+                ))}
+              </div>
+            )}
+            
+            {showAddForm && (
+              <div className="border-t border-gray-200 pt-6">
+                <CreditCardForm 
+                  onSubmit={handleAddCard}
                   isLoading={isSubmitting}
                 />
-              ))}
-            </div>
-          )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Add Card Section */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="p-6 border-b border-gray-100">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-gray-100 rounded-lg">
-              <Plus className="h-5 w-5 text-gray-700" />
-            </div>
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900">Add Payment Method</h2>
-              <p className="text-sm text-gray-600">
-                Add a new credit or debit card
-              </p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="p-6">
-          <CreditCardForm 
-            onSubmit={handleAddCard}
-            isLoading={isSubmitting}
-          />
-        </div>
-      </div>
     </div>
   );
 }

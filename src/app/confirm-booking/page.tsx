@@ -1,12 +1,19 @@
 "use client";
 
 import { useState, useEffect, Suspense } from 'react';
-import { ArrowLeft, MapPin, Car, Calendar, Clock, DollarSign } from 'lucide-react';
+import { ArrowLeft, MapPin, Car, Calendar, Clock, DollarSign, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Vehicle } from '@/components/car-card';
+import { CreditCardSelector } from '@/components/credit-card-selector';
+import { CreditCard as CreditCardType, CreditCardFormData } from '@/lib/types/credit-card';
+import { 
+  getUserCreditCards, 
+  addCreditCard,
+  setDefaultCreditCard 
+} from '@/lib/services/credit-card-service';
 
 function ConfirmBookingContent() {
     const router = useRouter();
@@ -15,6 +22,10 @@ function ConfirmBookingContent() {
     const [destination, setDestination] = useState<string>('');
     const [selectedDate, setSelectedDate] = useState<string>('');
     const [selectedTime, setSelectedTime] = useState<string>('');
+    const [creditCards, setCreditCards] = useState<CreditCardType[]>([]);
+    const [selectedCardId, setSelectedCardId] = useState<string>('');
+    const [isLoadingCards, setIsLoadingCards] = useState(true);
+    const [isAddingCard, setIsAddingCard] = useState(false);
     const isPickupLater = searchParams.get('pickup') === 'later';
 
     useEffect(() => {
@@ -42,9 +53,79 @@ function ConfirmBookingContent() {
         const storedTime = sessionStorage.getItem('selectedTime');
         if (storedDate) setSelectedDate(storedDate);
         if (storedTime) setSelectedTime(storedTime);
+
+        // Load user's credit cards
+        loadCreditCards();
     }, []);
 
+    const loadCreditCards = async () => {
+        try {
+            setIsLoadingCards(true);
+            // For now, using a dummy user ID. In a real app, this would come from auth context
+            const userId = 'demo-user-123';
+            const cards = await getUserCreditCards(userId);
+            setCreditCards(cards);
+            
+            // Auto-select default card if available
+            const defaultCard = cards.find(card => card.isDefault);
+            if (defaultCard) {
+                setSelectedCardId(defaultCard.id!);
+            } else if (cards.length > 0) {
+                setSelectedCardId(cards[0].id!);
+            }
+        } catch (error) {
+            console.error('Error loading credit cards:', error);
+            setCreditCards([]);
+        } finally {
+            setIsLoadingCards(false);
+        }
+    };
+
+    const handleCardSelect = (cardId: string) => {
+        setSelectedCardId(cardId);
+    };
+
+    const handleAddCard = async (cardData: CreditCardFormData) => {
+        try {
+            setIsAddingCard(true);
+            // For now, using a dummy user ID. In a real app, this would come from auth context
+            const userId = 'demo-user-123';
+            
+            const cardInput = {
+                cardNumber: cardData.cardNumber,
+                cardholderName: cardData.cardholderName,
+                expiryMonth: parseInt(cardData.expiryMonth),
+                expiryYear: parseInt(cardData.expiryYear),
+                cvv: cardData.cvv,
+                nickname: cardData.nickname,
+                billingAddress: cardData.billingAddress,
+                isDefault: cardData.isDefault || creditCards.length === 0 // First card becomes default
+            };
+
+            const cardId = await addCreditCard(userId, cardInput);
+            
+            // Reload cards to get updated list
+            await loadCreditCards();
+            
+            // Select the newly added card
+            setSelectedCardId(cardId);
+        } catch (error) {
+            console.error('Error adding credit card:', error);
+        } finally {
+            setIsAddingCard(false);
+        }
+    };
+
     const handleRequestDriver = () => {
+        // Validate that a credit card is selected
+        if (!selectedCardId || creditCards.length === 0) {
+            alert('Please add and select a credit card to continue.');
+            return;
+        }
+        
+        // Store selected card info for next page if needed
+        sessionStorage.setItem('selectedCardId', selectedCardId);
+        
         // Navigate to driver matching or confirmation page
         router.push('/driver-requested');
     };
@@ -146,14 +227,44 @@ function ConfirmBookingContent() {
                     </div>
                 </Card>
 
+                {/* Payment Method Section */}
+                <Card className="p-3 bg-white">
+                    <div className="flex items-start gap-3 mb-3">
+                        <CreditCard className="w-6 h-6 text-gray-600" />
+                        <div className="flex-1">
+                            <p className="text-xs text-gray-500 leading-none mb-0.5">Payment Method</p>
+                            <p className="text-sm text-gray-900 font-medium leading-tight">
+                                {isLoadingCards ? 'Loading payment methods...' : 'Select a credit card'}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div className="ml-9">
+                        <CreditCardSelector
+                            cards={creditCards}
+                            selectedCardId={selectedCardId}
+                            onCardSelect={handleCardSelect}
+                            onAddCard={handleAddCard}
+                            isLoading={isAddingCard}
+                            required={true}
+                        />
+                    </div>
+                </Card>
+
                 {/* Order Auzo Driver Button */}
                 <div className="pt-4">
                     <Button 
                         className="w-full h-12 text-base font-semibold"
                         onClick={handleRequestDriver}
+                        disabled={isLoadingCards || (!selectedCardId && creditCards.length === 0)}
                     >
-                        Order Auzo Driver
+                        {isLoadingCards ? 'Loading...' : 'Order Auzo Driver'}
                     </Button>
+                    {creditCards.length === 0 && !isLoadingCards && (
+                        <p className="text-xs text-red-600 mt-2 text-center">
+                            Please add a credit card to continue
+                        </p>
+                    )}
                 </div>
             </div>
         </div>
