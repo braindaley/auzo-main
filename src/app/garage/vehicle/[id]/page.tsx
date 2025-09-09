@@ -9,9 +9,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { vehicleStorage } from '@/lib/vehicle-storage';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, use } from 'react';
 import { Vehicle } from '@/components/car-card';
 import {
   AlertDialog,
@@ -25,10 +25,13 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-const VehicleDetailPage = () => {
+interface VehicleDetailPageProps {
+    params: Promise<{ id: string }>;
+}
+
+const VehicleDetailPage = ({ params }: VehicleDetailPageProps) => {
     const router = useRouter();
-    const params = useParams();
-    const vehicleId = params.id as string;
+    const { id: vehicleId } = use(params);
     const [vehicle, setVehicle] = useState<Vehicle | null>(null);
 
     useEffect(() => {

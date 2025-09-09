@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { ArrowLeft, MapPin, Car, Clock, DollarSign, User, Phone } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,16 +8,17 @@ import Link from 'next/link';
 import { transactionStorage, Transaction } from '@/lib/transaction-storage';
 
 interface TransactionDetailPageProps {
-    params: { id: string };
+    params: Promise<{ id: string }>;
 }
 
 export default function TransactionDetailPage({ params }: TransactionDetailPageProps) {
+    const { id } = use(params);
     const [transaction, setTransaction] = useState<Transaction | null>(null);
 
     useEffect(() => {
-        const loadedTransaction = transactionStorage.getTransactionById(params.id);
+        const loadedTransaction = transactionStorage.getTransactionById(id);
         setTransaction(loadedTransaction);
-    }, [params.id]);
+    }, [id]);
 
     if (!transaction) {
         return (

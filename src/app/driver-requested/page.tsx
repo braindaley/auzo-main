@@ -7,6 +7,8 @@ import { Card } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
 import { Vehicle } from '@/components/car-card';
 import { transactionStorage, Transaction } from '@/lib/transaction-storage';
+import { createOrder } from '@/lib/services/order-service';
+import { Order, OrderStatus } from '@/lib/types/order';
 
 export default function DriverRequestedPage() {
     const router = useRouter();
@@ -15,60 +17,95 @@ export default function DriverRequestedPage() {
     const [pickupTime, setPickupTime] = useState<string>('');
     const [message, setMessage] = useState<string>('Finding your driver');
     const [transaction, setTransaction] = useState<Transaction | null>(null);
+    const [orderId, setOrderId] = useState<string | null>(null);
+    const [isCreatingOrder, setIsCreatingOrder] = useState(false);
 
     useEffect(() => {
-        // Get booking details from sessionStorage
-        const vehicleData = sessionStorage.getItem('selectedVehicle');
-        const storedDestination = sessionStorage.getItem('selectedDestination');
-        const storedDate = sessionStorage.getItem('selectedDate');
-        const storedTime = sessionStorage.getItem('selectedTime');
+        const createFirestoreOrder = async () => {
+            // Get booking details from sessionStorage
+            const vehicleData = sessionStorage.getItem('selectedVehicle');
+            const storedDestination = sessionStorage.getItem('selectedDestination');
+            const storedDate = sessionStorage.getItem('selectedDate');
+            const storedTime = sessionStorage.getItem('selectedTime');
 
-        let vehicle: Vehicle | null = null;
-        let dest = '';
-        let pickup = '';
-        let isScheduled = false;
+            let vehicle: Vehicle | null = null;
+            let dest = '';
+            let pickup = '';
+            let isScheduled = false;
 
-        if (vehicleData) {
-            vehicle = JSON.parse(vehicleData);
-            setSelectedVehicle(vehicle);
-        }
+            if (vehicleData) {
+                vehicle = JSON.parse(vehicleData);
+                setSelectedVehicle(vehicle);
+            }
 
-        if (storedDestination) {
-            dest = storedDestination;
-            setDestination(dest);
-        }
+            if (storedDestination) {
+                dest = storedDestination;
+                setDestination(dest);
+            }
 
-        if (storedDate && storedTime) {
-            pickup = `${storedDate} at ${storedTime}`;
-            isScheduled = true;
-            setPickupTime(pickup);
-        } else {
-            pickup = 'ASAP';
-            setPickupTime(pickup);
-        }
+            if (storedDate && storedTime) {
+                pickup = `${storedDate} at ${storedTime}`;
+                isScheduled = true;
+                setPickupTime(pickup);
+            } else {
+                pickup = 'ASAP';
+                setPickupTime(pickup);
+            }
 
-        // Save transaction if we have the required data
-        if (vehicle && dest) {
-            const savedTransaction = transactionStorage.saveTransaction({
-                vehicle,
-                destination: dest,
-                pickupTime: pickup,
-                isScheduled,
-                scheduledDate: storedDate || undefined,
-                scheduledTime: storedTime || undefined
-            });
-            setTransaction(savedTransaction);
-            
-            console.log('Transaction saved:', savedTransaction);
-        }
+            // Save transaction if we have the required data
+            if (vehicle && dest) {
+                const savedTransaction = transactionStorage.saveTransaction({
+                    vehicle,
+                    destination: dest,
+                    pickupTime: pickup,
+                    isScheduled,
+                    scheduledDate: storedDate || undefined,
+                    scheduledTime: storedTime || undefined
+                });
+                setTransaction(savedTransaction);
+                
+                console.log('Transaction saved:', savedTransaction);
 
-        // Timer for message change
-        const timer = setTimeout(() => {
-            setMessage('Your driver will arrive in 12 minutes');
-        }, 3000);
+                // Create order in Firestore
+                if (!isCreatingOrder) {
+                    setIsCreatingOrder(true);
+                    try {
+                        const orderData: Partial<Order> = {
+                            pickupLocation: 'Current Location', // You can get actual location if needed
+                            dropoffLocation: dest,
+                            vehicleInfo: {
+                                make: vehicle.make,
+                                model: vehicle.model,
+                                year: vehicle.year,
+                                licensePlate: vehicle.licensePlate,
+                            },
+                            notes: isScheduled ? `Scheduled for ${storedDate} at ${storedTime}` : 'ASAP Pickup',
+                        };
 
-        return () => clearTimeout(timer);
-    }, []);
+                        const newOrderId = await createOrder(orderData);
+                        setOrderId(newOrderId);
+                        console.log('Order created in Firestore:', newOrderId);
+
+                        // Redirect to the specific order page after a short delay
+                        setTimeout(() => {
+                            router.push(`/order/${newOrderId}`);
+                        }, 3000);
+                    } catch (error) {
+                        console.error('Error creating order:', error);
+                    }
+                }
+            }
+
+            // Timer for message change
+            const timer = setTimeout(() => {
+                setMessage('Your driver will arrive in 12 minutes');
+            }, 3000);
+
+            return () => clearTimeout(timer);
+        };
+
+        createFirestoreOrder();
+    }, [router, isCreatingOrder]);
 
     const handleBackToHome = () => {
         // Clear session storage
