@@ -4,8 +4,9 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { vehicleStorage } from '@/lib/vehicle-storage';
+import { Suspense } from 'react';
 
-const ColorSelectionPage = () => {
+const ColorSelectionContent = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const year = searchParams.get('year');
@@ -94,6 +95,14 @@ const ColorSelectionPage = () => {
                 </div>
             </div>
         </div>
+    );
+};
+
+const ColorSelectionPage = () => {
+    return (
+        <Suspense fallback={<div className="flex-1 overflow-y-auto p-4"><div className="max-w-2xl mx-auto"><div className="text-center">Loading...</div></div></div>}>
+            <ColorSelectionContent />
+        </Suspense>
     );
 };
 

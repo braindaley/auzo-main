@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { ArrowLeft, MapPin, Car, Calendar, Clock, DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Vehicle } from '@/components/car-card';
 
-export default function ConfirmBookingPage() {
+function ConfirmBookingContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
@@ -18,10 +18,17 @@ export default function ConfirmBookingPage() {
     const isPickupLater = searchParams.get('pickup') === 'later';
 
     useEffect(() => {
+        // Only access sessionStorage if we're in the browser
+        if (typeof window === 'undefined') return;
+
         // Get selected vehicle from sessionStorage
         const vehicleData = sessionStorage.getItem('selectedVehicle');
         if (vehicleData) {
-            setSelectedVehicle(JSON.parse(vehicleData));
+            try {
+                setSelectedVehicle(JSON.parse(vehicleData));
+            } catch {
+                // Handle parsing errors gracefully
+            }
         }
 
         // Get destination from sessionStorage (if you store it)
@@ -150,5 +157,29 @@ export default function ConfirmBookingPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function ConfirmBookingPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex flex-col min-h-screen bg-gray-50">
+                <div className="border-b bg-white px-4 py-4">
+                    <div className="flex items-center gap-4">
+                        <Link href="/select-vehicle" className="p-1">
+                            <ArrowLeft className="w-6 h-6 text-gray-600" />
+                        </Link>
+                        <div className="flex-1">
+                            <h1 className="text-lg font-semibold text-gray-900">Confirm Booking</h1>
+                        </div>
+                    </div>
+                </div>
+                <div className="flex-1 flex items-center justify-center">
+                    <div className="text-gray-500">Loading...</div>
+                </div>
+            </div>
+        }>
+            <ConfirmBookingContent />
+        </Suspense>
     );
 }

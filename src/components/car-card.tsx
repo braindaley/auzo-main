@@ -9,6 +9,10 @@ interface Vehicle {
   make: string;
   model: string;
   color: string;
+  vin?: string;
+  licensePlate?: string;
+  purchaseDate?: string;
+  photos?: string[];
 }
 
 interface CarCardProps {

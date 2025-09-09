@@ -3,8 +3,9 @@
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 
-const MakeSelectionPage = () => {
+const MakeSelectionContent = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const year = searchParams.get('year');
@@ -63,6 +64,14 @@ const MakeSelectionPage = () => {
                 </div>
             </div>
         </div>
+    );
+};
+
+const MakeSelectionPage = () => {
+    return (
+        <Suspense fallback={<div className="flex-1 overflow-y-auto p-4"><div className="max-w-2xl mx-auto"><div className="text-center">Loading...</div></div></div>}>
+            <MakeSelectionContent />
+        </Suspense>
     );
 };
 

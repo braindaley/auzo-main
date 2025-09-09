@@ -1,12 +1,17 @@
 
 "use client";
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Car, Droplet, Wrench, Gauge, Cog, Sparkles, PaintBucket, Settings, Search, Calendar, Fuel, Waves } from 'lucide-react';
 import Link from 'next/link';
 
-const personalServices = [];
+const personalServices: Array<{
+    name: string;
+    icon: React.ComponentType<any>;
+    href: string;
+    description?: string;
+}> = [];
 
 const additionalServices = [
     { name: "Quick Lube", icon: Droplet },
