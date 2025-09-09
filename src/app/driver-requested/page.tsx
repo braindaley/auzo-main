@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { Home, Clock, MapPin, Car } from 'lucide-react';
+import { Home, Clock, MapPin, Car, Navigation } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { useRouter } from 'next/navigation';
 import { Vehicle } from '@/components/car-card';
 import { transactionStorage, Transaction } from '@/lib/transaction-storage';
@@ -70,15 +71,21 @@ export default function DriverRequestedPage() {
                 if (!isCreatingOrder) {
                     setIsCreatingOrder(true);
                     try {
+                        const vehicleInfo: any = {
+                            make: vehicle.make,
+                            model: vehicle.model,
+                            year: vehicle.year,
+                        };
+                        
+                        // Only add licensePlate if it exists
+                        if (vehicle.licensePlate) {
+                            vehicleInfo.licensePlate = vehicle.licensePlate;
+                        }
+
                         const orderData: Partial<Order> = {
                             pickupLocation: 'Current Location', // You can get actual location if needed
                             dropoffLocation: dest,
-                            vehicleInfo: {
-                                make: vehicle.make,
-                                model: vehicle.model,
-                                year: vehicle.year,
-                                licensePlate: vehicle.licensePlate,
-                            },
+                            vehicleInfo,
                             notes: isScheduled ? `Scheduled for ${storedDate} at ${storedTime}` : 'ASAP Pickup',
                         };
 
@@ -120,10 +127,21 @@ export default function DriverRequestedPage() {
     return (
         <div className="flex flex-col min-h-screen bg-gray-50">
             {/* Map Placeholder */}
-            <div className="h-64 bg-gray-200 flex items-center justify-center">
+            <div className="h-64 bg-gray-200 flex items-center justify-center relative">
                 <div className="text-center text-gray-500">
                     <MapPin className="w-12 h-12 mx-auto mb-2" />
                     <p className="text-sm">Map loading...</p>
+                </div>
+                
+                {/* Status Badge */}
+                <div className="absolute top-4 right-4">
+                    <Badge 
+                        variant="secondary"
+                        className="flex items-center gap-1 px-3 py-2 text-sm"
+                    >
+                        <Navigation className="w-4 h-4" />
+                        Finding driver
+                    </Badge>
                 </div>
             </div>
 

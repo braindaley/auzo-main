@@ -10,7 +10,6 @@ import Link from 'next/link';
 const navItems = [
   { name: 'Home', href: '/home', icon: Home },
   { name: 'Garage', href: '/garage', icon: Car },
-  { name: 'Activity', href: '/activity', icon: List },
   { name: 'Account', href: '/account', icon: User },
 ];
 
@@ -30,7 +29,7 @@ const BottomNav = () => {
       }}
     >
       <div className="container mx-auto px-0">
-        <div className="grid grid-cols-4">
+        <div className="grid grid-cols-3">
           {navItems.map((item) => (
             <Link 
               key={item.name} 

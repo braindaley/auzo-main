@@ -115,6 +115,20 @@ class TransactionStorage {
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(transactions));
   }
 
+  updateTransaction(id: string, updates: Partial<Transaction>): void {
+    const transactions = this.getTransactions();
+    const transactionIndex = transactions.findIndex(t => t.id === id);
+    
+    if (transactionIndex === -1) return;
+    
+    transactions[transactionIndex] = {
+      ...transactions[transactionIndex],
+      ...updates
+    };
+    
+    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(transactions));
+  }
+
   getRecentTransactions(limit: number = 10): Transaction[] {
     return this.getTransactions().slice(0, limit);
   }

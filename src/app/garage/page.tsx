@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Car, Plus, MapPin, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
@@ -54,6 +55,40 @@ const GaragePage = () => {
         });
     };
 
+    const getStatusBadgeVariant = (status: Transaction['status']) => {
+        switch (status) {
+            case 'completed':
+                return 'default';
+            case 'in_progress':
+                return 'secondary';
+            case 'matched':
+                return 'secondary';
+            case 'requested':
+                return 'outline';
+            case 'cancelled':
+                return 'destructive';
+            default:
+                return 'outline';
+        }
+    };
+
+    const getStatusLabel = (status: Transaction['status']) => {
+        switch (status) {
+            case 'completed':
+                return 'Completed';
+            case 'in_progress':
+                return 'In Progress';
+            case 'matched':
+                return 'Driver Matched';
+            case 'requested':
+                return 'Requested';
+            case 'cancelled':
+                return 'Cancelled';
+            default:
+                return status;
+        }
+    };
+
     return (
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
             <div className="mt-4">
@@ -102,15 +137,20 @@ const GaragePage = () => {
                                                 >
                                                     <CardContent className="p-3">
                                                         <div className="space-y-1">
-                                                            {/* Row 1: Location */}
+                                                            {/* Row 1: Status Badge */}
+                                                            <div className="flex items-center">
+                                                                <Badge variant={getStatusBadgeVariant(transaction.status)} className="text-xs py-0 px-2">
+                                                                    {getStatusLabel(transaction.status)}
+                                                                </Badge>
+                                                            </div>
+                                                            
+                                                            {/* Row 2: Location */}
                                                             <div className="flex items-center gap-2">
                                                                 <MapPin className="w-3 h-3 text-gray-500" />
                                                                 <span className="text-sm font-medium text-gray-900">
                                                                     {transaction.destination}
                                                                 </span>
                                                             </div>
-                                                            
-                                                            {/* Row 2: Vehicle (skip since it's the same as the parent) */}
                                                             
                                                             {/* Row 3: Date/Time */}
                                                             <div className="flex items-center gap-2">

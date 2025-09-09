@@ -1,10 +1,13 @@
 
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Car, Droplet, Wrench, Gauge, Cog, Sparkles, PaintBucket, Settings, Search, Calendar, Fuel, Waves } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Car, Droplet, Wrench, Gauge, Cog, Sparkles, PaintBucket, Settings, Search, Calendar, Fuel, Waves, MapPin, Clock } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { transactionStorage, Transaction } from '@/lib/transaction-storage';
 
 const personalServices: Array<{
     name: string;
@@ -27,6 +30,71 @@ const additionalServices = [
 
 const HomePage = () => {
     const [pickupTime, setPickupTime] = useState<'now' | 'later'>('now');
+    const [latestTransaction, setLatestTransaction] = useState<Transaction | null>(null);
+    const router = useRouter();
+
+    useEffect(() => {
+        // Load the latest transaction from storage
+        const transactions = transactionStorage.getTransactions();
+        if (transactions.length > 0) {
+            setLatestTransaction(transactions[0]);
+        }
+    }, []);
+
+    const formatDate = (timestamp: string) => {
+        const date = new Date(timestamp);
+        return date.toLocaleDateString('en-US', { 
+            month: 'short', 
+            day: 'numeric', 
+            year: 'numeric' 
+        });
+    };
+
+    const formatTime = (timestamp: string) => {
+        const date = new Date(timestamp);
+        return date.toLocaleTimeString('en-US', { 
+            hour: 'numeric', 
+            minute: '2-digit' 
+        });
+    };
+
+    const getStatusBadgeVariant = (status: Transaction['status']) => {
+        switch (status) {
+            case 'completed':
+                return 'default';
+            case 'in_progress':
+                return 'secondary';
+            case 'matched':
+                return 'secondary';
+            case 'requested':
+                return 'outline';
+            case 'cancelled':
+                return 'destructive';
+            default:
+                return 'outline';
+        }
+    };
+
+    const getStatusLabel = (status: Transaction['status']) => {
+        switch (status) {
+            case 'completed':
+                return 'Completed';
+            case 'in_progress':
+                return 'In Progress';
+            case 'matched':
+                return 'Driver Matched';
+            case 'requested':
+                return 'Requested';
+            case 'cancelled':
+                return 'Cancelled';
+            default:
+                return status;
+        }
+    };
+
+    const handleTransactionClick = (transaction: Transaction) => {
+        router.push(`/activity/${transaction.id}`);
+    };
 
     return (
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
@@ -53,6 +121,64 @@ const HomePage = () => {
                         </Link>
                     </div>
                 </div>
+                
+                {latestTransaction && (
+                    <div className="mt-6">
+                        <div className="mb-4">
+                            <h2 className="heading-2">Latest Order</h2>
+                        </div>
+                        <Card className="hover:bg-gray-50 transition-colors">
+                            <CardContent className="p-3 relative">
+                                {/* Order Pickup CTA for completed orders - Top Right */}
+                                {latestTransaction.status === 'completed' && (
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            // Navigate to confirm-booking with reversed locations
+                                            const searchParams = new URLSearchParams({
+                                                vehicleId: latestTransaction.vehicle.id,
+                                                destination: latestTransaction.pickupLocation,
+                                                pickupLocation: latestTransaction.destination
+                                            });
+                                            router.push(`/confirm-booking?${searchParams.toString()}`);
+                                        }}
+                                        className="absolute top-2 right-2 bg-black hover:bg-gray-800 text-white text-[10px] py-1 px-2 rounded text-center transition-colors"
+                                    >
+                                        Order Pickup
+                                    </button>
+                                )}
+                                
+                                <div 
+                                    className="space-y-1 cursor-pointer pr-20"
+                                    onClick={() => handleTransactionClick(latestTransaction)}
+                                >
+                                    {/* Row 1: Status Badge */}
+                                    <div className="flex items-center">
+                                        <Badge variant={getStatusBadgeVariant(latestTransaction.status)} className="text-xs py-0 px-2">
+                                            {getStatusLabel(latestTransaction.status)}
+                                        </Badge>
+                                    </div>
+                                    
+                                    {/* Row 2: Location */}
+                                    <div className="flex items-center gap-2">
+                                        <MapPin className="w-3 h-3 text-gray-500" />
+                                        <span className="text-sm font-medium text-gray-900">
+                                            {latestTransaction.destination}
+                                        </span>
+                                    </div>
+                                    
+                                    {/* Row 3: Date/Time */}
+                                    <div className="flex items-center gap-2">
+                                        <Clock className="w-3 h-3 text-gray-500" />
+                                        <span className="text-xs text-gray-600">
+                                            {formatDate(latestTransaction.timestamp)} at {formatTime(latestTransaction.timestamp)}
+                                        </span>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                )}
                 
                 <div className="mt-6">
                     <h2 className="heading-2 mb-4">Services</h2>
