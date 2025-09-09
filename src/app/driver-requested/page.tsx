@@ -20,6 +20,7 @@ export default function DriverRequestedPage() {
     const [transaction, setTransaction] = useState<Transaction | null>(null);
     const [orderId, setOrderId] = useState<string | null>(null);
     const [isCreatingOrder, setIsCreatingOrder] = useState(false);
+    const [isRoundTrip, setIsRoundTrip] = useState<boolean>(false);
 
     useEffect(() => {
         const createFirestoreOrder = async () => {
@@ -28,11 +29,17 @@ export default function DriverRequestedPage() {
             const storedDestination = sessionStorage.getItem('selectedDestination');
             const storedDate = sessionStorage.getItem('selectedDate');
             const storedTime = sessionStorage.getItem('selectedTime');
+            const roundTripFlag = sessionStorage.getItem('isRoundTrip');
 
             let vehicle: Vehicle | null = null;
             let dest = '';
             let pickup = '';
             let isScheduled = false;
+
+            // Set round trip flag
+            if (roundTripFlag === 'true') {
+                setIsRoundTrip(true);
+            }
 
             if (vehicleData) {
                 vehicle = JSON.parse(vehicleData);
@@ -61,7 +68,8 @@ export default function DriverRequestedPage() {
                     pickupTime: pickup,
                     isScheduled,
                     scheduledDate: storedDate || undefined,
-                    scheduledTime: storedTime || undefined
+                    scheduledTime: storedTime || undefined,
+                    isRoundTrip: roundTripFlag === 'true'
                 });
                 setTransaction(savedTransaction);
                 
@@ -120,6 +128,7 @@ export default function DriverRequestedPage() {
         sessionStorage.removeItem('selectedDestination');
         sessionStorage.removeItem('selectedDate');
         sessionStorage.removeItem('selectedTime');
+        sessionStorage.removeItem('isRoundTrip');
         
         router.push('/home');
     };
@@ -149,6 +158,9 @@ export default function DriverRequestedPage() {
             <div className="bg-white px-4 py-6">
                 <div className="text-center">
                     <h1 className="text-xl font-semibold text-gray-900">{message}</h1>
+                    {isRoundTrip && (
+                        <p className="text-sm text-blue-600 font-medium mt-2">Round Trip Auzo Service</p>
+                    )}
                 </div>
             </div>
 
@@ -171,8 +183,13 @@ export default function DriverRequestedPage() {
                         <div className="flex items-start gap-2">
                             <MapPin className="w-4 h-4 text-gray-400 mt-0.5" />
                             <div className="flex-1">
-                                <p className="text-xs text-gray-500">Destination</p>
+                                <p className="text-xs text-gray-500">
+                                    {isRoundTrip ? 'Service Location (Round Trip)' : 'Destination'}
+                                </p>
                                 <p className="text-sm text-gray-900">{destination || 'AutoZone Pro Service Center'}</p>
+                                {isRoundTrip && (
+                                    <p className="text-xs text-blue-600 font-medium mt-1">Return to pickup location after service</p>
+                                )}
                             </div>
                         </div>
 

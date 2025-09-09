@@ -26,6 +26,7 @@ function ConfirmBookingContent() {
     const [selectedCardId, setSelectedCardId] = useState<string>('');
     const [isLoadingCards, setIsLoadingCards] = useState(true);
     const [isAddingCard, setIsAddingCard] = useState(false);
+    const [isRoundTrip, setIsRoundTrip] = useState<boolean>(false);
     const isPickupLater = searchParams.get('pickup') === 'later';
 
     useEffect(() => {
@@ -53,6 +54,12 @@ function ConfirmBookingContent() {
         const storedTime = sessionStorage.getItem('selectedTime');
         if (storedDate) setSelectedDate(storedDate);
         if (storedTime) setSelectedTime(storedTime);
+
+        // Get round trip flag from sessionStorage
+        const roundTripFlag = sessionStorage.getItem('isRoundTrip');
+        if (roundTripFlag === 'true') {
+            setIsRoundTrip(true);
+        }
 
         // Load user's credit cards
         loadCreditCards();
@@ -145,13 +152,18 @@ function ConfirmBookingContent() {
                         <ArrowLeft className="w-6 h-6 text-gray-600" />
                     </Link>
                     <div className="flex-1">
-                        <h1 className="text-lg font-semibold text-gray-900">Confirm Booking</h1>
+                        <h1 className="text-lg font-semibold text-gray-900">
+                            {isRoundTrip ? 'Confirm Round Trip' : 'Confirm Booking'}
+                        </h1>
+                        {isRoundTrip && (
+                            <p className="text-sm text-blue-600 font-medium">Auzo Service</p>
+                        )}
                     </div>
                 </div>
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 space-y-2">
-                {/* From and To Section */}
+                {/* From and To Section - Round Trip or One Way */}
                 <Card className="p-3 bg-white">
                     <div className="space-y-2">
                         <div className="flex items-start gap-3">
@@ -173,8 +185,28 @@ function ConfirmBookingContent() {
                                 <p className="text-sm text-gray-900 font-medium leading-tight">
                                     {destination || 'AutoZone Pro Service Center'}
                                 </p>
+                                {isRoundTrip && (
+                                    <p className="text-xs text-blue-600 font-medium mt-1">Auzo Service</p>
+                                )}
                             </div>
                         </div>
+
+                        {/* Show return trip for round trip bookings */}
+                        {isRoundTrip && (
+                            <>
+                                <div className="border-l border-gray-200 ml-3 h-2"></div>
+                                
+                                <div className="flex items-start gap-3">
+                                    <div className="w-6 h-6 flex items-center justify-center">
+                                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="text-xs text-gray-500 leading-none mb-0.5">Back to</p>
+                                        <p className="text-sm text-gray-900 font-medium leading-tight">Current location</p>
+                                    </div>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </Card>
 

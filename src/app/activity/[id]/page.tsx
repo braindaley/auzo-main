@@ -135,7 +135,14 @@ export default function TransactionDetailPage({ params }: TransactionDetailPageP
 
                 {/* Route Information */}
                 <Card className="p-4 bg-white">
-                    <h2 className="text-sm font-semibold text-gray-900 mb-3">Route</h2>
+                    <div className="flex items-center justify-between mb-3">
+                        <h2 className="text-sm font-semibold text-gray-900">Route</h2>
+                        {transaction.isRoundTrip && (
+                            <span className="text-xs text-blue-600 font-medium bg-blue-50 px-2 py-1 rounded-full">
+                                Round Trip
+                            </span>
+                        )}
+                    </div>
                     <div className="space-y-3">
                         <div className="flex items-start gap-3">
                             <div className="w-6 h-6 flex items-center justify-center">
@@ -156,7 +163,9 @@ export default function TransactionDetailPage({ params }: TransactionDetailPageP
                         <div className="flex items-start gap-3">
                             <MapPin className="w-6 h-6 text-blue-500" />
                             <div className="flex-1">
-                                <p className="text-xs text-gray-500 leading-none mb-0.5">To</p>
+                                <p className="text-xs text-gray-500 leading-none mb-0.5">
+                                    {transaction.isRoundTrip ? 'Service Location' : 'To'}
+                                </p>
                                 <p className="text-sm text-gray-900 font-medium leading-tight">
                                     {transaction.destination}
                                     {(transaction.status === 'completed' || transaction.status === 'in_progress') && (
@@ -165,8 +174,34 @@ export default function TransactionDetailPage({ params }: TransactionDetailPageP
                                         </span>
                                     )}
                                 </p>
+                                {transaction.isRoundTrip && (
+                                    <p className="text-xs text-blue-600 font-medium mt-1">
+                                        Auzo Service - Return trip included
+                                    </p>
+                                )}
                             </div>
                         </div>
+
+                        {/* Show return trip for round trip bookings */}
+                        {transaction.isRoundTrip && (
+                            <>
+                                <div className="border-l border-gray-200 ml-3 h-2"></div>
+                                
+                                <div className="flex items-start gap-3">
+                                    <div className="w-6 h-6 flex items-center justify-center">
+                                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="text-xs text-gray-500 leading-none mb-0.5">Back to</p>
+                                        <p className="text-sm text-gray-900 font-medium leading-tight">
+                                            {transaction.status === 'completed' 
+                                                ? '1234 Main Street, Phoenix, AZ 85001' 
+                                                : transaction.pickupLocation}
+                                        </p>
+                                    </div>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </Card>
 

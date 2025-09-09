@@ -16,6 +16,7 @@ export interface Transaction {
   
   // Service details
   serviceType: 'delivery';
+  isRoundTrip?: boolean;
   cost: number;
   
   // Location details
@@ -46,6 +47,7 @@ class TransactionStorage {
     isScheduled: boolean;
     scheduledDate?: string;
     scheduledTime?: string;
+    isRoundTrip?: boolean;
   }): Transaction {
     const transaction: Transaction = {
       id: this.generateTransactionId(),
@@ -63,6 +65,7 @@ class TransactionStorage {
       
       // Service details
       serviceType: 'delivery',
+      isRoundTrip: bookingData.isRoundTrip,
       cost: 14.90,
       
       // Location details
