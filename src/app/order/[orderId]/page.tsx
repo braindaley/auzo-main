@@ -134,6 +134,20 @@ export default function OrderPage({ params }: OrderPageProps) {
         }
     };
 
+    const getArrivalTime = (status: OrderStatus): string | null => {
+        switch (status) {
+            case OrderStatus.DRIVER_ON_WAY:
+                return "Arrives in 12 minutes";
+            case OrderStatus.CAR_IN_TRANSIT:
+                return "Arrives in 20 minutes";
+            case OrderStatus.CAR_DELIVERED:
+                // For demo purposes, show current time as delivery time
+                return `Delivered at ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+            default:
+                return null;
+        }
+    };
+
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-screen">
@@ -187,6 +201,11 @@ export default function OrderPage({ params }: OrderPageProps) {
                     <h1 className="text-xl font-semibold text-gray-900 mb-2">
                         {getStatusMessage(order.status)}
                     </h1>
+                    {getArrivalTime(order.status) && (
+                        <p className="text-lg font-medium text-blue-600 mb-2">
+                            {getArrivalTime(order.status)}
+                        </p>
+                    )}
                     <p className="text-sm text-gray-500">Order #{orderId.slice(-6).toUpperCase()}</p>
                 </div>
             </div>

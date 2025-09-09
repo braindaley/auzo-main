@@ -17,9 +17,9 @@ const personalServices: Array<{
 }> = [];
 
 const additionalServices = [
-    { name: "Quick Lube", icon: Droplet },
-    { name: "Car Wash", icon: Waves },
-    { name: "Fuel Fill", icon: Fuel },
+    { name: "Quick Lube", icon: Droplet, href: "/service?service=quick%20lube" },
+    { name: "Car Wash", icon: Waves, href: "/service?service=car%20wash" },
+    { name: "Fuel Fill", icon: Fuel, href: "/service?service=fuel%20fill" },
     { name: "Dealer Service Center", icon: Car },
     { name: "Tire & Wheel Service", icon: Cog },
     { name: "Brake & Muffler Service", icon: Gauge },
@@ -184,10 +184,19 @@ const HomePage = () => {
                     <h2 className="heading-2 mb-4">Services</h2>
                     <div className="grid grid-cols-4 gap-3">
                         {additionalServices.map((service) => (
-                            <button key={service.name} className="flex flex-col items-center justify-center p-3 hover:bg-gray-50 rounded-lg transition-colors">
-                                <service.icon className="w-8 h-8 text-gray-700 mb-2" />
-                                <p className="text-xs text-center text-gray-600 leading-tight">{service.name}</p>
-                            </button>
+                            service.href ? (
+                                <Link key={service.name} href={service.href}>
+                                    <button className="w-full flex flex-col items-center justify-center p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                                        <service.icon className="w-8 h-8 text-gray-700 mb-2" />
+                                        <p className="text-xs text-center text-gray-600 leading-tight">{service.name}</p>
+                                    </button>
+                                </Link>
+                            ) : (
+                                <button key={service.name} className="flex flex-col items-center justify-center p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                                    <service.icon className="w-8 h-8 text-gray-700 mb-2" />
+                                    <p className="text-xs text-center text-gray-600 leading-tight">{service.name}</p>
+                                </button>
+                            )
                         ))}
                     </div>
                 </div>

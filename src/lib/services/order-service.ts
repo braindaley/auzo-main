@@ -14,15 +14,16 @@ const ORDERS_COLLECTION = 'orders';
 
 export async function createOrder(orderData: Partial<Order>): Promise<string> {
   try {
+    const timestamp = serverTimestamp();
     const newOrder: Partial<Order> = {
       ...orderData,
       status: OrderStatus.FINDING_DRIVER,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
+      createdAt: timestamp,
+      updatedAt: timestamp,
       statusHistory: [
         {
           status: OrderStatus.FINDING_DRIVER,
-          timestamp: serverTimestamp(),
+          timestamp: new Date(),
         },
       ],
     };
@@ -64,7 +65,7 @@ export async function updateOrderStatus(
       updatedAt: serverTimestamp(),
       statusHistory: arrayUnion({
         status: newStatus,
-        timestamp: serverTimestamp(),
+        timestamp: new Date(),
       }),
     });
     console.log('Order status updated successfully');
