@@ -3,7 +3,6 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import Header from '@/components/header';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { User } from 'lucide-react';
@@ -11,8 +10,6 @@ import { User } from 'lucide-react';
 export default function OpeningScreen() {
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
-      <Header isTransparent={false} disableLogoLink={true} hideAccountIcon={true} />
-      
       <main className="flex-1 flex flex-col">
         <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
             <h1 className="heading-1 mb-4">Auzo</h1>

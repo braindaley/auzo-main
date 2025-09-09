@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowLeft, Car, Check, ChevronDown, Clock, MapPin } from 'lucide-react';
 
-import BottomNav from '@/components/bottom-nav';
 import Header from '@/components/header';
 import ServiceMap from '@/components/service-map';
 import RideOptions from '@/components/ride-options';
@@ -131,8 +130,6 @@ const ServiceHomePage = () => {
       <AnimatePresence>
         {currentStep === steps.PLANNING && renderPlanningContent()}
       </AnimatePresence>
-      
-      <BottomNav />
     </div>
   );
 };

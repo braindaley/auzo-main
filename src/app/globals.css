@@ -35,42 +35,99 @@
 
 @layer base {
   * {
-    @apply border-border;
+    @apply m-0 p-0 box-border;
   }
+
   body {
-    @apply bg-background text-foreground;
+    @apply font-sans text-gray-900 bg-white leading-relaxed;
+  }
+
+  h1 {
+    @apply text-2xl font-semibold mb-2;
+  }
+
+  h2 {
+    @apply text-xl font-semibold mb-2;
+  }
+
+  h3 {
+    @apply text-lg font-medium mb-2;
+  }
+
+  p {
+    @apply mb-4 text-gray-800;
+  }
+
+  a {
+    @apply underline text-black;
+  }
+
+  button {
+    @apply bg-gray-100 border border-gray-300 rounded px-4 py-2 text-sm;
+  }
+
+  input, textarea, select {
+    @apply w-full border border-gray-300 rounded px-3 py-2;
   }
 }
 
 @layer components {
-  /* Standardized typography classes */
-  .heading-1 {
-    @apply text-3xl font-bold text-foreground;
+  .card {
+    @apply border-2 border-dashed border-gray-300 rounded p-4 mb-4;
   }
-  .heading-2 {
-    @apply text-2xl font-semibold text-foreground;
+
+  .navbar {
+    @apply border-b border-gray-200 py-3 text-center;
   }
-  .heading-3 {
-    @apply text-xl font-semibold text-foreground;
+
+  .container {
+    @apply w-[390px] mx-auto p-4;
   }
-  .body-large {
-    @apply text-lg text-foreground;
+
+  /* Navigation footer overrides */
+  footer {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
   }
-  .body-base {
-    @apply text-base text-foreground;
+
+  footer[class*="nav"] {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
   }
-  .body-small {
-    @apply text-sm text-foreground;
+
+  .nav-footer {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
   }
-  .caption {
-    @apply text-xs text-muted-foreground;
+
+  .nav-link {
+    text-decoration: none !important;
+    text-decoration-line: none !important;
   }
-  
-  /* Standardized spacing */
-  .section-padding {
-    @apply px-4 py-6;
+
+  .nav-link:hover {
+    text-decoration: none !important;
   }
-  .card-padding {
-    @apply p-4;
+
+  .nav-button {
+    text-decoration: none !important;
+    background-color: transparent !important;
+  }
+
+  .nav-text {
+    text-decoration: none !important;
+  }
+
+  /* Override global link styles for navigation */
+  .nav-link a,
+  .nav-button a,
+  .nav-text a {
+    text-decoration: none !important;
+  }
+
+  /* Force white background on bottom navigation */
+  footer.sticky.bottom-0 {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
   }
 }

@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Star, LifeBuoy, Wallet, List, ChevronRight, Gift, ShieldCheck, Leaf, Users } from 'lucide-react';
-import BottomNav from '@/components/bottom-nav';
 import Image from 'next/image';
 
 const AccountPage = () => {
@@ -121,7 +120,6 @@ const AccountPage = () => {
                  </div>
             </div>
         </main>
-        <BottomNav />
     </div>
   );
 };
