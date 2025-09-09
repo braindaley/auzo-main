@@ -1,0 +1,133 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%; /* White */
+    --foreground: 0 0% 9%; /* Dark black */
+    --card: 0 0% 100%; /* White cards */
+    --card-foreground: 0 0% 9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 9%;
+    --primary: 0 0% 9%; /* Black for primary actions */
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 96%; /* Light gray */
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96%; /* Light gray for muted elements */
+    --muted-foreground: 0 0% 45%; /* Medium gray text */
+    --accent: 0 0% 96%;
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 90%; /* Light gray borders */
+    --input: 0 0% 96%; /* Light gray inputs */
+    --ring: 0 0% 9%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply m-0 p-0 box-border;
+  }
+
+  body {
+    @apply font-sans text-gray-900 bg-white leading-relaxed;
+  }
+
+  h1 {
+    @apply text-2xl font-semibold mb-2;
+  }
+
+  h2 {
+    @apply text-xl font-semibold mb-2;
+  }
+
+  h3 {
+    @apply text-lg font-medium mb-2;
+  }
+
+  p {
+    @apply mb-4 text-gray-800;
+  }
+
+  a {
+    @apply underline text-black;
+  }
+
+  button {
+    @apply bg-gray-100 border border-gray-300 rounded px-4 py-2 text-sm;
+  }
+
+  input, textarea, select {
+    @apply w-full border border-gray-300 rounded px-3 py-2;
+  }
+}
+
+@layer components {
+  .card {
+    @apply border-2 border-dashed border-gray-300 rounded p-4 mb-4;
+  }
+
+  .navbar {
+    @apply border-b border-gray-200 py-3 text-center;
+  }
+
+  .container {
+    @apply w-[390px] mx-auto p-4;
+  }
+
+  /* Navigation footer overrides */
+  footer {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+  }
+
+  footer[class*="nav"] {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+  }
+
+  .nav-footer {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+  }
+
+  .nav-link {
+    text-decoration: none !important;
+    text-decoration-line: none !important;
+  }
+
+  .nav-link:hover {
+    text-decoration: none !important;
+  }
+
+  .nav-button {
+    text-decoration: none !important;
+    background-color: transparent !important;
+  }
+
+  .nav-text {
+    text-decoration: none !important;
+  }
+
+  /* Override global link styles for navigation */
+  .nav-link a,
+  .nav-button a,
+  .nav-text a {
+    text-decoration: none !important;
+  }
+
+  /* Force white background on bottom navigation */
+  footer.sticky.bottom-0 {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+  }
+}
