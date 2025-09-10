@@ -51,7 +51,15 @@ function ScheduleDateContent() {
     return (
         <div className="flex flex-col min-h-screen bg-background">
              <Header>
-                <Button variant="ghost" size="icon" onClick={() => router.back()}>
+                <Button variant="ghost" size="icon" onClick={() => {
+                    const queryParams = new URLSearchParams(searchParams.toString());
+                    const service = queryParams.get('service');
+                    if (service) {
+                        router.push(`/select-service-options?service=${encodeURIComponent(service)}`);
+                    } else {
+                        router.push('/select-service');
+                    }
+                }}>
                     <ArrowLeft />
                 </Button>
             </Header>

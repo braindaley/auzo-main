@@ -66,7 +66,11 @@ function VerificationContent() {
   return (
     <div className="flex flex-col min-h-screen bg-background">
        <Header isTransparent={false}>
-          <Button variant="ghost" size="icon" onClick={() => router.back()}>
+          <Button variant="ghost" size="icon" onClick={() => {
+              const params = new URLSearchParams();
+              if (flow) params.set('flow', flow);
+              router.push(`/user-signup${params.toString() ? '?' + params.toString() : ''}`);
+            }}>
               <ArrowLeft />
           </Button>
        </Header>

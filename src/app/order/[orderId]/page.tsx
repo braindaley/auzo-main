@@ -2,11 +2,11 @@
 
 import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
-import { Home, Clock, MapPin, Car, CheckCircle, Truck, Navigation, Package } from 'lucide-react';
+import { Home, Clock, MapPin, Car, CheckCircle, Truck, Navigation, Package, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { getOrder, updateOrderStatus } from '@/lib/services/order-service';
+import { getOrder, updateOrderStatus, cancelOrder } from '@/lib/services/order-service';
 import { Order, OrderStatus, OrderStatusLabels } from '@/lib/types/order';
 
 interface OrderPageProps {
@@ -75,7 +75,8 @@ export default function OrderPage({ params }: OrderPageProps) {
                 nextStatus = OrderStatus.CAR_DELIVERED;
                 break;
             case OrderStatus.CAR_DELIVERED:
-                // Already delivered, no next status
+            case OrderStatus.CANCELLED:
+                // Already delivered or cancelled, no next status
                 return;
             default:
                 return;
@@ -89,6 +90,20 @@ export default function OrderPage({ params }: OrderPageProps) {
         }
     };
 
+    const handleCancelOrder = async () => {
+        if (!order) return;
+
+        const confirmed = confirm('Are you sure you want to cancel this order?');
+        if (!confirmed) return;
+
+        try {
+            await cancelOrder(orderId);
+            await loadOrder(); // Reload to get updated order
+        } catch (error) {
+            console.error('Error cancelling order:', error);
+        }
+    };
+
     const getStatusIcon = (status: OrderStatus) => {
         switch (status) {
             case OrderStatus.FINDING_DRIVER:
@@ -99,6 +114,8 @@ export default function OrderPage({ params }: OrderPageProps) {
                 return <Truck className="w-4 h-4" />;
             case OrderStatus.CAR_DELIVERED:
                 return <CheckCircle className="w-4 h-4" />;
+            case OrderStatus.CANCELLED:
+                return <X className="w-4 h-4" />;
             default:
                 return null;
         }
@@ -114,6 +131,8 @@ export default function OrderPage({ params }: OrderPageProps) {
                 return "default";
             case OrderStatus.CAR_DELIVERED:
                 return "outline";
+            case OrderStatus.CANCELLED:
+                return "destructive";
             default:
                 return "default";
         }
@@ -129,6 +148,8 @@ export default function OrderPage({ params }: OrderPageProps) {
                 return "Your vehicle is being transported to the destination";
             case OrderStatus.CAR_DELIVERED:
                 return "Your vehicle has been delivered successfully!";
+            case OrderStatus.CANCELLED:
+                return "This order has been cancelled";
             default:
                 return "";
         }
@@ -143,6 +164,8 @@ export default function OrderPage({ params }: OrderPageProps) {
             case OrderStatus.CAR_DELIVERED:
                 // For demo purposes, show current time as delivery time
                 return `Delivered at ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+            case OrderStatus.CANCELLED:
+                return `Cancelled at ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
             default:
                 return null;
         }
@@ -313,6 +336,16 @@ export default function OrderPage({ params }: OrderPageProps) {
 
                 {/* Action Buttons */}
                 <div className="space-y-2 pt-4">
+                    {order.status === OrderStatus.FINDING_DRIVER && (
+                        <Button 
+                            variant="destructive"
+                            className="w-full h-12 text-base font-semibold"
+                            onClick={handleCancelOrder}
+                        >
+                            <X className="w-4 h-4 mr-2" />
+                            Cancel Service
+                        </Button>
+                    )}
                     <Button 
                         className="w-full h-12 text-base font-semibold"
                         onClick={() => router.push('/home')}

@@ -69,7 +69,10 @@ function AddOnsForm() {
 
   return (
     <div className="w-full max-w-md mx-auto space-y-6">
-      <Button variant="ghost" onClick={() => router.back()} className="mb-4">
+      <Button variant="ghost" onClick={() => {
+        const queryParams = new URLSearchParams(searchParams.toString());
+        router.push(`/review-details?${queryParams.toString()}`);
+      }} className="mb-4">
         <ArrowLeft className="mr-2" />
         Back to Review
       </Button>

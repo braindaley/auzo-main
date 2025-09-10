@@ -17,9 +17,9 @@ const personalServices: Array<{
 }> = [];
 
 const additionalServices = [
-    { name: "Quick Lube", icon: Droplet, href: "/full-service?service=quick%20lube" },
-    { name: "Car Wash", icon: Waves, href: "/full-service?service=car%20wash" },
-    { name: "Fuel Fill", icon: Fuel, href: "/full-service?service=fuel%20fill" },
+    { name: "Quick Lube", icon: Droplet, href: "/service-explanation?service=quick%20lube" },
+    { name: "Car Wash", icon: Waves, href: "/service-explanation?service=car%20wash" },
+    { name: "Fuel Fill", icon: Fuel, href: "/service-explanation?service=fuel%20fill" },
     { name: "Dealer Service Center", icon: Car, href: "/service-explanation?service=dealer%20service%20center" },
     { name: "Tire & Wheel Service", icon: Cog, href: "/service-explanation?service=tire%20%26%20wheel%20service" },
     { name: "Brake & Muffler Service", icon: Gauge, href: "/service-explanation?service=brake%20%26%20muffler%20service" },
@@ -93,7 +93,7 @@ const HomePage = () => {
     };
 
     const handleTransactionClick = (transaction: Transaction) => {
-        router.push(`/activity/${transaction.id}`);
+        router.push(`/activity/${transaction.id}?from=home`);
     };
 
     return (

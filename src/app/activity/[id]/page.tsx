@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect, use } from 'react';
-import { ArrowLeft, MapPin, Car, Clock, DollarSign, User, Phone, Wrench, Settings, PaintBucket, Gauge, CircleDot } from 'lucide-react';
+import { ArrowLeft, MapPin, Car, Clock, DollarSign, User, Phone, Wrench, Settings, PaintBucket, Gauge, CircleDot, X } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { transactionStorage, Transaction } from '@/lib/transaction-storage';
 
 interface TransactionDetailPageProps {
@@ -13,7 +14,23 @@ interface TransactionDetailPageProps {
 
 export default function TransactionDetailPage({ params }: TransactionDetailPageProps) {
     const { id } = use(params);
+    const router = useRouter();
+    const searchParams = useSearchParams();
     const [transaction, setTransaction] = useState<Transaction | null>(null);
+    
+    const from = searchParams.get('from') || 'activity';
+    
+    const getBackPath = () => {
+        switch (from) {
+            case 'home':
+                return '/home';
+            case 'garage':
+                return '/garage';
+            case 'activity':
+            default:
+                return '/activity';
+        }
+    };
 
     useEffect(() => {
         const loadedTransaction = transactionStorage.getTransactionById(id);
@@ -23,13 +40,13 @@ export default function TransactionDetailPage({ params }: TransactionDetailPageP
     const handleStatusClick = () => {
         if (!transaction) return;
         
-        const statusOrder = ['requested', 'matched', 'in_progress', 'completed'];
+        const statusOrder: Array<Transaction['status']> = ['requested', 'matched', 'in_progress', 'completed'];
         const currentIndex = statusOrder.indexOf(transaction.status);
         const nextIndex = (currentIndex + 1) % statusOrder.length;
         const nextStatus = statusOrder[nextIndex];
         
         // Update the transaction with new status
-        const updatedTransaction = {
+        const updatedTransaction: Transaction = {
             ...transaction,
             status: nextStatus
         };
@@ -41,12 +58,29 @@ export default function TransactionDetailPage({ params }: TransactionDetailPageP
         setTransaction(updatedTransaction);
     };
 
+    const handleCancelTransaction = () => {
+        if (!transaction) return;
+
+        const confirmed = confirm('Are you sure you want to cancel this service?');
+        if (!confirmed) return;
+
+        // Cancel the transaction
+        transactionStorage.cancelTransaction(id);
+
+        // Update local state
+        const updatedTransaction: Transaction = {
+            ...transaction,
+            status: 'cancelled'
+        };
+        setTransaction(updatedTransaction);
+    };
+
     if (!transaction) {
         return (
             <div className="flex flex-col min-h-screen bg-gray-50">
                 <div className="border-b bg-white px-4 py-4">
                     <div className="flex items-center gap-4">
-                        <Link href="/activity" className="p-1">
+                        <Link href={getBackPath()} className="p-1">
                             <ArrowLeft className="w-6 h-6 text-gray-600" />
                         </Link>
                         <div className="flex-1">
@@ -124,7 +158,7 @@ export default function TransactionDetailPage({ params }: TransactionDetailPageP
         <div className="flex flex-col min-h-screen bg-gray-50">
             <div className="border-b bg-white px-4 py-4">
                 <div className="flex items-center gap-4">
-                    <Link href="/activity" className="p-1">
+                    <Link href={getBackPath()} className="p-1">
                         <ArrowLeft className="w-6 h-6 text-gray-600" />
                     </Link>
                     <div className="flex-1">
@@ -330,9 +364,11 @@ export default function TransactionDetailPage({ params }: TransactionDetailPageP
                         </Button>
                         <Button 
                             className="w-full h-12 text-base"
-                            variant="outline"
+                            variant="destructive"
+                            onClick={handleCancelTransaction}
                         >
-                            Cancel Order
+                            <X className="w-4 h-4 mr-2" />
+                            Cancel Service
                         </Button>
                     </div>
                 )}

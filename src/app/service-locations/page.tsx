@@ -59,7 +59,7 @@ function ServiceLocationsContent() {
           <ServiceMap />
         </div>
         <div className="p-4 flex-1 overflow-y-auto">
-          <Button variant="ghost" onClick={() => router.back()} className="mb-4">
+          <Button variant="ghost" onClick={() => router.push('/home')} className="mb-4">
             <ArrowLeft className="mr-2" />
             Back
           </Button>

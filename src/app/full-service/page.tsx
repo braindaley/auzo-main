@@ -204,7 +204,6 @@ export default function ServicePage({ searchParams }: ServicePageProps) {
                     </Link>
                     <div className="flex-1">
                         <h1 className="text-lg font-semibold text-gray-900">{serviceTitle}</h1>
-                        <p className="text-sm text-gray-600">Round trip Auzo Service</p>
                     </div>
                 </div>
                 <div className="pl-10">
@@ -272,7 +271,7 @@ export default function ServicePage({ searchParams }: ServicePageProps) {
 
                 <div className="space-y-1">
                     <h2 className="text-sm font-medium text-gray-700 px-1 mb-2">
-                        {serviceType ? `${serviceTitle} locations` : 'Service locations'}
+                        {serviceType ? `Select a ${serviceTitle} location` : 'Select a service location'}
                     </h2>
                     
                     {filteredDestinations.map((destination) => (

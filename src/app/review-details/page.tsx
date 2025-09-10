@@ -57,7 +57,21 @@ function ReviewDetailsContent() {
 
     return (
         <div className="w-full max-w-lg mx-auto p-4 md:p-8">
-            <Button variant="ghost" onClick={() => router.back()} className="mb-4">
+            <Button variant="ghost" onClick={() => {
+                const queryParams = new URLSearchParams(searchParams.toString());
+                const hasYear = queryParams.has('year');
+                
+                if (hasYear) {
+                    router.push(`/schedule-time?${queryParams.toString()}`);
+                } else {
+                    const scheduleType = queryParams.get('scheduleType');
+                    if (scheduleType) {
+                        router.push(`/schedule-time?${queryParams.toString()}`);
+                    } else {
+                        router.push('/schedule-time');
+                    }
+                }
+            }} className="mb-4">
                 <ArrowLeft className="mr-2" />
                 Back
             </Button>

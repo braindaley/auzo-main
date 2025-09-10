@@ -44,7 +44,14 @@ function ScheduleDateContent() {
     return (
         <div className="flex flex-col min-h-screen bg-background">
              <Header>
-                <Button variant="ghost" size="icon" onClick={() => router.back()}>
+                <Button variant="ghost" size="icon" onClick={() => {
+                    const queryParams = new URLSearchParams(searchParams.toString());
+                    if (queryParams.has('year')) {
+                        router.push(`/transport/vehicle?${queryParams.toString()}`);
+                    } else {
+                        router.push('/select-vehicle');
+                    }
+                }}>
                     <ArrowLeft />
                 </Button>
             </Header>

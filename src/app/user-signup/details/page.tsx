@@ -50,7 +50,7 @@ export default function UserDetailsPage() {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <Header isTransparent={false}>
-         <Button variant="ghost" size="icon" onClick={() => router.back()}>
+         <Button variant="ghost" size="icon" onClick={() => router.push('/user-signup/terms')}>
             <ArrowLeft />
          </Button>
       </Header>

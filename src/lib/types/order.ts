@@ -5,6 +5,7 @@ export enum OrderStatus {
   DRIVER_ON_WAY = 2,
   CAR_IN_TRANSIT = 3,
   CAR_DELIVERED = 4,
+  CANCELLED = 5,
 }
 
 export const OrderStatusLabels: Record<OrderStatus, string> = {
@@ -12,6 +13,7 @@ export const OrderStatusLabels: Record<OrderStatus, string> = {
   [OrderStatus.DRIVER_ON_WAY]: 'Driver on way',
   [OrderStatus.CAR_IN_TRANSIT]: 'Car in transit',
   [OrderStatus.CAR_DELIVERED]: 'Car delivered',
+  [OrderStatus.CANCELLED]: 'Cancelled',
 };
 
 export interface Order {

@@ -24,7 +24,7 @@ const ActivityPage = () => {
     }, []);
 
     const handleTransactionClick = (transaction: Transaction) => {
-        router.push(`/activity/${transaction.id}`);
+        router.push(`/activity/${transaction.id}?from=activity`);
     };
 
     const formatDate = (timestamp: string) => {

@@ -91,3 +91,21 @@ export async function updateOrder(
     throw error;
   }
 }
+
+export async function cancelOrder(orderId: string): Promise<void> {
+  try {
+    const docRef = doc(db, ORDERS_COLLECTION, orderId);
+    await updateDoc(docRef, {
+      status: OrderStatus.CANCELLED,
+      updatedAt: serverTimestamp(),
+      statusHistory: arrayUnion({
+        status: OrderStatus.CANCELLED,
+        timestamp: new Date(),
+      }),
+    });
+    console.log('Order cancelled successfully');
+  } catch (error) {
+    console.error('Error cancelling order:', error);
+    throw error;
+  }
+}

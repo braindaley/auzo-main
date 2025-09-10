@@ -32,7 +32,7 @@ const GaragePage = () => {
     };
 
     const handleTransactionClick = (transaction: Transaction) => {
-        router.push(`/activity/${transaction.id}`);
+        router.push(`/activity/${transaction.id}?from=garage`);
     };
 
     const getTransactionsForVehicle = (vehicleId: string): Transaction[] => {

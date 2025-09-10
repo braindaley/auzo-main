@@ -55,7 +55,7 @@ const ServiceExplanationPage = () => {
             <div className="border-b bg-white px-4 py-4">
                 <div className="flex items-center gap-4">
                     <button
-                        onClick={() => router.back()}
+                        onClick={() => router.push('/home')}
                         className="p-1"
                     >
                         <ArrowLeft className="w-6 h-6 text-gray-600" />
@@ -71,21 +71,50 @@ const ServiceExplanationPage = () => {
             {/* Content */}
             <div className="flex-1 p-6 bg-white mx-4 mt-4 rounded-lg shadow-sm">
                 <div className="space-y-4">
-                    <p className="text-lg font-medium text-gray-900">
-                        Order an Auzo driver for your {formatServiceName(serviceName).toLowerCase()}
-                    </p>
-                    
-                    <p className="text-base text-gray-700">
-                        An Auzo driver will pick up your vehicle and deliver it to your specified location.
-                    </p>
-                    
-                    <p className="text-base text-gray-700">
-                        Note: If an appointment is required, be sure to set that up in advance.
-                    </p>
-                    
-                    <p className="text-base text-gray-700">
-                        For your convenience, once your vehicle's service is completed, order another Auzo driver to bring it home.
-                    </p>
+                    {(() => {
+                        const serviceNameLower = serviceName.toLowerCase();
+                        const isFullService = serviceNameLower.includes('quick lube') ||
+                                              serviceNameLower.includes('car wash') ||
+                                              serviceNameLower.includes('fuel fill');
+                        
+                        if (isFullService) {
+                            return (
+                                <>
+                                    <p className="text-lg font-medium text-gray-900">
+                                        Order an Auzo driver for a full service {formatServiceName(serviceName).toLowerCase()}
+                                    </p>
+                                    
+                                    <p className="text-base text-gray-700">
+                                        An Auzo driver will pick up your vehicle, complete your service, and return it back to your specified location.
+                                    </p>
+                                    
+                                    <p className="text-base text-gray-700">
+                                        Up-front pricing included! Note that you will receive a price quote when you order so that you know how much everything will cost up front.
+                                    </p>
+                                </>
+                            );
+                        } else {
+                            return (
+                                <>
+                                    <p className="text-lg font-medium text-gray-900">
+                                        Order an Auzo driver for your {formatServiceName(serviceName).toLowerCase()}
+                                    </p>
+                                    
+                                    <p className="text-base text-gray-700">
+                                        An Auzo driver will pick up your vehicle and deliver it to your specified location.
+                                    </p>
+                                    
+                                    <p className="text-base text-gray-700">
+                                        Note: If an appointment is required, be sure to set that up in advance.
+                                    </p>
+                                    
+                                    <p className="text-base text-gray-700">
+                                        For your convenience, once your vehicle's service is completed, order another Auzo driver to bring it home.
+                                    </p>
+                                </>
+                            );
+                        }
+                    })()}
 
                     {/* Button */}
                     <div className="pt-4">

@@ -509,7 +509,6 @@ export default function OneWayServicePage({ searchParams }: OneWayServicePagePro
                                 .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
                                 .join(' ') : 'Service'}
                         </h1>
-                        <p className="text-sm text-gray-600">One-way delivery to service location</p>
                     </div>
                 </div>
                 <div className="pl-10">
@@ -566,9 +565,9 @@ export default function OneWayServicePage({ searchParams }: OneWayServicePagePro
 
                 <div className="space-y-1">
                     <h2 className="text-sm font-medium text-gray-700 px-1 mb-2">
-                        {serviceType ? `${serviceType.split('%20').join(' ').split(' ')
+                        {serviceType ? `Select a ${serviceType.split('%20').join(' ').split(' ')
                             .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-                            .join(' ')} locations` : 'Service locations'}
+                            .join(' ')} location` : 'Select a service location'}
                     </h2>
                     
                     {filteredDestinations.map((destination) => (

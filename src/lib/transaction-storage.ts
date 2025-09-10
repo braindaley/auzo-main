@@ -189,6 +189,10 @@ class TransactionStorage {
     return this.getTransactions().slice(0, limit);
   }
 
+  cancelTransaction(id: string): void {
+    this.updateTransactionStatus(id, 'cancelled');
+  }
+
   clearTransactions(): void {
     localStorage.removeItem(this.STORAGE_KEY);
   }
