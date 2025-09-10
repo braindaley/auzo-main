@@ -15,7 +15,8 @@ const mockDestinations = [
         address: '123 Main St',
         city: 'San Francisco, CA',
         distance: '0.8 mi',
-        lastVisited: '2 hours ago'
+        lastVisited: '2 hours ago',
+        hasAuzoService: true
     },
     {
         id: 2,
@@ -24,7 +25,8 @@ const mockDestinations = [
         address: '456 Market St',
         city: 'San Francisco, CA',
         distance: '1.2 mi',
-        lastVisited: '1 day ago'
+        lastVisited: '1 day ago',
+        hasAuzoService: true
     },
     {
         id: 3,
@@ -104,6 +106,13 @@ export default function DeliverPage({ searchParams }: DeliverPageProps) {
         
         // Store destination in sessionStorage for confirm-booking page
         sessionStorage.setItem('selectedDestination', destinationName || '');
+        
+        // Check if this is an Auzo Service location
+        if ('hasAuzoService' in destination && destination.hasAuzoService) {
+            sessionStorage.setItem('isRoundTrip', 'true');
+        } else {
+            sessionStorage.setItem('isRoundTrip', 'false');
+        }
         
         // Navigate to select vehicle page
         setTimeout(() => {
@@ -227,6 +236,11 @@ export default function DeliverPage({ searchParams }: DeliverPageProps) {
                                     </div>
                                     
                                     <div className="flex items-center gap-2 ml-3 flex-shrink-0">
+                                        {'hasAuzoService' in destination && destination.hasAuzoService && (
+                                            <Badge className="text-xs py-0 px-1 bg-blue-100 text-blue-700">
+                                                Auzo Service
+                                            </Badge>
+                                        )}
                                         <div className="flex items-center gap-1">
                                             <Clock className="w-3 h-3 text-gray-400" />
                                             <span className="text-xs text-gray-500">{destination.lastVisited}</span>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, Suspense } from 'react';
-import { ArrowLeft, MapPin, Car, Calendar, Clock, DollarSign, CreditCard } from 'lucide-react';
+import { ArrowLeft, MapPin, Car, Calendar, Clock, DollarSign, CreditCard, Wrench } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import Link from 'next/link';
@@ -27,7 +27,10 @@ function ConfirmBookingContent() {
     const [isLoadingCards, setIsLoadingCards] = useState(true);
     const [isAddingCard, setIsAddingCard] = useState(false);
     const [isRoundTrip, setIsRoundTrip] = useState<boolean>(false);
+    const [selectedServiceCategory, setSelectedServiceCategory] = useState<string>('');
+    const [selectedServiceOption, setSelectedServiceOption] = useState<any>(null);
     const isPickupLater = searchParams.get('pickup') === 'later';
+    const deliveryFee = 14.90;
 
     useEffect(() => {
         // Only access sessionStorage if we're in the browser
@@ -59,6 +62,20 @@ function ConfirmBookingContent() {
         const roundTripFlag = sessionStorage.getItem('isRoundTrip');
         if (roundTripFlag === 'true') {
             setIsRoundTrip(true);
+        }
+
+        // Get selected service details
+        const serviceCategory = sessionStorage.getItem('selectedServiceCategory');
+        const serviceOption = sessionStorage.getItem('selectedServiceOption');
+        if (serviceCategory) {
+            setSelectedServiceCategory(serviceCategory);
+        }
+        if (serviceOption) {
+            try {
+                setSelectedServiceOption(JSON.parse(serviceOption));
+            } catch {
+                // Handle parsing errors gracefully
+            }
         }
 
         // Load user's credit cards
@@ -144,11 +161,44 @@ function ConfirmBookingContent() {
         return 'ASAP';
     };
 
+    const calculateServiceCost = () => {
+        if (!selectedServiceOption?.price) return 0;
+        
+        // Extract numeric value from price string (e.g., "$70" -> 70)
+        const priceStr = selectedServiceOption.price.replace(/[^0-9.]/g, '');
+        const price = parseFloat(priceStr);
+        
+        // For fuel, we'll just show the per-gallon price, not calculate total
+        if (selectedServiceOption.price.includes('gallon')) {
+            return 0; // Fuel cost will be calculated at fill-up
+        }
+        
+        return isNaN(price) ? 0 : price;
+    };
+
+    const calculateTotalCost = () => {
+        const serviceCost = calculateServiceCost();
+        return (deliveryFee + serviceCost).toFixed(2);
+    };
+
+    const getBackUrl = () => {
+        // If it's a round trip (Auzo service), go back to service selection
+        // Otherwise go back to vehicle selection
+        if (isRoundTrip && selectedServiceOption) {
+            const serviceType = sessionStorage.getItem('selectedServiceType');
+            if (serviceType) {
+                return `/select-service-options?service=${encodeURIComponent(serviceType)}`;
+            }
+            return '/select-service-options';
+        }
+        return '/select-vehicle';
+    };
+
     return (
         <div className="flex flex-col min-h-screen bg-gray-50">
             <div className="border-b bg-white px-4 py-4">
                 <div className="flex items-center gap-4">
-                    <Link href="/select-vehicle" className="p-1">
+                    <Link href={getBackUrl()} className="p-1">
                         <ArrowLeft className="w-6 h-6 text-gray-600" />
                     </Link>
                     <div className="flex-1">
@@ -228,6 +278,8 @@ function ConfirmBookingContent() {
                     </div>
                 </Card>
 
+                {/* Service Selection (for Auzo Service) - Removed as it's now in Cost Section */}
+
                 {/* Date/Time Section */}
                 <Card className="p-3 bg-white">
                     <div className="flex items-start gap-3">
@@ -245,17 +297,70 @@ function ConfirmBookingContent() {
 
                 {/* Cost Section */}
                 <Card className="p-3 bg-white">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-start gap-3">
-                            <DollarSign className="w-6 h-6 text-gray-600" />
-                            <div>
-                                <p className="text-xs text-gray-500 leading-none mb-0.5">Service Cost</p>
-                                <p className="text-sm text-gray-900 font-medium leading-tight">Delivery</p>
+                    <div className="space-y-3">
+                        {/* Delivery Fee */}
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-start gap-3">
+                                <DollarSign className="w-6 h-6 text-gray-600" />
+                                <div>
+                                    <p className="text-xs text-gray-500 leading-none mb-0.5">Delivery Fee</p>
+                                    <p className="text-sm text-gray-900 font-medium leading-tight">Round trip service</p>
+                                </div>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-lg font-semibold text-gray-900">${deliveryFee.toFixed(2)}</p>
                             </div>
                         </div>
-                        <div className="text-right">
-                            <p className="text-xl font-bold text-gray-900">$14.90</p>
-                        </div>
+                        
+                        {/* Service Cost (if applicable) */}
+                        {isRoundTrip && selectedServiceOption && calculateServiceCost() > 0 && (
+                            <>
+                                <div className="border-t pt-3">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-start gap-3">
+                                            <Wrench className="w-6 h-6 text-gray-600" />
+                                            <div>
+                                                <p className="text-xs text-gray-500 leading-none mb-0.5">Service</p>
+                                                <p className="text-sm text-gray-900 font-medium leading-tight">
+                                                    {selectedServiceOption.name}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-lg font-semibold text-gray-900">
+                                                ${calculateServiceCost().toFixed(2)}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                {/* Total */}
+                                <div className="border-t pt-3">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-start gap-3">
+                                            <div className="w-6" />
+                                            <div>
+                                                <p className="text-sm font-bold text-gray-900">Total</p>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-xl font-bold text-primary">
+                                                ${calculateTotalCost()}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </>
+                        )}
+                        
+                        {/* Fuel Note */}
+                        {isRoundTrip && selectedServiceOption && selectedServiceOption.price?.includes('gallon') && (
+                            <div className="border-t pt-3">
+                                <p className="text-xs text-gray-500 italic">
+                                    * Fuel cost ({selectedServiceOption.price}) will be calculated based on gallons filled
+                                </p>
+                            </div>
+                        )}
                     </div>
                 </Card>
 

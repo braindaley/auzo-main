@@ -185,14 +185,14 @@ const HomePage = () => {
                     <div className="grid grid-cols-4 gap-3">
                         {additionalServices.map((service) => (
                             service.href ? (
-                                <Link key={service.name} href={service.href}>
-                                    <button className="w-full flex flex-col items-center justify-center p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                                <Link key={service.name} href={service.href} style={{ textDecoration: 'none' }}>
+                                    <button className="w-full h-full min-h-[100px] flex flex-col items-center justify-center p-3 hover:bg-gray-50 rounded-lg transition-colors">
                                         <service.icon className="w-8 h-8 text-gray-700 mb-2" />
                                         <p className="text-xs text-center text-gray-600 leading-tight">{service.name}</p>
                                     </button>
                                 </Link>
                             ) : (
-                                <button key={service.name} className="flex flex-col items-center justify-center p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                                <button key={service.name} className="w-full h-full min-h-[100px] flex flex-col items-center justify-center p-3 hover:bg-gray-50 rounded-lg transition-colors">
                                     <service.icon className="w-8 h-8 text-gray-700 mb-2" />
                                     <p className="text-xs text-center text-gray-600 leading-tight">{service.name}</p>
                                 </button>

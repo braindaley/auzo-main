@@ -12,9 +12,18 @@ import { vehicleStorage } from '@/lib/vehicle-storage';
 export default function SelectVehiclePage() {
     const router = useRouter();
     const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+    const [previousPage, setPreviousPage] = useState('/deliver');
 
     useEffect(() => {
         setVehicles(vehicleStorage.getVehicles());
+        
+        // Determine where we came from based on service type
+        const serviceType = sessionStorage.getItem('selectedServiceType');
+        if (serviceType) {
+            setPreviousPage(`/service?service=${encodeURIComponent(serviceType)}`);
+        } else {
+            setPreviousPage('/deliver');
+        }
     }, []);
 
     const handleAddVehicle = () => {
@@ -23,16 +32,31 @@ export default function SelectVehiclePage() {
     };
 
     const handleVehicleSelect = (vehicle: Vehicle) => {
-        // Store selected vehicle and navigate directly to confirm-booking
+        // Store selected vehicle
         sessionStorage.setItem('selectedVehicle', JSON.stringify(vehicle));
-        router.push('/confirm-booking');
+        
+        // Check if this is an Auzo service flow (round trip)
+        const isRoundTrip = sessionStorage.getItem('isRoundTrip') === 'true';
+        
+        if (isRoundTrip) {
+            // Navigate to service selection for Auzo service
+            const serviceType = sessionStorage.getItem('selectedServiceType');
+            if (serviceType) {
+                router.push(`/select-service-options?service=${encodeURIComponent(serviceType)}`);
+            } else {
+                router.push('/select-service-options');
+            }
+        } else {
+            // Navigate directly to confirm-booking for regular transport
+            router.push('/confirm-booking');
+        }
     };
 
     return (
         <div className="flex flex-col min-h-screen bg-background">
             <div className="border-b bg-white px-4 py-4">
                 <div className="flex items-center gap-4">
-                    <Link href="/deliver" className="p-1">
+                    <Link href={previousPage} className="p-1">
                         <ArrowLeft className="w-6 h-6 text-gray-600" />
                     </Link>
                     <div className="flex-1">

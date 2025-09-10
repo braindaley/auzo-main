@@ -134,6 +134,12 @@ export default function ServicePage({ searchParams }: ServicePageProps) {
         sessionStorage.setItem('selectedDestination', destinationName || '');
         sessionStorage.setItem('serviceType', serviceType);
         
+        // Store the specific service type if provided
+        const urlServiceType = resolvedSearchParams?.service;
+        if (urlServiceType) {
+            sessionStorage.setItem('selectedServiceType', urlServiceType);
+        }
+        
         if (destination.hasAuzoService) {
             // Auzo Service locations - round trip flow
             sessionStorage.setItem('isRoundTrip', 'true');
@@ -265,16 +271,14 @@ export default function ServicePage({ searchParams }: ServicePageProps) {
                                     <div className="flex-1 min-w-0">
                                         {destination.type === 'business' ? (
                                             <>
-                                                <div className="flex items-center gap-2">
-                                                    <p className="font-medium text-gray-900 truncate">
-                                                        {destination.businessName}
-                                                    </p>
-                                                    {destination.hasAuzoService && (
-                                                        <Badge variant="secondary" className="text-[10px] py-0 px-1.5 bg-blue-100 text-blue-700">
-                                                            Auzo Service
-                                                        </Badge>
-                                                    )}
-                                                </div>
+                                                {destination.hasAuzoService && (
+                                                    <Badge variant="secondary" className="text-[10px] py-0 px-1.5 bg-blue-100 text-blue-700 mb-1 inline-block">
+                                                        Auzo Service
+                                                    </Badge>
+                                                )}
+                                                <p className="font-medium text-gray-900 truncate">
+                                                    {destination.businessName}
+                                                </p>
                                                 <p className="text-sm text-gray-600 truncate">
                                                     {destination.address}, {destination.city}
                                                 </p>
@@ -292,10 +296,6 @@ export default function ServicePage({ searchParams }: ServicePageProps) {
                                     </div>
                                     
                                     <div className="flex items-center gap-2 ml-3 flex-shrink-0">
-                                        <div className="flex items-center gap-1">
-                                            <Clock className="w-3 h-3 text-gray-400" />
-                                            <span className="text-xs text-gray-500">{destination.lastVisited}</span>
-                                        </div>
                                         <span className="text-xs text-gray-500">{destination.distance}</span>
                                     </div>
                                 </div>
