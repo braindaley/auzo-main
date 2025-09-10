@@ -1,17 +1,15 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { CreditCard, Loader2, Plus } from 'lucide-react';
 
 import { WalletCreditCardItem } from './wallet-credit-card-item';
-import { CreditCardForm } from './credit-card-form';
 
 import { 
-  CreditCard as CreditCardType, 
-  CreditCardFormData 
+  CreditCard as CreditCardType
 } from '@/lib/types/credit-card';
 import { 
-  addCreditCard, 
   getActiveCreditCards, 
   setDefaultCreditCard, 
   deleteCreditCard 
@@ -22,10 +20,10 @@ interface WalletCreditCardListProps {
 }
 
 export function WalletCreditCardList({ userId }: WalletCreditCardListProps) {
+  const router = useRouter();
   const [creditCards, setCreditCards] = useState<CreditCardType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showAddForm, setShowAddForm] = useState(false);
 
   const loadCreditCards = async () => {
     if (!userId) {
@@ -65,32 +63,6 @@ export function WalletCreditCardList({ userId }: WalletCreditCardListProps) {
     loadCreditCards();
   }, [userId]);
 
-  const handleAddCard = async (cardData: CreditCardFormData) => {
-    if (!userId) throw new Error('User ID is required');
-    
-    setIsSubmitting(true);
-    try {
-      const cardInput = {
-        cardNumber: cardData.cardNumber.replace(/\s/g, ''),
-        cardholderName: cardData.cardholderName,
-        expiryMonth: parseInt(cardData.expiryMonth),
-        expiryYear: parseInt(cardData.expiryYear),
-        cvv: cardData.cvv,
-        nickname: cardData.nickname || undefined,
-        billingAddress: cardData.billingAddress,
-        isDefault: cardData.isDefault,
-      };
-
-      await addCreditCard(userId, cardInput);
-      await loadCreditCards(); // Reload the list
-      setShowAddForm(false); // Hide the form after successful submission
-    } catch (error) {
-      console.error('Error adding credit card:', error);
-      throw error; // Re-throw to let the form handle the error
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   const handleSetDefault = async (cardId: string) => {
     if (!userId) return;
@@ -160,7 +132,7 @@ export function WalletCreditCardList({ userId }: WalletCreditCardListProps) {
               </div>
             </div>
             <button
-              onClick={() => setShowAddForm(!showAddForm)}
+              onClick={() => router.push('/wallet/add-card')}
               className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
             >
               <Plus className="h-4 w-4" />
@@ -194,19 +166,9 @@ export function WalletCreditCardList({ userId }: WalletCreditCardListProps) {
                 ))}
               </div>
             )}
-            
-            {showAddForm && (
-              <div className="border-t border-gray-200 pt-6">
-                <CreditCardForm 
-                  onSubmit={handleAddCard}
-                  isLoading={isSubmitting}
-                />
-              </div>
-            )}
           </div>
         </div>
       </div>
-
     </div>
   );
 }
