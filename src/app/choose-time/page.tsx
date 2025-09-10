@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { ArrowLeft, Calendar, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -39,7 +39,7 @@ const formatDate = (date: Date) => {
     }
 };
 
-export default function ChooseTimePage() {
+function ChooseTimeContent() {
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
     const router = useRouter();
@@ -131,5 +131,29 @@ export default function ChooseTimePage() {
                 )}
             </div>
         </div>
+    );
+}
+
+export default function ChooseTimePage() {
+    return (
+        <Suspense fallback={
+            <div className="flex flex-col min-h-screen bg-background">
+                <div className="border-b bg-white px-4 py-4">
+                    <div className="flex items-center gap-4">
+                        <div className="p-1">
+                            <ArrowLeft className="w-6 h-6 text-gray-600" />
+                        </div>
+                        <div className="flex-1">
+                            <h1 className="text-lg font-semibold text-gray-900">Choose a time</h1>
+                        </div>
+                    </div>
+                </div>
+                <div className="flex-1 flex items-center justify-center">
+                    <div className="text-gray-500">Loading...</div>
+                </div>
+            </div>
+        }>
+            <ChooseTimeContent />
+        </Suspense>
     );
 }
