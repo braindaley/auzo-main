@@ -433,7 +433,7 @@ export default function OneWayServicePage({ searchParams }: OneWayServicePagePro
     const router = useRouter();
     const resolvedSearchParams = use(searchParams);
     const pickupTime = resolvedSearchParams?.pickup === 'later' ? 'later' : 'now';
-    const serviceType = resolvedSearchParams?.service || '';
+    const serviceType = decodeURIComponent(resolvedSearchParams?.service || '');
     const [currentPickupTime, setCurrentPickupTime] = useState(pickupTime);
     
     useEffect(() => {
@@ -533,44 +533,13 @@ export default function OneWayServicePage({ searchParams }: OneWayServicePagePro
                                 .join(' ') : 'Service'}
                         </h1>
                     </div>
-                    {selectedDate && selectedTime ? (
-                        <div className="flex items-center gap-2">
-                            <button 
-                                onClick={() => {
-                                    // Navigate to choose-time page to edit, preserving service parameter
-                                    const params = new URLSearchParams();
-                                    params.set('from', 'one-way-service');
-                                    if (serviceType) {
-                                        params.set('service', serviceType);
-                                    }
-                                    router.push(`/choose-time?${params.toString()}`);
-                                }}
-                                className="flex items-center gap-2 bg-white border border-gray-200 rounded-md px-3 py-1.5 hover:bg-gray-50 transition-colors"
-                            >
-                                <Calendar className="w-4 h-4 text-gray-600" />
-                                <span className="text-sm text-gray-700">
-                                    {selectedDate} at {selectedTime}
-                                </span>
-                            </button>
-                            <button
-                                onClick={() => {
-                                    // Clear selected time and switch to now
-                                    sessionStorage.removeItem('selectedDate');
-                                    sessionStorage.removeItem('selectedTime');
-                                    setSelectedDate('');
-                                    setSelectedTime('');
-                                    setCurrentPickupTime('now');
-                                }}
-                                className="flex items-center justify-center w-8 h-8 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
-                                title="Cancel scheduled time"
-                            >
-                                <X className="w-4 h-4 text-gray-600" />
-                            </button>
-                        </div>
-                    ) : (
+                </div>
+                {/* Date/Time Selection moved below service title */}
+                {selectedDate && selectedTime ? (
+                    <div className="flex items-center gap-2">
                         <button 
                             onClick={() => {
-                                // Navigate to choose-time page, preserving service parameter
+                                // Navigate to choose-time page to edit, preserving service parameter
                                 const params = new URLSearchParams();
                                 params.set('from', 'one-way-service');
                                 if (serviceType) {
@@ -582,11 +551,43 @@ export default function OneWayServicePage({ searchParams }: OneWayServicePagePro
                         >
                             <Calendar className="w-4 h-4 text-gray-600" />
                             <span className="text-sm text-gray-700">
-                                Later
+                                {selectedDate} at {selectedTime}
                             </span>
                         </button>
-                    )}
-                </div>
+                        <button
+                            onClick={() => {
+                                // Clear selected time and switch to now
+                                sessionStorage.removeItem('selectedDate');
+                                sessionStorage.removeItem('selectedTime');
+                                setSelectedDate('');
+                                setSelectedTime('');
+                                setCurrentPickupTime('now');
+                            }}
+                            className="flex items-center justify-center w-8 h-8 bg-red-100 border border-red-300 rounded-md hover:bg-red-200 hover:border-red-400 transition-colors shadow-sm"
+                            title="Cancel scheduled time"
+                        >
+                            <span className="text-red-600 font-semibold text-sm leading-none">×</span>
+                        </button>
+                    </div>
+                ) : (
+                    <button 
+                        onClick={() => {
+                            // Navigate to choose-time page, preserving service parameter
+                            const params = new URLSearchParams();
+                            params.set('from', 'one-way-service');
+                            if (serviceType) {
+                                params.set('service', serviceType);
+                            }
+                            router.push(`/choose-time?${params.toString()}`);
+                        }}
+                        className="flex items-center gap-2 bg-white border border-gray-200 rounded-md px-3 py-1.5 hover:bg-gray-50 transition-colors w-fit"
+                    >
+                        <Calendar className="w-4 h-4 text-gray-600" />
+                        <span className="text-sm text-gray-700">
+                            Later
+                        </span>
+                    </button>
+                )}
             </div>
 
             <div className="flex-1 p-4 space-y-4">

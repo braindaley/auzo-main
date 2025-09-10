@@ -140,7 +140,7 @@ export default function ServicePage({ searchParams }: ServicePageProps) {
     const router = useRouter();
     const resolvedSearchParams = use(searchParams);
     const pickupTime = resolvedSearchParams?.pickup === 'later' ? 'later' : 'now';
-    const serviceType = resolvedSearchParams?.service || '';
+    const serviceType = decodeURIComponent(resolvedSearchParams?.service || '');
     const [currentPickupTime, setCurrentPickupTime] = useState(pickupTime);
     
     useEffect(() => {
@@ -272,8 +272,13 @@ export default function ServicePage({ searchParams }: ServicePageProps) {
                 ) : (
                     <button 
                         onClick={() => {
-                            // Navigate to choose-time page
-                            router.push('/choose-time?from=full-service');
+                            // Navigate to choose-time page, preserving service parameter
+                            const params = new URLSearchParams();
+                            params.set('from', 'full-service');
+                            if (serviceType) {
+                                params.set('service', serviceType);
+                            }
+                            router.push(`/choose-time?${params.toString()}`);
                         }}
                         className="flex items-center gap-2 bg-white border border-gray-200 rounded-md px-3 py-1.5 hover:bg-gray-50 transition-colors w-fit"
                     >

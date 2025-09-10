@@ -73,7 +73,7 @@ function ChooseTimeContent() {
         <div className="flex flex-col min-h-screen bg-background">
             <div className="border-b bg-white px-4 py-4">
                 <div className="flex items-center gap-4">
-                    <Link href={`/${referrer}`} className="p-1">
+                    <Link href={`/${referrer}${serviceParam ? `?service=${serviceParam}` : ''}`} className="p-1">
                         <ArrowLeft className="w-6 h-6 text-gray-600" />
                     </Link>
                     <div className="flex-1">
