@@ -1,11 +1,11 @@
 "use client";
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-const ServiceExplanationPage = () => {
+const ServiceExplanationContent = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const serviceName = searchParams.get('service') || 'service';
@@ -128,6 +128,14 @@ const ServiceExplanationPage = () => {
                 </div>
             </div>
         </div>
+    );
+};
+
+const ServiceExplanationPage = () => {
+    return (
+        <Suspense fallback={<div className="flex flex-col min-h-screen bg-gray-50 items-center justify-center">Loading...</div>}>
+            <ServiceExplanationContent />
+        </Suspense>
     );
 };
 
