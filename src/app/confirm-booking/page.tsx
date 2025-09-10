@@ -185,8 +185,14 @@ function ConfirmBookingContent() {
             sessionStorage.setItem('driverNotes', driverNotes);
         }
         
-        // Navigate to driver matching or confirmation page
-        router.push('/driver-requested');
+        // Check if this is a scheduled booking (has date and time)
+        if (selectedDate && selectedTime) {
+            // For scheduled bookings, go to scheduled confirmation
+            router.push('/booking-scheduled');
+        } else {
+            // For immediate bookings, go to driver search
+            router.push('/driver-requested');
+        }
     };
 
     const formatDateTime = () => {
