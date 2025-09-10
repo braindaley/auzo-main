@@ -129,7 +129,7 @@ const getServiceTitle = (serviceType: string) => {
 };
 
 interface ServicePageProps {
-    searchParams: { pickup?: string; service?: string };
+    searchParams: { pickup?: string; service?: string; fromExplanation?: string };
 }
 
 export default function ServicePage({ searchParams }: ServicePageProps) {
@@ -144,15 +144,37 @@ export default function ServicePage({ searchParams }: ServicePageProps) {
     const [currentPickupTime, setCurrentPickupTime] = useState(pickupTime);
     
     useEffect(() => {
+        // Check if we're coming from service explanation page
+        const fromExplanation = resolvedSearchParams?.fromExplanation === 'true';
+        
         // Check if date and time are already selected
         const storedDate = sessionStorage.getItem('selectedDate');
         const storedTime = sessionStorage.getItem('selectedTime');
+        const storedDestination = sessionStorage.getItem('selectedDestination');
+        const storedServiceType = sessionStorage.getItem('selectedServiceType');
+        
         if (storedDate && storedTime) {
             setSelectedDate(storedDate);
             setSelectedTime(storedTime);
             setCurrentPickupTime('later');
         }
-    }, []);
+        
+        // Clear destination if coming from home/service explanation (fresh flow)
+        if (fromExplanation) {
+            sessionStorage.removeItem('selectedDestination');
+            sessionStorage.removeItem('selectedServiceType');
+            setSelectedDestination('');
+            setSearchQuery('');
+        } else if (storedDestination && storedServiceType === resolvedSearchParams?.service) {
+            // Only restore destination if we're in the same service flow and not starting fresh
+            setSelectedDestination(storedDestination);
+            setSearchQuery(storedDestination);
+        } else {
+            // Clear stored destination if it's a different service
+            sessionStorage.removeItem('selectedDestination');
+            sessionStorage.removeItem('selectedServiceType');
+        }
+    }, [resolvedSearchParams?.service, resolvedSearchParams?.fromExplanation]);
 
     const handleDestinationSelect = (destination: any) => {
         const destinationName = destination.type === 'business' 
@@ -219,6 +241,9 @@ export default function ServicePage({ searchParams }: ServicePageProps) {
     const serviceTitle = getServiceTitle(serviceType);
 
     const filteredDestinations = serviceLocations.filter(dest => {
+        // If there's a selected destination, show all locations (don't filter)
+        if (selectedDestination) return true;
+        // Otherwise, filter based on search query
         if (!searchQuery) return true;
         const searchLower = searchQuery.toLowerCase();
         return (
@@ -309,7 +334,19 @@ export default function ServicePage({ searchParams }: ServicePageProps) {
                         <div className="flex-1">
                             <div className="text-xs text-blue-600 font-medium mb-1">To</div>
                             {selectedDestination ? (
-                                <div className="text-gray-900 font-medium">{selectedDestination}</div>
+                                <div className="flex items-center justify-between">
+                                    <div className="text-gray-900 font-medium">{selectedDestination}</div>
+                                    <button
+                                        onClick={() => {
+                                            setSelectedDestination('');
+                                            setSearchQuery('');
+                                            sessionStorage.removeItem('selectedDestination');
+                                        }}
+                                        className="text-gray-400 hover:text-gray-600 p-1"
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </button>
+                                </div>
                             ) : (
                                 <input 
                                     type="text"
