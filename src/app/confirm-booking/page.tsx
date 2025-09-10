@@ -32,7 +32,6 @@ function ConfirmBookingContent() {
     const [selectedServiceCategory, setSelectedServiceCategory] = useState<string>('');
     const [selectedServiceOption, setSelectedServiceOption] = useState<any>(null);
     const [driverNotes, setDriverNotes] = useState<string>('');
-    const isPickupLater = searchParams.get('pickup') === 'later';
     const deliveryFee = 14.90;
 
     useEffect(() => {
@@ -191,7 +190,7 @@ function ConfirmBookingContent() {
     };
 
     const formatDateTime = () => {
-        if (isPickupLater && selectedDate && selectedTime) {
+        if (selectedDate && selectedTime) {
             return `${selectedDate} at ${selectedTime}`;
         }
         return 'ASAP';
@@ -319,7 +318,7 @@ function ConfirmBookingContent() {
                 {/* Date/Time Section */}
                 <Card className="p-3 bg-white">
                     <div className="flex items-start gap-3">
-                        {isPickupLater ? (
+                        {selectedDate && selectedTime ? (
                             <Calendar className="w-6 h-6 text-gray-600" />
                         ) : (
                             <Clock className="w-6 h-6 text-gray-600" />

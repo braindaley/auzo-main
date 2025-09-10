@@ -238,50 +238,51 @@ export default function ServicePage({ searchParams }: ServicePageProps) {
                     <div className="flex-1">
                         <h1 className="text-lg font-semibold text-gray-900">{serviceTitle}</h1>
                     </div>
-                    {selectedDate && selectedTime ? (
-                        <div className="flex items-center gap-2">
-                            <button 
-                                onClick={() => {
-                                    // Navigate to choose-time page to edit
-                                    router.push('/choose-time?from=full-service');
-                                }}
-                                className="flex items-center gap-2 bg-white border border-gray-200 rounded-md px-3 py-1.5 hover:bg-gray-50 transition-colors"
-                            >
-                                <Calendar className="w-4 h-4 text-gray-600" />
-                                <span className="text-sm text-gray-700">
-                                    {selectedDate} at {selectedTime}
-                                </span>
-                            </button>
-                            <button
-                                onClick={() => {
-                                    // Clear selected time and switch to now
-                                    sessionStorage.removeItem('selectedDate');
-                                    sessionStorage.removeItem('selectedTime');
-                                    setSelectedDate('');
-                                    setSelectedTime('');
-                                    setCurrentPickupTime('now');
-                                }}
-                                className="flex items-center justify-center w-8 h-8 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
-                                title="Cancel scheduled time"
-                            >
-                                <X className="w-4 h-4 text-gray-600" />
-                            </button>
-                        </div>
-                    ) : (
+                </div>
+                {/* Date/Time Selection moved below service title */}
+                {selectedDate && selectedTime ? (
+                    <div className="flex items-center gap-2">
                         <button 
                             onClick={() => {
-                                // Navigate to choose-time page
+                                // Navigate to choose-time page to edit
                                 router.push('/choose-time?from=full-service');
                             }}
                             className="flex items-center gap-2 bg-white border border-gray-200 rounded-md px-3 py-1.5 hover:bg-gray-50 transition-colors"
                         >
                             <Calendar className="w-4 h-4 text-gray-600" />
                             <span className="text-sm text-gray-700">
-                                Later
+                                {selectedDate} at {selectedTime}
                             </span>
                         </button>
-                    )}
-                </div>
+                        <button
+                            onClick={() => {
+                                // Clear selected time and switch to now
+                                sessionStorage.removeItem('selectedDate');
+                                sessionStorage.removeItem('selectedTime');
+                                setSelectedDate('');
+                                setSelectedTime('');
+                                setCurrentPickupTime('now');
+                            }}
+                            className="flex items-center justify-center w-8 h-8 bg-red-100 border border-red-300 rounded-md hover:bg-red-200 hover:border-red-400 transition-colors shadow-sm"
+                            title="Cancel scheduled time"
+                        >
+                            <span className="text-red-600 font-semibold text-sm leading-none">×</span>
+                        </button>
+                    </div>
+                ) : (
+                    <button 
+                        onClick={() => {
+                            // Navigate to choose-time page
+                            router.push('/choose-time?from=full-service');
+                        }}
+                        className="flex items-center gap-2 bg-white border border-gray-200 rounded-md px-3 py-1.5 hover:bg-gray-50 transition-colors w-fit"
+                    >
+                        <Calendar className="w-4 h-4 text-gray-600" />
+                        <span className="text-sm text-gray-700">
+                            Later
+                        </span>
+                    </button>
+                )}
             </div>
 
             <div className="flex-1 p-4 space-y-4">

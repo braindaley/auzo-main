@@ -183,10 +183,10 @@ export default function DeliverPage({ searchParams }: DeliverPageProps) {
                                     setSelectedTime('');
                                     setCurrentPickupTime('now');
                                 }}
-                                className="flex items-center justify-center w-8 h-8 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
+                                className="flex items-center justify-center w-8 h-8 bg-gray-100 border border-gray-300 rounded-md hover:bg-red-50 hover:border-red-300 transition-colors shadow-sm"
                                 title="Cancel scheduled time"
                             >
-                                <X className="w-4 h-4 text-gray-600" />
+                                <X className="w-4 h-4 text-gray-700 hover:text-red-600" />
                             </button>
                         </div>
                     ) : (
