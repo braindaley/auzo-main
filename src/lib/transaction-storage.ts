@@ -4,7 +4,7 @@ export interface Transaction {
   id: string;
   orderNumber: string;
   timestamp: string;
-  status: 'requested' | 'matched' | 'in_progress' | 'completed' | 'cancelled';
+  status: 'scheduled' | 'requested' | 'matched' | 'in_progress' | 'completed' | 'cancelled';
   
   // Booking details
   vehicle: Vehicle;
@@ -80,7 +80,7 @@ class TransactionStorage {
       id: this.generateTransactionId(),
       orderNumber: this.generateOrderNumber(),
       timestamp: new Date().toISOString(),
-      status: 'requested',
+      status: bookingData.isScheduled ? 'scheduled' : 'requested',
       
       // Booking details
       vehicle: bookingData.vehicle,

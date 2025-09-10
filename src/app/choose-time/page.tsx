@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { ArrowLeft, Calendar, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 const timeSlots = [
     '9:00 AM', '9:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM',
@@ -43,7 +43,13 @@ export default function ChooseTimePage() {
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
     const router = useRouter();
+    const searchParams = useSearchParams();
     const dates = generateDates();
+    
+    // Get the referrer to know which page to return to
+    const referrer = searchParams.get('from') || 'deliver';
+    // Preserve service parameters when returning
+    const serviceParam = searchParams.get('service');
 
     const handleTimeSelect = (time: string) => {
         setSelectedTime(time);
@@ -52,9 +58,14 @@ export default function ChooseTimePage() {
             sessionStorage.setItem('selectedDate', formatDate(selectedDate));
             sessionStorage.setItem('selectedTime', time);
         }
-        // Auto-navigate after time selection
+        // Navigate back to the referring page with preserved service parameters
         setTimeout(() => {
-            router.push('/select-vehicle?pickup=later');
+            const params = new URLSearchParams();
+            params.set('pickup', 'later');
+            if (serviceParam) {
+                params.set('service', serviceParam);
+            }
+            router.push(`/${referrer}?${params.toString()}`);
         }, 300);
     };
 
@@ -62,7 +73,7 @@ export default function ChooseTimePage() {
         <div className="flex flex-col min-h-screen bg-background">
             <div className="border-b bg-white px-4 py-4">
                 <div className="flex items-center gap-4">
-                    <Link href="/deliver" className="p-1">
+                    <Link href={`/${referrer}`} className="p-1">
                         <ArrowLeft className="w-6 h-6 text-gray-600" />
                     </Link>
                     <div className="flex-1">

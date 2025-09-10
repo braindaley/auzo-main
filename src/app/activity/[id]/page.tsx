@@ -40,7 +40,7 @@ export default function TransactionDetailPage({ params }: TransactionDetailPageP
     const handleStatusClick = () => {
         if (!transaction) return;
         
-        const statusOrder: Array<Transaction['status']> = ['requested', 'matched', 'in_progress', 'completed'];
+        const statusOrder: Array<Transaction['status']> = ['scheduled', 'requested', 'matched', 'in_progress', 'completed'];
         const currentIndex = statusOrder.indexOf(transaction.status);
         const nextIndex = (currentIndex + 1) % statusOrder.length;
         const nextStatus = statusOrder[nextIndex];
@@ -115,6 +115,7 @@ export default function TransactionDetailPage({ params }: TransactionDetailPageP
 
     const getStatusColor = (status: string) => {
         switch (status) {
+            case 'scheduled': return 'text-purple-600 bg-purple-50';
             case 'requested': return 'text-blue-600 bg-blue-50';
             case 'matched': return 'text-green-600 bg-green-50';
             case 'in_progress': return 'text-orange-600 bg-orange-50';
@@ -126,6 +127,7 @@ export default function TransactionDetailPage({ params }: TransactionDetailPageP
 
     const getStatusText = (status: string) => {
         switch (status) {
+            case 'scheduled': return 'Scheduled';
             case 'requested': return 'Driver Requested';
             case 'matched': return 'Driver Matched';
             case 'in_progress': return 'In Progress';
@@ -354,7 +356,7 @@ export default function TransactionDetailPage({ params }: TransactionDetailPageP
                 </Card>
 
                 {/* Action Buttons */}
-                {transaction.status === 'requested' && (
+                {(transaction.status === 'scheduled' || transaction.status === 'requested') && (
                     <div className="pt-4">
                         <Button 
                             className="w-full h-12 text-base font-semibold mb-2"

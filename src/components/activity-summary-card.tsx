@@ -49,6 +49,8 @@ export function ActivitySummaryCard() {
         return 'text-blue-600 bg-blue-50';
       case 'matched':
         return 'text-yellow-600 bg-yellow-50';
+      case 'scheduled':
+        return 'text-purple-600 bg-purple-50';
       case 'requested':
         return 'text-gray-600 bg-gray-50';
       case 'cancelled':
@@ -66,6 +68,8 @@ export function ActivitySummaryCard() {
         return 'In Progress';
       case 'matched':
         return 'Driver Matched';
+      case 'scheduled':
+        return 'Scheduled';
       case 'requested':
         return 'Requested';
       case 'cancelled':

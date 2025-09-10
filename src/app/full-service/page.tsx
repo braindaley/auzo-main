@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, use } from 'react';
-import { ArrowLeft, MapPin, Clock, Search, Calendar, ArrowRight } from 'lucide-react';
+import { useState, use, useEffect } from 'react';
+import { ArrowLeft, MapPin, Clock, Search, Calendar, ArrowRight, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -135,11 +135,24 @@ interface ServicePageProps {
 export default function ServicePage({ searchParams }: ServicePageProps) {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedDestination, setSelectedDestination] = useState('');
+    const [selectedDate, setSelectedDate] = useState<string>('');
+    const [selectedTime, setSelectedTime] = useState<string>('');
     const router = useRouter();
     const resolvedSearchParams = use(searchParams);
     const pickupTime = resolvedSearchParams?.pickup === 'later' ? 'later' : 'now';
     const serviceType = resolvedSearchParams?.service || '';
     const [currentPickupTime, setCurrentPickupTime] = useState(pickupTime);
+    
+    useEffect(() => {
+        // Check if date and time are already selected
+        const storedDate = sessionStorage.getItem('selectedDate');
+        const storedTime = sessionStorage.getItem('selectedTime');
+        if (storedDate && storedTime) {
+            setSelectedDate(storedDate);
+            setSelectedTime(storedTime);
+            setCurrentPickupTime('later');
+        }
+    }, []);
 
     const handleDestinationSelect = (destination: any) => {
         const destinationName = destination.type === 'business' 
@@ -163,9 +176,19 @@ export default function ServicePage({ searchParams }: ServicePageProps) {
             // Auzo Service locations - round trip flow
             sessionStorage.setItem('isRoundTrip', 'true');
             setTimeout(() => {
-                if (currentPickupTime === 'later') {
-                    router.push('/choose-time');
+                if (currentPickupTime === 'later' && selectedDate && selectedTime) {
+                    // Time already selected, go to vehicle selection
+                    router.push('/select-vehicle?pickup=later');
+                } else if (currentPickupTime === 'later') {
+                    // Need to select time first, preserving service parameter
+                    const params = new URLSearchParams();
+                    params.set('from', 'full-service');
+                    if (serviceType) {
+                        params.set('service', serviceType);
+                    }
+                    router.push(`/choose-time?${params.toString()}`);
                 } else {
+                    // Immediate pickup
                     router.push('/select-vehicle');
                 }
             }, 500);
@@ -173,9 +196,19 @@ export default function ServicePage({ searchParams }: ServicePageProps) {
             // Regular delivery flow for locations without Auzo Service
             sessionStorage.setItem('isRoundTrip', 'false');
             setTimeout(() => {
-                if (currentPickupTime === 'later') {
-                    router.push('/choose-time');
+                if (currentPickupTime === 'later' && selectedDate && selectedTime) {
+                    // Time already selected, go to vehicle selection
+                    router.push('/select-vehicle?pickup=later');
+                } else if (currentPickupTime === 'later') {
+                    // Need to select time first, preserving service parameter
+                    const params = new URLSearchParams();
+                    params.set('from', 'full-service');
+                    if (serviceType) {
+                        params.set('service', serviceType);
+                    }
+                    router.push(`/choose-time?${params.toString()}`);
                 } else {
+                    // Immediate pickup
                     router.push('/select-vehicle');
                 }
             }, 500);
@@ -205,25 +238,49 @@ export default function ServicePage({ searchParams }: ServicePageProps) {
                     <div className="flex-1">
                         <h1 className="text-lg font-semibold text-gray-900">{serviceTitle}</h1>
                     </div>
-                </div>
-                <div className="pl-10">
-                    <button 
-                        onClick={() => {
-                            if (currentPickupTime === 'now') {
-                                // When switching from Now to Later, navigate to choose-time page
-                                router.push('/choose-time');
-                            } else {
-                                // When switching from Later to Now
-                                setCurrentPickupTime('now');
-                            }
-                        }}
-                        className="flex items-center gap-2 bg-white border border-gray-200 rounded-md px-3 py-1.5 hover:bg-gray-50 transition-colors"
-                    >
-                        <Calendar className="w-4 h-4 text-gray-600" />
-                        <span className="text-sm text-gray-700">
-                            {currentPickupTime === 'now' ? 'Now' : 'Later'}
-                        </span>
-                    </button>
+                    {selectedDate && selectedTime ? (
+                        <div className="flex items-center gap-2">
+                            <button 
+                                onClick={() => {
+                                    // Navigate to choose-time page to edit
+                                    router.push('/choose-time?from=full-service');
+                                }}
+                                className="flex items-center gap-2 bg-white border border-gray-200 rounded-md px-3 py-1.5 hover:bg-gray-50 transition-colors"
+                            >
+                                <Calendar className="w-4 h-4 text-gray-600" />
+                                <span className="text-sm text-gray-700">
+                                    {selectedDate} at {selectedTime}
+                                </span>
+                            </button>
+                            <button
+                                onClick={() => {
+                                    // Clear selected time and switch to now
+                                    sessionStorage.removeItem('selectedDate');
+                                    sessionStorage.removeItem('selectedTime');
+                                    setSelectedDate('');
+                                    setSelectedTime('');
+                                    setCurrentPickupTime('now');
+                                }}
+                                className="flex items-center justify-center w-8 h-8 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
+                                title="Cancel scheduled time"
+                            >
+                                <X className="w-4 h-4 text-gray-600" />
+                            </button>
+                        </div>
+                    ) : (
+                        <button 
+                            onClick={() => {
+                                // Navigate to choose-time page
+                                router.push('/choose-time?from=full-service');
+                            }}
+                            className="flex items-center gap-2 bg-white border border-gray-200 rounded-md px-3 py-1.5 hover:bg-gray-50 transition-colors"
+                        >
+                            <Calendar className="w-4 h-4 text-gray-600" />
+                            <span className="text-sm text-gray-700">
+                                Later
+                            </span>
+                        </button>
+                    )}
                 </div>
             </div>
 

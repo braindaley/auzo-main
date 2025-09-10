@@ -15,14 +15,18 @@ const ORDERS_COLLECTION = 'orders';
 export async function createOrder(orderData: Partial<Order>): Promise<string> {
   try {
     const timestamp = serverTimestamp();
+    // Determine initial status based on whether order is scheduled
+    const isScheduled = orderData.scheduledDate && orderData.scheduledTime;
+    const initialStatus = isScheduled ? OrderStatus.SCHEDULED : OrderStatus.FINDING_DRIVER;
+    
     const newOrder: Partial<Order> = {
       ...orderData,
-      status: OrderStatus.FINDING_DRIVER,
+      status: initialStatus,
       createdAt: timestamp,
       updatedAt: timestamp,
       statusHistory: [
         {
-          status: OrderStatus.FINDING_DRIVER,
+          status: initialStatus,
           timestamp: new Date(),
         },
       ],

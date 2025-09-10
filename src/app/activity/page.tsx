@@ -52,6 +52,8 @@ const ActivityPage = () => {
                 return 'secondary';
             case 'matched':
                 return 'secondary';
+            case 'scheduled':
+                return 'outline';
             case 'requested':
                 return 'outline';
             case 'cancelled':
@@ -69,6 +71,8 @@ const ActivityPage = () => {
                 return 'In Progress';
             case 'matched':
                 return 'Driver Matched';
+            case 'scheduled':
+                return 'Scheduled';
             case 'requested':
                 return 'Requested';
             case 'cancelled':
