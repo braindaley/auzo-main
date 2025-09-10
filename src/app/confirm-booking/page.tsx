@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect, Suspense } from 'react';
-import { ArrowLeft, MapPin, Car, Calendar, Clock, DollarSign, CreditCard, Wrench } from 'lucide-react';
+import { ArrowLeft, MapPin, Car, Calendar, Clock, DollarSign, CreditCard, Wrench, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Vehicle } from '@/components/car-card';
@@ -20,6 +21,7 @@ function ConfirmBookingContent() {
     const searchParams = useSearchParams();
     const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
     const [destination, setDestination] = useState<string>('');
+    const [pickupLocation, setPickupLocation] = useState<string>('');
     const [selectedDate, setSelectedDate] = useState<string>('');
     const [selectedTime, setSelectedTime] = useState<string>('');
     const [creditCards, setCreditCards] = useState<CreditCardType[]>([]);
@@ -29,6 +31,7 @@ function ConfirmBookingContent() {
     const [isRoundTrip, setIsRoundTrip] = useState<boolean>(false);
     const [selectedServiceCategory, setSelectedServiceCategory] = useState<string>('');
     const [selectedServiceOption, setSelectedServiceOption] = useState<any>(null);
+    const [driverNotes, setDriverNotes] = useState<string>('');
     const isPickupLater = searchParams.get('pickup') === 'later';
     const deliveryFee = 14.90;
 
@@ -36,20 +39,48 @@ function ConfirmBookingContent() {
         // Only access sessionStorage if we're in the browser
         if (typeof window === 'undefined') return;
 
-        // Get selected vehicle from sessionStorage
-        const vehicleData = sessionStorage.getItem('selectedVehicle');
-        if (vehicleData) {
-            try {
-                setSelectedVehicle(JSON.parse(vehicleData));
-            } catch {
-                // Handle parsing errors gracefully
+        // Check for URL parameters first (for Order Pickup functionality)
+        const urlVehicleId = searchParams.get('vehicleId');
+        const urlDestination = searchParams.get('destination');
+        const urlPickupLocation = searchParams.get('pickupLocation');
+
+        // Get selected vehicle - either from URL param or sessionStorage
+        if (urlVehicleId) {
+            // If vehicleId is in URL, we need to construct the vehicle object
+            // For now, we'll use a simple approach - in a real app, you'd fetch vehicle details by ID
+            setSelectedVehicle({
+                id: urlVehicleId,
+                year: '2018',
+                make: 'Hyundai',
+                model: 'Tucson',
+                color: 'Blue'
+            } as Vehicle);
+        } else {
+            const vehicleData = sessionStorage.getItem('selectedVehicle');
+            if (vehicleData) {
+                try {
+                    setSelectedVehicle(JSON.parse(vehicleData));
+                } catch {
+                    // Handle parsing errors gracefully
+                }
             }
         }
 
-        // Get destination from sessionStorage (if you store it)
-        const storedDestination = sessionStorage.getItem('selectedDestination');
-        if (storedDestination) {
-            setDestination(storedDestination);
+        // Get destination - either from URL param or sessionStorage
+        if (urlDestination) {
+            setDestination(urlDestination);
+        } else {
+            const storedDestination = sessionStorage.getItem('selectedDestination');
+            if (storedDestination) {
+                setDestination(storedDestination);
+            }
+        }
+
+        // Get pickup location - either from URL param or default to "Current location"
+        if (urlPickupLocation) {
+            setPickupLocation(urlPickupLocation);
+        } else {
+            setPickupLocation('Current location');
         }
 
         // Get date and time from sessionStorage (if stored from choose-time page)
@@ -80,7 +111,7 @@ function ConfirmBookingContent() {
 
         // Load user's credit cards
         loadCreditCards();
-    }, []);
+    }, [searchParams]);
 
     const loadCreditCards = async () => {
         try {
@@ -149,6 +180,11 @@ function ConfirmBookingContent() {
         
         // Store selected card info for next page if needed
         sessionStorage.setItem('selectedCardId', selectedCardId);
+        
+        // Store driver notes if provided
+        if (driverNotes.trim()) {
+            sessionStorage.setItem('driverNotes', driverNotes);
+        }
         
         // Navigate to driver matching or confirmation page
         router.push('/driver-requested');
@@ -222,7 +258,7 @@ function ConfirmBookingContent() {
                             </div>
                             <div className="flex-1">
                                 <p className="text-xs text-gray-500 leading-none mb-0.5">From</p>
-                                <p className="text-sm text-gray-900 font-medium leading-tight">Current location</p>
+                                <p className="text-sm text-gray-900 font-medium leading-tight">{pickupLocation}</p>
                             </div>
                         </div>
                         
@@ -252,7 +288,7 @@ function ConfirmBookingContent() {
                                     </div>
                                     <div className="flex-1">
                                         <p className="text-xs text-gray-500 leading-none mb-0.5">Back to</p>
-                                        <p className="text-sm text-gray-900 font-medium leading-tight">Current location</p>
+                                        <p className="text-sm text-gray-900 font-medium leading-tight">{pickupLocation}</p>
                                     </div>
                                 </div>
                             </>
@@ -384,6 +420,29 @@ function ConfirmBookingContent() {
                             onAddCard={handleAddCard}
                             isLoading={isAddingCard}
                             required={true}
+                        />
+                    </div>
+                </Card>
+
+                {/* Notes for Driver Section */}
+                <Card className="p-3 bg-white">
+                    <div className="flex items-start gap-3 mb-3">
+                        <MessageSquare className="w-6 h-6 text-gray-600" />
+                        <div className="flex-1">
+                            <p className="text-xs text-gray-500 leading-none mb-0.5">Notes for driver</p>
+                            <p className="text-sm text-gray-900 font-medium leading-tight">
+                                Optional special instructions
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div className="ml-9">
+                        <Textarea
+                            placeholder="Add any special instructions for the driver (e.g., apartment number, parking location, etc.)"
+                            value={driverNotes}
+                            onChange={(e) => setDriverNotes(e.target.value)}
+                            className="resize-none"
+                            rows={3}
                         />
                     </div>
                 </Card>

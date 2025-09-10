@@ -17,10 +17,15 @@ export default function SelectVehiclePage() {
     useEffect(() => {
         setVehicles(vehicleStorage.getVehicles());
         
-        // Determine where we came from based on service type
+        // Determine where we came from based on session storage flags
         const serviceType = sessionStorage.getItem('selectedServiceType');
-        if (serviceType) {
-            setPreviousPage(`/service?service=${encodeURIComponent(serviceType)}`);
+        const isOneWayService = sessionStorage.getItem('isOneWayService');
+        const isRoundTrip = sessionStorage.getItem('isRoundTrip');
+        
+        if (serviceType && isOneWayService === 'true') {
+            setPreviousPage(`/one-way-service?service=${encodeURIComponent(serviceType)}`);
+        } else if (serviceType && isRoundTrip === 'true') {
+            setPreviousPage(`/full-service?service=${encodeURIComponent(serviceType)}`);
         } else {
             setPreviousPage('/deliver');
         }

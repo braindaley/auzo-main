@@ -15,7 +15,8 @@ export interface Transaction {
   scheduledTime?: string;
   
   // Service details
-  serviceType: 'delivery';
+  serviceType: string;
+  specificServiceType?: string; // e.g., "dealer service center", "tire & wheel service", "quick lube"
   isRoundTrip?: boolean;
   cost: number;
   
@@ -38,6 +39,32 @@ class TransactionStorage {
 
   private generateTransactionId(): string {
     return `txn_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+  }
+
+  private determineServiceType(): string {
+    if (typeof window === 'undefined') return 'delivery';
+    
+    const isOneWayService = sessionStorage.getItem('isOneWayService');
+    const isRoundTrip = sessionStorage.getItem('isRoundTrip');
+    
+    if (isOneWayService === 'true') {
+      return 'one-way service';
+    } else if (isRoundTrip === 'true') {
+      return 'full service';
+    } else {
+      return 'delivery';
+    }
+  }
+
+  private getSpecificServiceType(): string | undefined {
+    if (typeof window === 'undefined') return undefined;
+    
+    const selectedServiceType = sessionStorage.getItem('selectedServiceType');
+    if (selectedServiceType) {
+      // Format the service type for display
+      return selectedServiceType.replace(/%20/g, ' ');
+    }
+    return undefined;
   }
 
   saveTransaction(bookingData: {
@@ -64,7 +91,8 @@ class TransactionStorage {
       scheduledTime: bookingData.scheduledTime,
       
       // Service details
-      serviceType: 'delivery',
+      serviceType: this.determineServiceType(),
+      specificServiceType: this.getSpecificServiceType(),
       isRoundTrip: bookingData.isRoundTrip,
       cost: 14.90,
       
@@ -130,6 +158,31 @@ class TransactionStorage {
     };
     
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(transactions));
+  }
+
+  // Cleanup method to remove duplicate transactions
+  removeDuplicateTransactions(): void {
+    if (typeof window === 'undefined') return;
+    
+    const transactions = this.getTransactions();
+    const uniqueTransactions: Transaction[] = [];
+    const seenKeys = new Set<string>();
+    
+    for (const transaction of transactions) {
+      // Create a unique key based on vehicle, destination, and timestamp (within 10 seconds)
+      const timestampKey = Math.floor(new Date(transaction.timestamp).getTime() / 10000) * 10000;
+      const uniqueKey = `${transaction.vehicle.id}-${transaction.destination}-${timestampKey}`;
+      
+      if (!seenKeys.has(uniqueKey)) {
+        seenKeys.add(uniqueKey);
+        uniqueTransactions.push(transaction);
+      }
+    }
+    
+    if (uniqueTransactions.length !== transactions.length) {
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(uniqueTransactions));
+      console.log(`Removed ${transactions.length - uniqueTransactions.length} duplicate transactions`);
+    }
   }
 
   getRecentTransactions(limit: number = 10): Transaction[] {

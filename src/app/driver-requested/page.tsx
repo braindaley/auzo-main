@@ -21,9 +21,14 @@ export default function DriverRequestedPage() {
     const [orderId, setOrderId] = useState<string | null>(null);
     const [isCreatingOrder, setIsCreatingOrder] = useState(false);
     const [isRoundTrip, setIsRoundTrip] = useState<boolean>(false);
+    const [isInitialized, setIsInitialized] = useState(false);
 
     useEffect(() => {
         const createFirestoreOrder = async () => {
+            // Prevent multiple executions
+            if (isInitialized) return;
+            setIsInitialized(true);
+            
             // Get booking details from sessionStorage
             const vehicleData = sessionStorage.getItem('selectedVehicle');
             const storedDestination = sessionStorage.getItem('selectedDestination');
@@ -120,7 +125,7 @@ export default function DriverRequestedPage() {
         };
 
         createFirestoreOrder();
-    }, [router, isCreatingOrder]);
+    }, []); // Empty dependency array to run only once
 
     const handleBackToHome = () => {
         // Clear session storage

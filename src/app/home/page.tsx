@@ -17,15 +17,15 @@ const personalServices: Array<{
 }> = [];
 
 const additionalServices = [
-    { name: "Quick Lube", icon: Droplet, href: "/service?service=quick%20lube" },
-    { name: "Car Wash", icon: Waves, href: "/service?service=car%20wash" },
-    { name: "Fuel Fill", icon: Fuel, href: "/service?service=fuel%20fill" },
-    { name: "Dealer Service Center", icon: Car },
-    { name: "Tire & Wheel Service", icon: Cog },
-    { name: "Brake & Muffler Service", icon: Gauge },
-    { name: "Transmission Service", icon: Settings },
-    { name: "Body & Glass Service", icon: PaintBucket },
-    { name: "General Repair Service", icon: Wrench }
+    { name: "Quick Lube", icon: Droplet, href: "/full-service?service=quick%20lube" },
+    { name: "Car Wash", icon: Waves, href: "/full-service?service=car%20wash" },
+    { name: "Fuel Fill", icon: Fuel, href: "/full-service?service=fuel%20fill" },
+    { name: "Dealer Service Center", icon: Car, href: "/service-explanation?service=dealer%20service%20center" },
+    { name: "Tire & Wheel Service", icon: Cog, href: "/service-explanation?service=tire%20%26%20wheel%20service" },
+    { name: "Brake & Muffler Service", icon: Gauge, href: "/service-explanation?service=brake%20%26%20muffler%20service" },
+    { name: "Transmission Service", icon: Settings, href: "/service-explanation?service=transmission%20service" },
+    { name: "Body & Glass Service", icon: PaintBucket, href: "/service-explanation?service=body%20%26%20glass%20service" },
+    { name: "General Repair Service", icon: Wrench, href: "/service-explanation?service=general%20repair%20service" }
 ];
 
 const HomePage = () => {
@@ -130,7 +130,7 @@ const HomePage = () => {
                         <Card className="hover:bg-gray-50 transition-colors">
                             <CardContent className="p-3 relative">
                                 {/* Order Pickup CTA for completed orders - Top Right */}
-                                {latestTransaction.status === 'completed' && (
+                                {latestTransaction.status === 'completed' && !latestTransaction.isRoundTrip && (
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();

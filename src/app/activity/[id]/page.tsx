@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, use } from 'react';
-import { ArrowLeft, MapPin, Car, Clock, DollarSign, User, Phone } from 'lucide-react';
+import { ArrowLeft, MapPin, Car, Clock, DollarSign, User, Phone, Wrench, Settings, PaintBucket, Gauge, CircleDot } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -101,6 +101,25 @@ export default function TransactionDetailPage({ params }: TransactionDetailPageP
         }
     };
 
+    const getServiceIcon = (serviceType: string | undefined) => {
+        if (!serviceType) return Wrench;
+        
+        const serviceLower = serviceType.toLowerCase();
+        if (serviceLower.includes('dealer')) return Car;
+        if (serviceLower.includes('tire') || serviceLower.includes('wheel')) return CircleDot;
+        if (serviceLower.includes('brake') || serviceLower.includes('muffler')) return Gauge;
+        if (serviceLower.includes('transmission')) return Settings;
+        if (serviceLower.includes('body') || serviceLower.includes('glass')) return PaintBucket;
+        return Wrench;
+    };
+
+    const formatServiceType = (specificServiceType: string | undefined) => {
+        if (!specificServiceType) return null;
+        return specificServiceType.split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .join(' ');
+    };
+
     return (
         <div className="flex flex-col min-h-screen bg-gray-50">
             <div className="border-b bg-white px-4 py-4">
@@ -132,6 +151,27 @@ export default function TransactionDetailPage({ params }: TransactionDetailPageP
                         </div>
                     </div>
                 </Card>
+
+                {/* Service Information */}
+                {transaction.specificServiceType && (
+                    <Card className="p-4 bg-white">
+                        <div className="flex items-start gap-3">
+                            {(() => {
+                                const ServiceIcon = getServiceIcon(transaction.specificServiceType);
+                                return <ServiceIcon className="w-6 h-6 text-gray-600" />;
+                            })()}
+                            <div className="flex-1">
+                                <p className="text-xs text-gray-500 leading-none mb-0.5">Service Type</p>
+                                <p className="text-sm text-gray-900 font-medium leading-tight">
+                                    {formatServiceType(transaction.specificServiceType)}
+                                </p>
+                                <p className="text-xs text-gray-500 mt-0.5 capitalize">
+                                    {transaction.serviceType}
+                                </p>
+                            </div>
+                        </div>
+                    </Card>
+                )}
 
                 {/* Route Information */}
                 <Card className="p-4 bg-white">

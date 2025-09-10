@@ -84,15 +84,34 @@ const fuelFillLocations = [
 ];
 
 const getServiceLocations = (serviceType: string) => {
+    // For quick lube, car wash, and fuel fill services, only show Auzo Service locations
+    const auzoOnlyServices = ['quick lube', 'car wash', 'fuel fill'];
+    
+    let locations;
     switch (serviceType) {
         case 'quick lube':
-            return quickLubeLocations;
+            locations = quickLubeLocations;
+            break;
         case 'car wash':
-            return carWashLocations;
+            locations = carWashLocations;
+            break;
         case 'fuel fill':
-            return fuelFillLocations;
+            locations = fuelFillLocations;
+            break;
         default:
-            return [...quickLubeLocations, ...carWashLocations, ...fuelFillLocations];
+            locations = [...quickLubeLocations, ...carWashLocations, ...fuelFillLocations];
+    }
+    
+    // Apply filtering based on service type
+    if (auzoOnlyServices.includes(serviceType)) {
+        // For quick lube, car wash, and fuel fill: only show Auzo Service locations
+        return locations.filter(location => location.hasAuzoService);
+    } else if (serviceType && !auzoOnlyServices.includes(serviceType)) {
+        // For other specific services: only show non-Auzo Service locations
+        return locations.filter(location => !location.hasAuzoService);
+    } else {
+        // For default/no specific service: return all locations
+        return locations;
     }
 };
 

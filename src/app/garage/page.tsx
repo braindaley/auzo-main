@@ -16,6 +16,9 @@ const GaragePage = () => {
     const [transactions, setTransactions] = useState<Transaction[]>([]);
 
     useEffect(() => {
+        // Clean up any duplicate transactions first
+        transactionStorage.removeDuplicateTransactions();
+        
         setVehicles(vehicleStorage.getVehicles());
         setTransactions(transactionStorage.getTransactions());
     }, []);

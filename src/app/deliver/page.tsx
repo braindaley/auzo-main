@@ -107,12 +107,8 @@ export default function DeliverPage({ searchParams }: DeliverPageProps) {
         // Store destination in sessionStorage for confirm-booking page
         sessionStorage.setItem('selectedDestination', destinationName || '');
         
-        // Check if this is an Auzo Service location
-        if ('hasAuzoService' in destination && destination.hasAuzoService) {
-            sessionStorage.setItem('isRoundTrip', 'true');
-        } else {
-            sessionStorage.setItem('isRoundTrip', 'false');
-        }
+        // Deliver flow is always one-way (no Auzo Service locations)
+        sessionStorage.setItem('isRoundTrip', 'false');
         
         // Navigate to select vehicle page
         setTimeout(() => {
@@ -124,15 +120,17 @@ export default function DeliverPage({ searchParams }: DeliverPageProps) {
         }, 500);
     };
 
-    const filteredDestinations = mockDestinations.filter(dest => {
-        if (!searchQuery) return true;
-        const searchLower = searchQuery.toLowerCase();
-        return (
-            (dest.type === 'business' && dest.businessName?.toLowerCase().includes(searchLower)) ||
-            dest.address.toLowerCase().includes(searchLower) ||
-            dest.city.toLowerCase().includes(searchLower)
-        );
-    });
+    const filteredDestinations = mockDestinations
+        .filter(dest => !('hasAuzoService' in dest) || !dest.hasAuzoService) // Exclude Auzo Service locations
+        .filter(dest => {
+            if (!searchQuery) return true;
+            const searchLower = searchQuery.toLowerCase();
+            return (
+                (dest.type === 'business' && dest.businessName?.toLowerCase().includes(searchLower)) ||
+                dest.address.toLowerCase().includes(searchLower) ||
+                dest.city.toLowerCase().includes(searchLower)
+            );
+        });
 
     return (
         <div className="flex flex-col min-h-screen bg-background">
@@ -236,11 +234,6 @@ export default function DeliverPage({ searchParams }: DeliverPageProps) {
                                     </div>
                                     
                                     <div className="flex items-center gap-2 ml-3 flex-shrink-0">
-                                        {'hasAuzoService' in destination && destination.hasAuzoService && (
-                                            <Badge className="text-xs py-0 px-1 bg-blue-100 text-blue-700">
-                                                Auzo Service
-                                            </Badge>
-                                        )}
                                         <div className="flex items-center gap-1">
                                             <Clock className="w-3 h-3 text-gray-400" />
                                             <span className="text-xs text-gray-500">{destination.lastVisited}</span>

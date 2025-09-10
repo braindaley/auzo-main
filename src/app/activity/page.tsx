@@ -15,6 +15,9 @@ const ActivityPage = () => {
     const [transactions, setTransactions] = useState<Transaction[]>([]);
 
     useEffect(() => {
+        // Clean up any duplicate transactions first
+        transactionStorage.removeDuplicateTransactions();
+        
         // Load transactions from storage (newest first)
         const loadedTransactions = transactionStorage.getTransactions();
         setTransactions(loadedTransactions);
