@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -56,9 +56,13 @@ const creditCardSchema = z.object({
   isDefault: z.boolean().default(false),
 });
 
-export default function AddCardPage() {
+function AddCardContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Get the return URL from search params, default to /wallet
+  const returnTo = searchParams.get('returnTo') || '/wallet';
   
   // TODO: Replace with actual user authentication
   const userId = "demo-user-123";
@@ -103,7 +107,7 @@ export default function AddCardPage() {
       };
 
       await addCreditCard(userId, cardInput);
-      router.push('/wallet');
+      router.push(returnTo);
     } catch (error) {
       console.error('Error adding credit card:', error);
     } finally {
@@ -130,11 +134,11 @@ export default function AddCardPage() {
           {/* Header */}
           <div className="space-y-4">
             <Link 
-              href="/wallet" 
+              href={returnTo} 
               className="inline-flex items-center gap-3 text-gray-900 hover:text-gray-700 transition-colors no-underline"
             >
               <ArrowLeft className="w-5 h-5" />
-              <span className="text-lg font-medium">Back to Wallet</span>
+              <span className="text-lg font-medium">Back</span>
             </Link>
             <div>
               <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
@@ -382,7 +386,7 @@ export default function AddCardPage() {
                     <Button
                       type="button"
                       variant="outline"
-                      onClick={() => router.push('/wallet')}
+                      onClick={() => router.push(returnTo)}
                       disabled={isLoading}
                       className="flex-1"
                     >
@@ -406,5 +410,19 @@ export default function AddCardPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function AddCardPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-col min-h-screen bg-gray-50">
+        <div className="flex-1 flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-gray-600" />
+        </div>
+      </div>
+    }>
+      <AddCardContent />
+    </Suspense>
   );
 }

@@ -8,12 +8,12 @@ import { Textarea } from '@/components/ui/textarea';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Vehicle } from '@/components/car-card';
-import { CreditCardSelector } from '@/components/credit-card-selector';
-import { CreditCard as CreditCardType, CreditCardFormData } from '@/lib/types/credit-card';
+import { BookingCreditCardSelector } from '@/components/booking-credit-card-selector';
+import { CreditCard as CreditCardType } from '@/lib/types/credit-card';
 import { 
-  getUserCreditCards, 
-  addCreditCard,
-  setDefaultCreditCard 
+  getActiveCreditCards, 
+  setDefaultCreditCard,
+  deleteCreditCard 
 } from '@/lib/services/credit-card-service';
 
 function ConfirmBookingContent() {
@@ -27,7 +27,6 @@ function ConfirmBookingContent() {
     const [creditCards, setCreditCards] = useState<CreditCardType[]>([]);
     const [selectedCardId, setSelectedCardId] = useState<string>('');
     const [isLoadingCards, setIsLoadingCards] = useState(true);
-    const [isAddingCard, setIsAddingCard] = useState(false);
     const [isRoundTrip, setIsRoundTrip] = useState<boolean>(false);
     const [selectedServiceCategory, setSelectedServiceCategory] = useState<string>('');
     const [selectedServiceOption, setSelectedServiceOption] = useState<any>(null);
@@ -117,15 +116,27 @@ function ConfirmBookingContent() {
             setIsLoadingCards(true);
             // For now, using a dummy user ID. In a real app, this would come from auth context
             const userId = 'demo-user-123';
-            const cards = await getUserCreditCards(userId);
-            setCreditCards(cards);
+            const cards = await getActiveCreditCards(userId);
+            
+            // Sort cards: default first, then by creation date
+            const sortedCards = cards.sort((a, b) => {
+                if (a.isDefault && !b.isDefault) return -1;
+                if (!a.isDefault && b.isDefault) return 1;
+                if (a.createdAt && b.createdAt) {
+                    const aTime = a.createdAt instanceof Date ? a.createdAt.getTime() : a.createdAt.toMillis();
+                    const bTime = b.createdAt instanceof Date ? b.createdAt.getTime() : b.createdAt.toMillis();
+                    return bTime - aTime; // Most recent first
+                }
+                return 0;
+            });
+            setCreditCards(sortedCards);
             
             // Auto-select default card if available
-            const defaultCard = cards.find(card => card.isDefault);
+            const defaultCard = sortedCards.find(card => card.isDefault);
             if (defaultCard) {
                 setSelectedCardId(defaultCard.id!);
-            } else if (cards.length > 0) {
-                setSelectedCardId(cards[0].id!);
+            } else if (sortedCards.length > 0) {
+                setSelectedCardId(sortedCards[0].id!);
             }
         } catch (error) {
             console.error('Error loading credit cards:', error);
@@ -139,34 +150,27 @@ function ConfirmBookingContent() {
         setSelectedCardId(cardId);
     };
 
-    const handleAddCard = async (cardData: CreditCardFormData) => {
+    const handleSetDefault = async (cardId: string) => {
+        const userId = 'demo-user-123';
+        
         try {
-            setIsAddingCard(true);
-            // For now, using a dummy user ID. In a real app, this would come from auth context
-            const userId = 'demo-user-123';
-            
-            const cardInput = {
-                cardNumber: cardData.cardNumber,
-                cardholderName: cardData.cardholderName,
-                expiryMonth: parseInt(cardData.expiryMonth),
-                expiryYear: parseInt(cardData.expiryYear),
-                cvv: cardData.cvv,
-                nickname: cardData.nickname,
-                billingAddress: cardData.billingAddress,
-                isDefault: cardData.isDefault || creditCards.length === 0 // First card becomes default
-            };
-
-            const cardId = await addCreditCard(userId, cardInput);
-            
-            // Reload cards to get updated list
-            await loadCreditCards();
-            
-            // Select the newly added card
-            setSelectedCardId(cardId);
+            await setDefaultCreditCard(userId, cardId);
+            await loadCreditCards(); // Reload to show updated default status
         } catch (error) {
-            console.error('Error adding credit card:', error);
-        } finally {
-            setIsAddingCard(false);
+            console.error('Error setting default card:', error);
+            throw error;
+        }
+    };
+
+    const handleDeleteCard = async (cardId: string) => {
+        const userId = 'demo-user-123';
+        
+        try {
+            await deleteCreditCard(userId, cardId);
+            await loadCreditCards(); // Reload the list
+        } catch (error) {
+            console.error('Error deleting credit card:', error);
+            throw error;
         }
     };
 
@@ -406,27 +410,28 @@ function ConfirmBookingContent() {
                 </Card>
 
                 {/* Payment Method Section */}
-                <Card className="p-3 bg-white">
-                    <div className="flex items-start gap-3 mb-3">
+                <Card className="p-4 bg-white">
+                    <div className="flex items-start gap-3 mb-4">
                         <CreditCard className="w-6 h-6 text-gray-600" />
                         <div className="flex-1">
-                            <p className="text-xs text-gray-500 leading-none mb-0.5">Payment Method</p>
-                            <p className="text-sm text-gray-900 font-medium leading-tight">
-                                {isLoadingCards ? 'Loading payment methods...' : 'Select a credit card'}
+                            <p className="text-lg font-semibold text-gray-900">Payment Method</p>
+                            <p className="text-sm text-gray-600">
+                                {isLoadingCards ? 'Loading payment methods...' : 
+                                 creditCards.length === 0 ? 'Add a card to continue' : 
+                                 `${creditCards.length} card${creditCards.length === 1 ? '' : 's'} available`}
                             </p>
                         </div>
                     </div>
                     
-                    <div className="ml-9">
-                        <CreditCardSelector
-                            cards={creditCards}
-                            selectedCardId={selectedCardId}
-                            onCardSelect={handleCardSelect}
-                            onAddCard={handleAddCard}
-                            isLoading={isAddingCard}
-                            required={true}
-                        />
-                    </div>
+                    <BookingCreditCardSelector
+                        cards={creditCards}
+                        selectedCardId={selectedCardId}
+                        onCardSelect={handleCardSelect}
+                        onSetDefault={handleSetDefault}
+                        onDelete={handleDeleteCard}
+                        isLoading={isLoadingCards}
+                        required={true}
+                    />
                 </Card>
 
                 {/* Notes for Driver Section */}
