@@ -36,5 +36,15 @@ export const vehicleStorage = {
   getVehicle(id: string): Vehicle | undefined {
     const vehicles = this.getVehicles();
     return vehicles.find(v => v.id === id);
+  },
+
+  updateVehicle(id: string, updatedVehicle: Partial<Vehicle>): void {
+    const vehicles = this.getVehicles();
+    const index = vehicles.findIndex(v => v.id === id);
+    
+    if (index !== -1) {
+      vehicles[index] = { ...vehicles[index], ...updatedVehicle };
+      localStorage.setItem(VEHICLES_KEY, JSON.stringify(vehicles));
+    }
   }
 };

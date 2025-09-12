@@ -38,7 +38,7 @@ const AccountPage = () => {
                         </div>
                     </Link>
                     
-                    <div className="bg-white rounded-xl px-6 py-3 shadow-sm border border-gray-100">
+                    <Link href="/account/profile" className="block bg-white rounded-xl px-6 py-3 shadow-sm border border-gray-100 hover:bg-gray-50 transition-colors no-underline">
                         <div className="flex items-center justify-between">
                             <h3 className="text-lg font-semibold text-gray-900">Profile Settings</h3>
                             <div className="text-gray-400">
@@ -47,7 +47,7 @@ const AccountPage = () => {
                                 </svg>
                             </div>
                         </div>
-                    </div>
+                    </Link>
                     
                     <div className="bg-white rounded-xl px-6 py-3 shadow-sm border border-gray-100">
                         <div className="flex items-center justify-between">

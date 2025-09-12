@@ -12,6 +12,7 @@ interface Vehicle {
   vin?: string;
   licensePlate?: string;
   purchaseDate?: string;
+  mileage?: number;
   photos?: string[];
 }
 
