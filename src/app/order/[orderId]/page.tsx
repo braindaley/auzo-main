@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { getOrder, updateOrderStatus, cancelOrder } from '@/lib/services/order-service';
 import { Order, OrderStatus, OrderStatusLabels } from '@/lib/types/order';
+import { transactionStorage, Transaction } from '@/lib/transaction-storage';
 
 interface OrderPageProps {
     params: Promise<{ orderId: string }>;
@@ -27,21 +28,6 @@ export default function OrderPage({ params }: OrderPageProps) {
         }
     }, [orderId]);
 
-    useEffect(() => {
-        // Auto-update status from Finding Driver to Driver on Way after 3 seconds
-        if (order && order.status === OrderStatus.FINDING_DRIVER) {
-            const timer = setTimeout(async () => {
-                try {
-                    await updateOrderStatus(orderId, OrderStatus.DRIVER_ON_WAY);
-                    await loadOrder(); // Reload to get updated order
-                } catch (error) {
-                    console.error('Error auto-updating status:', error);
-                }
-            }, 3000);
-
-            return () => clearTimeout(timer);
-        }
-    }, [order, orderId]);
 
     const loadOrder = async () => {
         setLoading(true);
@@ -60,11 +46,35 @@ export default function OrderPage({ params }: OrderPageProps) {
         }
     };
 
+    // Find transaction by orderId and update its status
+    const syncTransactionStatus = (newOrderStatus: OrderStatus) => {
+        const transactions = transactionStorage.getTransactions();
+        console.log('Looking for transaction with orderId:', orderId);
+        console.log('All transactions:', transactions.map(t => ({ id: t.id, orderId: t.orderId, status: t.status })));
+        
+        const transaction = transactions.find(t => t.orderId === orderId);
+        if (transaction) {
+            console.log('Syncing transaction status:', {
+                transactionId: transaction.id,
+                orderId,
+                oldStatus: transaction.status,
+                newStatus: newOrderStatus
+            });
+            transactionStorage.updateTransactionStatus(transaction.id, newOrderStatus);
+        } else {
+            console.log('Transaction not found for orderId:', orderId);
+            console.log('Available orderIds:', transactions.filter(t => t.orderId).map(t => t.orderId));
+        }
+    };
+
     const handleStatusClick = async () => {
         if (!order) return;
 
         let nextStatus: OrderStatus;
         switch (order.status) {
+            case OrderStatus.SCHEDULED:
+                nextStatus = OrderStatus.FINDING_DRIVER;
+                break;
             case OrderStatus.FINDING_DRIVER:
                 nextStatus = OrderStatus.DRIVER_ON_WAY;
                 break;
@@ -85,6 +95,9 @@ export default function OrderPage({ params }: OrderPageProps) {
         try {
             await updateOrderStatus(orderId, nextStatus);
             await loadOrder(); // Reload to get updated order
+            
+            // Sync the transaction status in localStorage
+            syncTransactionStatus(nextStatus);
         } catch (error) {
             console.error('Error updating status:', error);
         }
@@ -99,6 +112,9 @@ export default function OrderPage({ params }: OrderPageProps) {
         try {
             await cancelOrder(orderId);
             await loadOrder(); // Reload to get updated order
+            
+            // Sync the transaction status in localStorage
+            syncTransactionStatus(OrderStatus.CANCELLED);
         } catch (error) {
             console.error('Error cancelling order:', error);
         }
@@ -106,6 +122,8 @@ export default function OrderPage({ params }: OrderPageProps) {
 
     const getStatusIcon = (status: OrderStatus) => {
         switch (status) {
+            case OrderStatus.SCHEDULED:
+                return <Clock className="w-4 h-4" />;
             case OrderStatus.FINDING_DRIVER:
                 return <Navigation className="w-4 h-4" />;
             case OrderStatus.DRIVER_ON_WAY:
@@ -123,6 +141,8 @@ export default function OrderPage({ params }: OrderPageProps) {
 
     const getStatusColor = (status: OrderStatus): "default" | "secondary" | "destructive" | "outline" => {
         switch (status) {
+            case OrderStatus.SCHEDULED:
+                return "outline";
             case OrderStatus.FINDING_DRIVER:
                 return "secondary";
             case OrderStatus.DRIVER_ON_WAY:
@@ -140,10 +160,12 @@ export default function OrderPage({ params }: OrderPageProps) {
 
     const getStatusMessage = (status: OrderStatus) => {
         switch (status) {
+            case OrderStatus.SCHEDULED:
+                return "Your service is scheduled and will begin at the selected time";
             case OrderStatus.FINDING_DRIVER:
                 return "We're finding the perfect driver for your vehicle";
             case OrderStatus.DRIVER_ON_WAY:
-                return "Your driver is on the way to pick up your vehicle";
+                return "Your driver is on the way";
             case OrderStatus.CAR_IN_TRANSIT:
                 return "Your vehicle is being transported to the destination";
             case OrderStatus.CAR_DELIVERED:
@@ -157,8 +179,10 @@ export default function OrderPage({ params }: OrderPageProps) {
 
     const getArrivalTime = (status: OrderStatus): string | null => {
         switch (status) {
-            case OrderStatus.DRIVER_ON_WAY:
-                return "Arrives in 12 minutes";
+            case OrderStatus.SCHEDULED:
+                return order?.scheduledDate && order?.scheduledTime 
+                    ? `Scheduled for ${order.scheduledDate} at ${order.scheduledTime}`
+                    : "Scheduled service";
             case OrderStatus.CAR_IN_TRANSIT:
                 return "Arrives in 20 minutes";
             case OrderStatus.CAR_DELIVERED:
@@ -209,8 +233,17 @@ export default function OrderPage({ params }: OrderPageProps) {
                 <div className="absolute top-4 right-4">
                     <Badge 
                         variant={getStatusColor(order.status)}
-                        className="cursor-pointer flex items-center gap-1 px-3 py-2 text-sm"
+                        className={`flex items-center gap-1 px-3 py-2 text-sm transition-all ${
+                            order.status !== OrderStatus.CAR_DELIVERED && order.status !== OrderStatus.CANCELLED
+                                ? 'cursor-pointer hover:scale-105 hover:shadow-lg active:scale-95'
+                                : ''
+                        }`}
                         onClick={handleStatusClick}
+                        title={
+                            order.status !== OrderStatus.CAR_DELIVERED && order.status !== OrderStatus.CANCELLED
+                                ? 'Click to advance to next status'
+                                : ''
+                        }
                     >
                         {getStatusIcon(order.status)}
                         {OrderStatusLabels[order.status]}
@@ -224,40 +257,105 @@ export default function OrderPage({ params }: OrderPageProps) {
                     <h1 className="text-xl font-semibold text-gray-900 mb-2">
                         {getStatusMessage(order.status)}
                     </h1>
+                    {order.status === OrderStatus.DRIVER_ON_WAY && (
+                        <p className="text-lg font-medium text-blue-600">
+                            ETA: 12 minutes
+                        </p>
+                    )}
                     {getArrivalTime(order.status) && (
-                        <p className="text-lg font-medium text-blue-600 mb-2">
+                        <p className="text-lg font-medium text-blue-600">
                             {getArrivalTime(order.status)}
                         </p>
                     )}
-                    <p className="text-sm text-gray-500">Order #{orderId.slice(-6).toUpperCase()}</p>
                 </div>
             </div>
+
+            {/* Driver Info (when available) - Moved here after status message */}
+            {order.status >= OrderStatus.DRIVER_ON_WAY && (
+                <div className="bg-white px-4 py-4 border-b">
+                    <div className="flex items-center gap-3">
+                        {/* Driver Picture */}
+                        <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
+                            <svg className="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                            </svg>
+                        </div>
+                        
+                        {/* Driver Info */}
+                        <div className="flex-1">
+                            <h3 className="text-sm font-semibold text-gray-900 mb-1">Driver Information</h3>
+                            <div className="space-y-1 text-sm">
+                                <p className="text-gray-700">
+                                    <span className="font-medium">Name:</span> {order.driverInfo?.name || 'John Smith'}
+                                </p>
+                                <p className="text-gray-700">
+                                    <span className="font-medium">Phone:</span> {order.driverInfo?.phone || '(555) 123-4567'}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <div className="flex-1 p-4 space-y-4">
                 {/* Order Progress */}
                 <Card className="p-4 bg-white">
                     <h2 className="text-sm font-semibold text-gray-900 mb-4">Order Progress</h2>
                     <div className="space-y-3">
-                        {Object.values(OrderStatus).filter(v => typeof v === 'number').map((status) => {
-                            const isCompleted = order.status >= (status as number);
-                            const isCurrent = order.status === status;
-                            return (
-                                <div key={status} className="flex items-center gap-3">
-                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                                        isCompleted ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-400'
-                                    }`}>
-                                        {isCompleted ? '✓' : status}
-                                    </div>
-                                    <div className="flex-1">
-                                        <p className={`text-sm ${isCurrent ? 'font-semibold' : ''} ${
-                                            isCompleted ? 'text-gray-900' : 'text-gray-400'
-                                        }`}>
-                                            {OrderStatusLabels[status as OrderStatus]}
-                                        </p>
-                                    </div>
+                        {/* Show special case for scheduled orders */}
+                        {order.status === OrderStatus.SCHEDULED && (
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-full flex items-center justify-center bg-blue-500 text-white">
+                                    <Clock className="w-4 h-4" />
                                 </div>
-                            );
-                        })}
+                                <div className="flex-1">
+                                    <p className="text-sm font-semibold text-gray-900">
+                                        Scheduled for {order.scheduledDate} at {order.scheduledTime}
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+                        
+                        {/* Show special case for cancelled orders */}
+                        {order.status === OrderStatus.CANCELLED && (
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-full flex items-center justify-center bg-red-500 text-white">
+                                    <X className="w-4 h-4" />
+                                </div>
+                                <div className="flex-1">
+                                    <p className="text-sm font-semibold text-gray-900">
+                                        Order Cancelled
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Show regular progress flow (excluding scheduled and cancelled) */}
+                        {order.status !== OrderStatus.SCHEDULED && order.status !== OrderStatus.CANCELLED && (
+                            <>
+                                {[OrderStatus.FINDING_DRIVER, OrderStatus.DRIVER_ON_WAY, OrderStatus.CAR_IN_TRANSIT, OrderStatus.CAR_DELIVERED].map((status) => {
+                                    const isCompleted = order.status >= status;
+                                    const isCurrent = order.status === status;
+
+                                    return (
+                                        <div key={status} className="flex items-center gap-3">
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                                                isCompleted ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-400'
+                                            }`}>
+                                                {isCompleted ? '✓' : status}
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className={`text-sm ${isCurrent ? 'font-semibold' : ''} ${
+                                                    isCompleted ? 'text-gray-900' : 'text-gray-400'
+                                                }`}>
+                                                    {OrderStatusLabels[status]}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </>
+                        )}
                     </div>
                 </Card>
 
@@ -269,7 +367,7 @@ export default function OrderPage({ params }: OrderPageProps) {
                         <div className="flex items-start gap-2">
                             <MapPin className="w-4 h-4 text-gray-400 mt-0.5" />
                             <div className="flex-1">
-                                <p className="text-xs text-gray-500">Pickup Location</p>
+                                <p className="text-xs text-gray-500 mb-1">Pickup Location</p>
                                 <p className="text-sm text-gray-900">{order.pickupLocation || 'Current Location'}</p>
                             </div>
                         </div>
@@ -277,7 +375,7 @@ export default function OrderPage({ params }: OrderPageProps) {
                         <div className="flex items-start gap-2">
                             <Package className="w-4 h-4 text-gray-400 mt-0.5" />
                             <div className="flex-1">
-                                <p className="text-xs text-gray-500">Destination</p>
+                                <p className="text-xs text-gray-500 mb-1">Destination</p>
                                 <p className="text-sm text-gray-900">{order.dropoffLocation || 'AutoZone Pro Service Center'}</p>
                             </div>
                         </div>
@@ -286,7 +384,7 @@ export default function OrderPage({ params }: OrderPageProps) {
                             <div className="flex items-start gap-2">
                                 <Car className="w-4 h-4 text-gray-400 mt-0.5" />
                                 <div className="flex-1">
-                                    <p className="text-xs text-gray-500">Vehicle</p>
+                                    <p className="text-xs text-gray-500 mb-1">Vehicle</p>
                                     <p className="text-sm text-gray-900">
                                         {order.vehicleInfo.year} {order.vehicleInfo.make} {order.vehicleInfo.model}
                                     </p>
@@ -301,7 +399,7 @@ export default function OrderPage({ params }: OrderPageProps) {
                             <div className="flex items-start gap-2">
                                 <Clock className="w-4 h-4 text-gray-400 mt-0.5" />
                                 <div className="flex-1">
-                                    <p className="text-xs text-gray-500">Notes</p>
+                                    <p className="text-xs text-gray-500 mb-1">Notes</p>
                                     <p className="text-sm text-gray-900">{order.notes}</p>
                                 </div>
                             </div>
@@ -309,33 +407,37 @@ export default function OrderPage({ params }: OrderPageProps) {
                     </div>
                 </Card>
 
-                {/* Driver Info (when available) */}
-                {order.status >= OrderStatus.DRIVER_ON_WAY && (
-                    <Card className="p-4 bg-blue-50 border-blue-200">
-                        <h3 className="text-sm font-semibold text-gray-900 mb-2">Driver Information</h3>
-                        <div className="space-y-1 text-sm">
-                            <p className="text-gray-700">
-                                <span className="font-medium">Name:</span> {order.driverInfo?.name || 'John Smith'}
-                            </p>
-                            <p className="text-gray-700">
-                                <span className="font-medium">Phone:</span> {order.driverInfo?.phone || '(555) 123-4567'}
-                            </p>
-                            <p className="text-gray-700">
-                                <span className="font-medium">ETA:</span> 12 minutes
-                            </p>
-                        </div>
-                    </Card>
-                )}
 
-                {/* Demo Instructions */}
-                <Card className="p-4 bg-yellow-50 border-yellow-200">
-                    <p className="text-xs text-yellow-800">
-                        <span className="font-semibold">Demo Mode:</span> Click the status badge above to manually progress through order statuses.
-                    </p>
+
+                {/* Order Number */}
+                <Card className="p-4 bg-white">
+                    <div className="text-center">
+                        <p className="text-sm text-gray-500 mb-1">Order Number</p>
+                        <p className="text-xl font-bold text-gray-900">
+                            #{orderId.slice(-6).toUpperCase()}
+                        </p>
+                    </div>
                 </Card>
 
                 {/* Action Buttons */}
                 <div className="space-y-2 pt-4">
+                    {order.status === OrderStatus.CAR_DELIVERED && (
+                        <Button 
+                            className="w-full h-12 text-base font-semibold"
+                            onClick={() => {
+                                // Navigate to confirm-booking with reversed locations
+                                const searchParams = new URLSearchParams({
+                                    vehicleId: order.vehicleInfo?.id || 'default',
+                                    destination: order.pickupLocation || 'Current Location',
+                                    pickupLocation: order.dropoffLocation
+                                });
+                                router.push(`/confirm-booking?${searchParams.toString()}`);
+                            }}
+                        >
+                            <Package className="w-4 h-4 mr-2" />
+                            Order Pickup
+                        </Button>
+                    )}
                     {order.status === OrderStatus.FINDING_DRIVER && (
                         <Button 
                             variant="destructive"

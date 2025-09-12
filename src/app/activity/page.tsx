@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Car, List, MapPin, Clock, ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { transactionStorage, Transaction } from '@/lib/transaction-storage';
+import { OrderStatus, OrderStatusLabels } from '@/lib/types/order';
 import Link from 'next/link';
 
 
@@ -44,42 +45,27 @@ const ActivityPage = () => {
         });
     };
 
-    const getStatusBadgeVariant = (status: Transaction['status']) => {
+    const getStatusBadgeVariant = (status: OrderStatus) => {
         switch (status) {
-            case 'completed':
+            case OrderStatus.SCHEDULED:
+                return 'outline';
+            case OrderStatus.FINDING_DRIVER:
+                return 'secondary';
+            case OrderStatus.DRIVER_ON_WAY:
+                return 'secondary';
+            case OrderStatus.CAR_IN_TRANSIT:
+                return 'secondary';
+            case OrderStatus.CAR_DELIVERED:
                 return 'default';
-            case 'in_progress':
-                return 'secondary';
-            case 'matched':
-                return 'secondary';
-            case 'scheduled':
-                return 'outline';
-            case 'requested':
-                return 'outline';
-            case 'cancelled':
+            case OrderStatus.CANCELLED:
                 return 'destructive';
             default:
                 return 'outline';
         }
     };
 
-    const getStatusLabel = (status: Transaction['status']) => {
-        switch (status) {
-            case 'completed':
-                return 'Completed';
-            case 'in_progress':
-                return 'In Progress';
-            case 'matched':
-                return 'Driver Matched';
-            case 'scheduled':
-                return 'Scheduled';
-            case 'requested':
-                return 'Requested';
-            case 'cancelled':
-                return 'Cancelled';
-            default:
-                return status;
-        }
+    const getStatusLabel = (status: OrderStatus) => {
+        return OrderStatusLabels[status];
     };
 
     return (

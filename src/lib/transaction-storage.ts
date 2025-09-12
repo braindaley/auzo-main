@@ -1,10 +1,11 @@
 import { Vehicle } from '@/components/car-card';
+import { OrderStatus } from '@/lib/types/order';
 
 export interface Transaction {
   id: string;
   orderNumber: string;
   timestamp: string;
-  status: 'scheduled' | 'requested' | 'matched' | 'in_progress' | 'completed' | 'cancelled';
+  status: OrderStatus;
   
   // Booking details
   vehicle: Vehicle;
@@ -22,6 +23,9 @@ export interface Transaction {
   
   // Location details
   pickupLocation: string;
+  
+  // Order details
+  orderId?: string; // Firestore order ID for linking to /order/[orderId]
   
   // Driver details (filled when driver is assigned)
   driverId?: string;
@@ -80,7 +84,7 @@ class TransactionStorage {
       id: this.generateTransactionId(),
       orderNumber: this.generateOrderNumber(),
       timestamp: new Date().toISOString(),
-      status: bookingData.isScheduled ? 'scheduled' : 'requested',
+      status: bookingData.isScheduled ? OrderStatus.SCHEDULED : OrderStatus.FINDING_DRIVER,
       
       // Booking details
       vehicle: bookingData.vehicle,
@@ -131,7 +135,7 @@ class TransactionStorage {
     return transactions.find(t => t.id === id) || null;
   }
 
-  updateTransactionStatus(id: string, status: Transaction['status'], updates?: Partial<Transaction>): void {
+  updateTransactionStatus(id: string, status: OrderStatus, updates?: Partial<Transaction>): void {
     const transactions = this.getTransactions();
     const transactionIndex = transactions.findIndex(t => t.id === id);
     
@@ -190,7 +194,11 @@ class TransactionStorage {
   }
 
   cancelTransaction(id: string): void {
-    this.updateTransactionStatus(id, 'cancelled');
+    this.updateTransactionStatus(id, OrderStatus.CANCELLED);
+  }
+
+  updateTransactionOrderId(transactionId: string, orderId: string): void {
+    this.updateTransaction(transactionId, { orderId });
   }
 
   clearTransactions(): void {

@@ -4,9 +4,20 @@ import { useState, useEffect, use } from 'react';
 import { ArrowLeft, MapPin, Car, Clock, DollarSign, User, Phone, Wrench, Settings, PaintBucket, Gauge, CircleDot, X } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { transactionStorage, Transaction } from '@/lib/transaction-storage';
+import { OrderStatus, OrderStatusLabels } from '@/lib/types/order';
 
 interface TransactionDetailPageProps {
     params: Promise<{ id: string }>;
@@ -17,6 +28,7 @@ export default function TransactionDetailPage({ params }: TransactionDetailPageP
     const router = useRouter();
     const searchParams = useSearchParams();
     const [transaction, setTransaction] = useState<Transaction | null>(null);
+    const [showCancelDialog, setShowCancelDialog] = useState<boolean>(false);
     
     const from = searchParams.get('from') || 'activity';
     
@@ -40,7 +52,7 @@ export default function TransactionDetailPage({ params }: TransactionDetailPageP
     const handleStatusClick = () => {
         if (!transaction) return;
         
-        const statusOrder: Array<Transaction['status']> = ['scheduled', 'requested', 'matched', 'in_progress', 'completed'];
+        const statusOrder: Array<OrderStatus> = [OrderStatus.SCHEDULED, OrderStatus.FINDING_DRIVER, OrderStatus.DRIVER_ON_WAY, OrderStatus.CAR_IN_TRANSIT, OrderStatus.CAR_DELIVERED];
         const currentIndex = statusOrder.indexOf(transaction.status);
         const nextIndex = (currentIndex + 1) % statusOrder.length;
         const nextStatus = statusOrder[nextIndex];
@@ -61,8 +73,8 @@ export default function TransactionDetailPage({ params }: TransactionDetailPageP
     const handleCancelTransaction = () => {
         if (!transaction) return;
 
-        const confirmed = confirm('Are you sure you want to cancel this service?');
-        if (!confirmed) return;
+        // Close dialog
+        setShowCancelDialog(false);
 
         // Cancel the transaction
         transactionStorage.cancelTransaction(id);
@@ -70,7 +82,7 @@ export default function TransactionDetailPage({ params }: TransactionDetailPageP
         // Update local state
         const updatedTransaction: Transaction = {
             ...transaction,
-            status: 'cancelled'
+            status: OrderStatus.CANCELLED
         };
         setTransaction(updatedTransaction);
     };
@@ -113,28 +125,20 @@ export default function TransactionDetailPage({ params }: TransactionDetailPageP
         });
     };
 
-    const getStatusColor = (status: string) => {
+    const getStatusColor = (status: OrderStatus) => {
         switch (status) {
-            case 'scheduled': return 'text-purple-600 bg-purple-50';
-            case 'requested': return 'text-blue-600 bg-blue-50';
-            case 'matched': return 'text-green-600 bg-green-50';
-            case 'in_progress': return 'text-orange-600 bg-orange-50';
-            case 'completed': return 'text-green-700 bg-green-100';
-            case 'cancelled': return 'text-red-600 bg-red-50';
+            case OrderStatus.SCHEDULED: return 'text-purple-600 bg-purple-50';
+            case OrderStatus.FINDING_DRIVER: return 'text-blue-600 bg-blue-50';
+            case OrderStatus.DRIVER_ON_WAY: return 'text-green-600 bg-green-50';
+            case OrderStatus.CAR_IN_TRANSIT: return 'text-orange-600 bg-orange-50';
+            case OrderStatus.CAR_DELIVERED: return 'text-green-700 bg-green-100';
+            case OrderStatus.CANCELLED: return 'text-red-600 bg-red-50';
             default: return 'text-gray-600 bg-gray-50';
         }
     };
 
-    const getStatusText = (status: string) => {
-        switch (status) {
-            case 'scheduled': return 'Scheduled';
-            case 'requested': return 'Driver Requested';
-            case 'matched': return 'Driver Matched';
-            case 'in_progress': return 'In Progress';
-            case 'completed': return 'Completed';
-            case 'cancelled': return 'Cancelled';
-            default: return status;
-        }
+    const getStatusText = (status: OrderStatus) => {
+        return OrderStatusLabels[status];
     };
 
     const getServiceIcon = (serviceType: string | undefined) => {
@@ -367,7 +371,7 @@ export default function TransactionDetailPage({ params }: TransactionDetailPageP
                         <Button 
                             className="w-full h-12 text-base"
                             variant="destructive"
-                            onClick={handleCancelTransaction}
+                            onClick={() => setShowCancelDialog(true)}
                         >
                             <X className="w-4 h-4 mr-2" />
                             Cancel Service
@@ -375,6 +379,27 @@ export default function TransactionDetailPage({ params }: TransactionDetailPageP
                     </div>
                 )}
             </div>
+
+            {/* Cancel Service Dialog */}
+            <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+                <AlertDialogContent className="max-w-[356px] max-h-[calc(100vh-2rem)] w-full mx-4">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Cancel Service</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to cancel this service? This action cannot be undone and you'll need to create a new order if you change your mind.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Keep Service</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={handleCancelTransaction}
+                            className="bg-red-600 text-white hover:bg-red-700"
+                        >
+                            Cancel Service
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }

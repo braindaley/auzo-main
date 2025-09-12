@@ -5,6 +5,7 @@ import { ArrowLeft, MapPin, Car, Calendar, Clock, DollarSign, CreditCard, Wrench
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Vehicle } from '@/components/car-card';
@@ -31,6 +32,8 @@ function ConfirmBookingContent() {
     const [selectedServiceCategory, setSelectedServiceCategory] = useState<string>('');
     const [selectedServiceOption, setSelectedServiceOption] = useState<any>(null);
     const [driverNotes, setDriverNotes] = useState<string>('');
+    const [willMeetDriver, setWillMeetDriver] = useState<boolean>(false);
+    const [isOrderPickup, setIsOrderPickup] = useState<boolean>(false);
     const deliveryFee = 14.90;
 
     useEffect(() => {
@@ -41,6 +44,10 @@ function ConfirmBookingContent() {
         const urlVehicleId = searchParams.get('vehicleId');
         const urlDestination = searchParams.get('destination');
         const urlPickupLocation = searchParams.get('pickupLocation');
+
+        // If we have URL parameters, this is an order pickup scenario
+        const isPickupScenario = !!(urlVehicleId && urlDestination && urlPickupLocation);
+        setIsOrderPickup(isPickupScenario);
 
         // Get selected vehicle - either from URL param or sessionStorage
         if (urlVehicleId) {
@@ -74,11 +81,12 @@ function ConfirmBookingContent() {
             }
         }
 
-        // Get pickup location - either from URL param or default to "Current location"
+        // Get pickup location - either from URL param or default to actual address
         if (urlPickupLocation) {
             setPickupLocation(urlPickupLocation);
         } else {
-            setPickupLocation('Current location');
+            // Use a realistic address for the user's current location
+            setPickupLocation('1234 Market Street, San Francisco, CA 94103');
         }
 
         // Get date and time from sessionStorage (if stored from choose-time page)
@@ -118,8 +126,21 @@ function ConfirmBookingContent() {
             const userId = 'demo-user-123';
             const cards = await getActiveCreditCards(userId);
             
+            // Ensure only one card is marked as default (data consistency check)
+            let defaultFound = false;
+            const cleanedCards = cards.map(card => {
+                if (card.isDefault) {
+                    if (defaultFound) {
+                        // If we already found a default, mark this one as non-default
+                        return { ...card, isDefault: false };
+                    }
+                    defaultFound = true;
+                }
+                return card;
+            });
+            
             // Sort cards: default first, then by creation date
-            const sortedCards = cards.sort((a, b) => {
+            const sortedCards = cleanedCards.sort((a, b) => {
                 if (a.isDefault && !b.isDefault) return -1;
                 if (!a.isDefault && b.isDefault) return 1;
                 if (a.createdAt && b.createdAt) {
@@ -180,9 +201,18 @@ function ConfirmBookingContent() {
             alert('Please add and select a credit card to continue.');
             return;
         }
+
+        // Validate driver meeting or instructions
+        if (!willMeetDriver && !driverNotes.trim()) {
+            alert('Please either confirm you will meet the driver at the vehicle, or provide instructions for key handoff.');
+            return;
+        }
         
         // Store selected card info for next page if needed
         sessionStorage.setItem('selectedCardId', selectedCardId);
+        
+        // Store driver meeting preference
+        sessionStorage.setItem('willMeetDriver', willMeetDriver.toString());
         
         // Store driver notes if provided
         if (driverNotes.trim()) {
@@ -266,8 +296,22 @@ function ConfirmBookingContent() {
                                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                             </div>
                             <div className="flex-1">
-                                <p className="text-xs text-gray-500 leading-none mb-0.5">From</p>
-                                <p className="text-sm text-gray-900 font-medium leading-tight">{pickupLocation}</p>
+                                <p className="text-xs text-gray-500 leading-none mb-1">From</p>
+                                {isOrderPickup ? (
+                                    <>
+                                        <p className="text-sm text-gray-900 font-medium leading-tight mb-1">
+                                            {destination || 'AutoZone Pro Service Center'}
+                                        </p>
+                                        <p className="text-xs text-gray-600 leading-tight">
+                                            789 Mission Street, San Francisco, CA 94103
+                                        </p>
+                                    </>
+                                ) : (
+                                    <>
+                                        <p className="text-sm text-gray-900 font-medium leading-tight mb-1">My location</p>
+                                        <p className="text-xs text-gray-600 leading-tight">{pickupLocation}</p>
+                                    </>
+                                )}
                             </div>
                         </div>
                         
@@ -276,12 +320,28 @@ function ConfirmBookingContent() {
                         <div className="flex items-start gap-3">
                             <MapPin className="w-6 h-6 text-blue-500" />
                             <div className="flex-1">
-                                <p className="text-xs text-gray-500 leading-none mb-0.5">To</p>
-                                <p className="text-sm text-gray-900 font-medium leading-tight">
-                                    {destination || 'AutoZone Pro Service Center'}
-                                </p>
-                                {isRoundTrip && (
-                                    <p className="text-xs text-blue-600 font-medium mt-1">Auzo Service</p>
+                                <p className="text-xs text-gray-500 leading-none mb-1">To</p>
+                                {isOrderPickup ? (
+                                    <>
+                                        <p className="text-sm text-gray-900 font-medium leading-tight mb-1">
+                                            Starting location
+                                        </p>
+                                        <p className="text-xs text-gray-600 leading-tight">
+                                            {pickupLocation || '1234 Main Street, Phoenix, AZ 85001'}
+                                        </p>
+                                    </>
+                                ) : (
+                                    <>
+                                        <p className="text-sm text-gray-900 font-medium leading-tight mb-1">
+                                            {destination || 'AutoZone Pro Service Center'}
+                                        </p>
+                                        <p className="text-xs text-gray-600 leading-tight">
+                                            789 Mission Street, San Francisco, CA 94103
+                                        </p>
+                                        {isRoundTrip && (
+                                            <p className="text-xs text-blue-600 font-medium mt-1">Auzo Service</p>
+                                        )}
+                                    </>
                                 )}
                             </div>
                         </div>
@@ -296,8 +356,9 @@ function ConfirmBookingContent() {
                                         <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                                     </div>
                                     <div className="flex-1">
-                                        <p className="text-xs text-gray-500 leading-none mb-0.5">Back to</p>
-                                        <p className="text-sm text-gray-900 font-medium leading-tight">{pickupLocation}</p>
+                                        <p className="text-xs text-gray-500 leading-none mb-1">Back to</p>
+                                        <p className="text-sm text-gray-900 font-medium leading-tight mb-1">My location</p>
+                                        <p className="text-xs text-gray-600 leading-tight">{pickupLocation}</p>
                                     </div>
                                 </div>
                             </>
@@ -441,19 +502,44 @@ function ConfirmBookingContent() {
                         <div className="flex-1">
                             <p className="text-xs text-gray-500 leading-none mb-0.5">Notes for driver</p>
                             <p className="text-sm text-gray-900 font-medium leading-tight">
-                                Optional special instructions
+                                {willMeetDriver ? 'Optional special instructions' : 'Special instructions (required)'}
                             </p>
                         </div>
                     </div>
                     
-                    <div className="ml-9">
-                        <Textarea
-                            placeholder="Add any special instructions for the driver (e.g., apartment number, parking location, etc.)"
-                            value={driverNotes}
-                            onChange={(e) => setDriverNotes(e.target.value)}
-                            className="resize-none"
-                            rows={3}
-                        />
+                    <div className="ml-9 space-y-3">
+                        <div className="flex items-start space-x-2">
+                            <Checkbox
+                                id="meet-driver"
+                                checked={willMeetDriver}
+                                onCheckedChange={(checked) => setWillMeetDriver(checked as boolean)}
+                                className="mt-0.5"
+                            />
+                            <label
+                                htmlFor="meet-driver"
+                                className="text-sm text-gray-700 cursor-pointer select-none"
+                            >
+                                I will meet the driver at the vehicle to provide keys
+                            </label>
+                        </div>
+                        
+                        <div>
+                            <Textarea
+                                placeholder={willMeetDriver 
+                                    ? "Add any special instructions for the driver (e.g., apartment number, parking location, etc.)"
+                                    : "Please provide instructions for key handoff (e.g., keys will be with front desk, in lockbox, etc.)"}
+                                value={driverNotes}
+                                onChange={(e) => setDriverNotes(e.target.value)}
+                                className={`resize-none ${!willMeetDriver && !driverNotes.trim() ? 'border-orange-400' : ''}`}
+                                rows={3}
+                                required={!willMeetDriver}
+                            />
+                            {!willMeetDriver && !driverNotes.trim() && (
+                                <p className="text-xs text-orange-600 mt-1">
+                                    * Required: Please provide key handoff instructions if you won't meet the driver
+                                </p>
+                            )}
+                        </div>
                     </div>
                 </Card>
 
@@ -462,13 +548,18 @@ function ConfirmBookingContent() {
                     <Button 
                         className="w-full h-12 text-base font-semibold"
                         onClick={handleRequestDriver}
-                        disabled={isLoadingCards || (!selectedCardId && creditCards.length === 0)}
+                        disabled={isLoadingCards || (!selectedCardId && creditCards.length === 0) || (!willMeetDriver && !driverNotes.trim())}
                     >
                         {isLoadingCards ? 'Loading...' : 'Order Auzo Driver'}
                     </Button>
                     {creditCards.length === 0 && !isLoadingCards && (
                         <p className="text-xs text-red-600 mt-2 text-center">
                             Please add a credit card to continue
+                        </p>
+                    )}
+                    {!willMeetDriver && !driverNotes.trim() && creditCards.length > 0 && !isLoadingCards && (
+                        <p className="text-xs text-orange-600 mt-2 text-center">
+                            Please confirm driver meeting or provide key handoff instructions
                         </p>
                     )}
                 </div>

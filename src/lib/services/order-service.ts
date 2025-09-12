@@ -19,8 +19,8 @@ export async function createOrder(orderData: Partial<Order>): Promise<string> {
     const isScheduled = orderData.scheduledDate && orderData.scheduledTime;
     const initialStatus = isScheduled ? OrderStatus.SCHEDULED : OrderStatus.FINDING_DRIVER;
     
-    const newOrder: Partial<Order> = {
-      ...orderData,
+    // Build the order object without undefined values
+    const newOrder: any = {
       status: initialStatus,
       createdAt: timestamp,
       updatedAt: timestamp,
@@ -31,6 +31,16 @@ export async function createOrder(orderData: Partial<Order>): Promise<string> {
         },
       ],
     };
+
+    // Only add fields that are defined
+    if (orderData.pickupLocation !== undefined) newOrder.pickupLocation = orderData.pickupLocation;
+    if (orderData.dropoffLocation !== undefined) newOrder.dropoffLocation = orderData.dropoffLocation;
+    if (orderData.vehicleInfo !== undefined) newOrder.vehicleInfo = orderData.vehicleInfo;
+    if (orderData.notes !== undefined) newOrder.notes = orderData.notes;
+    if (orderData.scheduledDate !== undefined) newOrder.scheduledDate = orderData.scheduledDate;
+    if (orderData.scheduledTime !== undefined) newOrder.scheduledTime = orderData.scheduledTime;
+    if (orderData.customerInfo !== undefined) newOrder.customerInfo = orderData.customerInfo;
+    if (orderData.driverInfo !== undefined) newOrder.driverInfo = orderData.driverInfo;
 
     const docRef = await addDoc(collection(db, ORDERS_COLLECTION), newOrder);
     console.log('Order created with ID:', docRef.id);

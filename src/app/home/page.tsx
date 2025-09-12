@@ -8,6 +8,7 @@ import { Car, Droplet, Wrench, Gauge, Cog, Sparkles, PaintBucket, Settings, Sear
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { transactionStorage, Transaction } from '@/lib/transaction-storage';
+import { OrderStatus, OrderStatusLabels } from '@/lib/types/order';
 
 const personalServices: Array<{
     name: string;
@@ -33,12 +34,50 @@ const HomePage = () => {
     const [latestTransaction, setLatestTransaction] = useState<Transaction | null>(null);
     const router = useRouter();
 
-    useEffect(() => {
-        // Load the latest transaction from storage
+    const loadLatestTransaction = () => {
         const transactions = transactionStorage.getTransactions();
+        console.log('All transactions:', transactions);
         if (transactions.length > 0) {
+            console.log('Latest transaction:', transactions[0]);
             setLatestTransaction(transactions[0]);
         }
+    };
+
+    // Temporary helper to clear all transactions for testing
+    const clearAllTransactions = () => {
+        transactionStorage.clearTransactions();
+        setLatestTransaction(null);
+        console.log('All transactions cleared');
+    };
+
+    useEffect(() => {
+        // Load the latest transaction from storage on every mount
+        loadLatestTransaction();
+
+        // Set up an interval to periodically refresh (every 2 seconds)
+        const interval = setInterval(() => {
+            loadLatestTransaction();
+        }, 2000);
+
+        // Refresh transaction data when window gets focus (user returns to page)
+        const handleFocus = () => {
+            loadLatestTransaction();
+        };
+
+        window.addEventListener('focus', handleFocus);
+        
+        // Also listen for storage events in case data changes in another tab
+        const handleStorage = () => {
+            loadLatestTransaction();
+        };
+        
+        window.addEventListener('storage', handleStorage);
+
+        return () => {
+            clearInterval(interval);
+            window.removeEventListener('focus', handleFocus);
+            window.removeEventListener('storage', handleStorage);
+        };
     }, []);
 
     const formatDate = (timestamp: string) => {
@@ -58,42 +97,42 @@ const HomePage = () => {
         });
     };
 
-    const getStatusBadgeVariant = (status: Transaction['status']) => {
+    const getStatusBadgeVariant = (status: OrderStatus) => {
         switch (status) {
-            case 'completed':
-                return 'default';
-            case 'in_progress':
-                return 'secondary';
-            case 'matched':
-                return 'secondary';
-            case 'requested':
+            case OrderStatus.SCHEDULED:
                 return 'outline';
-            case 'cancelled':
+            case OrderStatus.FINDING_DRIVER:
+                return 'secondary';
+            case OrderStatus.DRIVER_ON_WAY:
+                return 'secondary';
+            case OrderStatus.CAR_IN_TRANSIT:
+                return 'secondary';
+            case OrderStatus.CAR_DELIVERED:
+                return 'default';
+            case OrderStatus.CANCELLED:
                 return 'destructive';
             default:
                 return 'outline';
         }
     };
 
-    const getStatusLabel = (status: Transaction['status']) => {
-        switch (status) {
-            case 'completed':
-                return 'Completed';
-            case 'in_progress':
-                return 'In Progress';
-            case 'matched':
-                return 'Driver Matched';
-            case 'requested':
-                return 'Requested';
-            case 'cancelled':
-                return 'Cancelled';
-            default:
-                return status;
-        }
+    const getStatusLabel = (status: OrderStatus) => {
+        return OrderStatusLabels[status];
     };
 
     const handleTransactionClick = (transaction: Transaction) => {
-        router.push(`/activity/${transaction.id}?from=home`);
+        console.log('Clicking transaction:', {
+            transactionId: transaction.id,
+            orderId: transaction.orderId,
+            status: transaction.status
+        });
+        
+        // If transaction has an orderId, link to the order page, otherwise use activity page
+        if (transaction.orderId) {
+            router.push(`/order/${transaction.orderId}`);
+        } else {
+            router.push(`/activity/${transaction.id}?from=home`);
+        }
     };
 
     return (
@@ -130,7 +169,7 @@ const HomePage = () => {
                         <Card className="hover:bg-gray-50 transition-colors">
                             <CardContent className="p-3 relative">
                                 {/* Order Pickup CTA for completed orders - Top Right */}
-                                {latestTransaction.status === 'completed' && !latestTransaction.isRoundTrip && (
+                                {latestTransaction.status === OrderStatus.CAR_DELIVERED && !latestTransaction.isRoundTrip && (
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();

@@ -5,10 +5,20 @@ import { Home, Clock, MapPin, Car, Navigation } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { useRouter } from 'next/navigation';
 import { Vehicle } from '@/components/car-card';
 import { transactionStorage, Transaction } from '@/lib/transaction-storage';
-import { createOrder } from '@/lib/services/order-service';
+import { createOrder, updateOrderStatus } from '@/lib/services/order-service';
 import { Order, OrderStatus } from '@/lib/types/order';
 
 export default function DriverRequestedPage() {
@@ -22,6 +32,7 @@ export default function DriverRequestedPage() {
     const [isCreatingOrder, setIsCreatingOrder] = useState(false);
     const [isRoundTrip, setIsRoundTrip] = useState<boolean>(false);
     const [isInitialized, setIsInitialized] = useState(false);
+    const [showCancelDialog, setShowCancelDialog] = useState<boolean>(false);
 
     useEffect(() => {
         const createFirestoreOrder = async () => {
@@ -102,26 +113,27 @@ export default function DriverRequestedPage() {
                             notes: isScheduled ? `Scheduled for ${storedDate} at ${storedTime}` : 'ASAP Pickup',
                         };
 
+                        // Only add scheduled fields if they have values
+                        if (isScheduled && storedDate) {
+                            orderData.scheduledDate = storedDate;
+                        }
+                        if (isScheduled && storedTime) {
+                            orderData.scheduledTime = storedTime;
+                        }
+
                         const newOrderId = await createOrder(orderData);
                         setOrderId(newOrderId);
                         console.log('Order created in Firestore:', newOrderId);
+                        
+                        // Link the transaction to the order
+                        transactionStorage.updateTransactionOrderId(savedTransaction.id, newOrderId);
 
-                        // Redirect to the specific order page after a short delay
-                        setTimeout(() => {
-                            router.push(`/order/${newOrderId}`);
-                        }, 3000);
+                        // Don't automatically redirect - stay on finding driver screen
                     } catch (error) {
                         console.error('Error creating order:', error);
                     }
                 }
             }
-
-            // Timer for message change
-            const timer = setTimeout(() => {
-                setMessage('Your driver will arrive in 12 minutes');
-            }, 3000);
-
-            return () => clearTimeout(timer);
         };
 
         createFirestoreOrder();
@@ -129,6 +141,44 @@ export default function DriverRequestedPage() {
 
     const handleBackToHome = () => {
         // Clear session storage
+        sessionStorage.removeItem('selectedVehicle');
+        sessionStorage.removeItem('selectedDestination');
+        sessionStorage.removeItem('selectedDate');
+        sessionStorage.removeItem('selectedTime');
+        sessionStorage.removeItem('isRoundTrip');
+        
+        router.push('/home');
+    };
+
+    const handleStatusClick = async () => {
+        if (!orderId) return;
+        
+        try {
+            // Update status to DRIVER_ON_WAY (next status after FINDING_DRIVER)
+            await updateOrderStatus(orderId, OrderStatus.DRIVER_ON_WAY);
+            // Navigate to the order page
+            router.push(`/order/${orderId}`);
+        } catch (error) {
+            console.error('Error updating status:', error);
+            // Still navigate even if update fails
+            router.push(`/order/${orderId}`);
+        }
+    };
+
+    const handleCancelService = async () => {
+        // Close dialog and navigate to home
+        setShowCancelDialog(false);
+        
+        // If we have an order ID, we could update it to cancelled status
+        if (orderId) {
+            try {
+                await updateOrderStatus(orderId, OrderStatus.CANCELLED);
+            } catch (error) {
+                console.error('Error cancelling order:', error);
+            }
+        }
+        
+        // Clear session storage and navigate home
         sessionStorage.removeItem('selectedVehicle');
         sessionStorage.removeItem('selectedDestination');
         sessionStorage.removeItem('selectedDate');
@@ -147,11 +197,15 @@ export default function DriverRequestedPage() {
                     <p className="text-sm">Map loading...</p>
                 </div>
                 
-                {/* Status Badge */}
+                {/* Status Badge - Clickable to advance to next status */}
                 <div className="absolute top-4 right-4">
                     <Badge 
                         variant="secondary"
-                        className="flex items-center gap-1 px-3 py-2 text-sm"
+                        className={`flex items-center gap-1 px-3 py-2 text-sm transition-all ${
+                            orderId ? 'cursor-pointer hover:scale-105 hover:shadow-lg active:scale-95' : ''
+                        }`}
+                        onClick={handleStatusClick}
+                        title={orderId ? 'Click to advance to next status' : 'Creating order...'}
                     >
                         <Navigation className="w-4 h-4" />
                         Finding driver
@@ -170,14 +224,14 @@ export default function DriverRequestedPage() {
             </div>
 
             <div className="flex-1 p-4 space-y-4">
-                {/* Order Number */}
-                <Card className="p-4 bg-white">
-                    <div className="text-center">
-                        <p className="text-sm text-gray-500 mb-1">Order Number</p>
-                        <p className="text-xl font-bold text-gray-900">
-                            {transaction ? `#${transaction.orderNumber}` : '#AZ-00000'}
-                        </p>
-                    </div>
+                {/* What's Next */}
+                <Card className="p-4 bg-gray-50 border-gray-200">
+                    <h3 className="text-sm font-semibold text-gray-900 mb-2">What happens next?</h3>
+                    <ul className="space-y-1 text-sm text-gray-700">
+                        <li>• We'll notify you when a driver is assigned</li>
+                        <li>• You'll receive driver details and ETA</li>
+                        <li>• Track your driver in real-time</li>
+                    </ul>
                 </Card>
 
                 {/* Booking Details Summary */}
@@ -188,7 +242,7 @@ export default function DriverRequestedPage() {
                         <div className="flex items-start gap-2">
                             <MapPin className="w-4 h-4 text-gray-400 mt-0.5" />
                             <div className="flex-1">
-                                <p className="text-xs text-gray-500">
+                                <p className="text-xs text-gray-500 mb-1">
                                     {isRoundTrip ? 'Service Location (Round Trip)' : 'Destination'}
                                 </p>
                                 <p className="text-sm text-gray-900">{destination || 'AutoZone Pro Service Center'}</p>
@@ -201,7 +255,7 @@ export default function DriverRequestedPage() {
                         <div className="flex items-start gap-2">
                             <Car className="w-4 h-4 text-gray-400 mt-0.5" />
                             <div className="flex-1">
-                                <p className="text-xs text-gray-500">Vehicle</p>
+                                <p className="text-xs text-gray-500 mb-1">Vehicle</p>
                                 {selectedVehicle ? (
                                     <p className="text-sm text-gray-900">
                                         {selectedVehicle.year} {selectedVehicle.make} {selectedVehicle.model}
@@ -215,42 +269,56 @@ export default function DriverRequestedPage() {
                         <div className="flex items-start gap-2">
                             <Clock className="w-4 h-4 text-gray-400 mt-0.5" />
                             <div className="flex-1">
-                                <p className="text-xs text-gray-500">Pickup Time</p>
+                                <p className="text-xs text-gray-500 mb-1">Pickup Time</p>
                                 <p className="text-sm text-gray-900">{pickupTime}</p>
                             </div>
                         </div>
                     </div>
                 </Card>
 
-                {/* What's Next */}
-                <Card className="p-4 bg-gray-50 border-gray-200">
-                    <h3 className="text-sm font-semibold text-gray-900 mb-2">What happens next?</h3>
-                    <ul className="space-y-1 text-sm text-gray-700">
-                        <li>• We'll notify you when a driver is assigned</li>
-                        <li>• You'll receive driver details and ETA</li>
-                        <li>• Track your driver in real-time</li>
-                    </ul>
+                {/* Order Number */}
+                <Card className="p-4 bg-white">
+                    <div className="text-center">
+                        <p className="text-sm text-gray-500 mb-1">Order Number</p>
+                        <p className="text-xl font-bold text-gray-900">
+                            {transaction ? `#${transaction.orderNumber}` : '#AZ-00000'}
+                        </p>
+                    </div>
                 </Card>
 
-                {/* Action Buttons */}
-                <div className="space-y-2 pt-4">
+                {/* Cancel Service Button */}
+                <div className="pt-4">
                     <Button 
+                        variant="destructive"
                         className="w-full h-12 text-base font-semibold"
-                        variant="outline"
-                        onClick={() => router.push('/home')}
+                        onClick={() => setShowCancelDialog(true)}
                     >
-                        View Order Status
-                    </Button>
-                    
-                    <Button 
-                        className="w-full h-12 text-base font-semibold"
-                        onClick={handleBackToHome}
-                    >
-                        <Home className="w-4 h-4 mr-2" />
-                        Back to Home
+                        Cancel Service
                     </Button>
                 </div>
+
             </div>
+
+            {/* Cancel Service Dialog */}
+            <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+                <AlertDialogContent className="max-w-[356px] max-h-[calc(100vh-2rem)] w-full mx-4">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Cancel Service</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to cancel this service? This action cannot be undone and you'll need to create a new order if you change your mind.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Keep Service</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={handleCancelService}
+                            className="bg-red-600 text-white hover:bg-red-700"
+                        >
+                            Cancel Service
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }
