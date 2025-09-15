@@ -98,8 +98,16 @@ export default function SelectVehiclePage() {
                                     onClick={() => handleVehicleSelect(vehicle)}
                                 >
                                     <CardContent className="p-4 flex items-center gap-4">
-                                        <div className="flex-shrink-0">
-                                            <Car className="w-8 h-8 text-primary" />
+                                        <div className="w-12 h-12 rounded-lg bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
+                                            {vehicle.photos && vehicle.photos[0] ? (
+                                                <img 
+                                                    src={vehicle.photos[0]} 
+                                                    alt={`${vehicle.make} ${vehicle.model}`} 
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            ) : (
+                                                <Car className="w-6 h-6 text-primary" />
+                                            )}
                                         </div>
                                         <div className="flex-1">
                                             <h3 className="font-semibold">

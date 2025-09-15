@@ -178,13 +178,19 @@ const HomePage = () => {
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            // Navigate to confirm-booking with reversed locations
-                                            const searchParams = new URLSearchParams({
+                                            // Set order pickup flag for add-on popup
+                                            sessionStorage.setItem('isOrderPickup', 'true');
+                                            sessionStorage.removeItem('hasShownAddOnPopup'); // Reset popup flag
+                                            
+                                            // Store pickup details for later use in confirm-booking
+                                            sessionStorage.setItem('orderPickupDetails', JSON.stringify({
                                                 vehicleId: latestTransaction.vehicle.id,
                                                 destination: latestTransaction.pickupLocation,
                                                 pickupLocation: latestTransaction.destination
-                                            });
-                                            router.push(`/confirm-booking?${searchParams.toString()}`);
+                                            }));
+                                            
+                                            // Navigate to one-way-service to show add-on popup first
+                                            router.push('/one-way-service');
                                         }}
                                         className="absolute top-2 right-2 bg-black hover:bg-gray-800 text-white text-[10px] py-1 px-2 rounded text-center transition-colors"
                                     >
@@ -247,7 +253,16 @@ const HomePage = () => {
 
                 <div className="mt-8">
                     <h2 className="heading-2 mb-4">Promotions</h2>
-                    <Card className="bg-white hover:bg-gray-50 transition-colors border">
+                    <Card 
+                        className="bg-white hover:bg-gray-50 transition-colors border cursor-pointer"
+                        onClick={() => {
+                            // Set promotional flag for the oil change special
+                            sessionStorage.setItem('isPromotionalOilChange', 'true');
+                            sessionStorage.setItem('promotionalDiscount', '10');
+                            // Navigate to service explanation for quick lube
+                            router.push('/service-explanation?service=quick%20lube&promotional=true');
+                        }}
+                    >
                         <CardContent className="p-0">
                             {/* Promotional Image */}
                             <div className="h-32 bg-gray-200 rounded-t-lg flex items-center justify-center">

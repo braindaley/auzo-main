@@ -10,7 +10,7 @@ import { ArrowLeft, MapPin, Star, Phone, Check, X, ChevronDown, ChevronUp } from
 import ServiceMap from '@/components/service-map';
 import { AnimatePresence, motion } from 'framer-motion';
 
-const locations = [
+const allLocations = [
   {
     name: 'Oil Stop',
     address: '3045 Bristol St, Costa Mesa, CA 92626',
@@ -20,6 +20,18 @@ const locations = [
       monSat: '8:00 am - 6:00 pm',
       sun: 'Closed',
     },
+    type: 'oilstop'
+  },
+  {
+    name: 'Oil Stop',
+    address: '1234 Main St, Newport Beach, CA 92660',
+    distance: 5.2,
+    phone: '(949) 123-4567',
+    hours: {
+      monSat: '8:00 am - 6:00 pm',
+      sun: 'Closed',
+    },
+    type: 'oilstop'
   },
   {
     name: 'Jiffy Lube',
@@ -30,6 +42,7 @@ const locations = [
       monSat: '9:00 am - 7:00 pm',
       sun: '10:00 am - 5:00 pm',
     },
+    type: 'jiffy-lube'
   },
 ];
 
@@ -37,7 +50,13 @@ function ServiceLocationsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const query = searchParams.get('query');
+  const promotional = searchParams.get('promotional');
   const [expandedLocation, setExpandedLocation] = useState<string | null>(null);
+  
+  // Filter locations based on promotional flag
+  const locations = promotional === 'true' 
+    ? allLocations.filter(location => location.type === 'oilstop')
+    : allLocations;
 
   const handleSelectLocation = (destination: string) => {
     router.push(

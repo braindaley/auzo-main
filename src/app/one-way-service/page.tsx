@@ -5,6 +5,7 @@ import { ArrowLeft, MapPin, Clock, Search, Calendar, Car, Wrench, Cog, Settings,
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { AddOnServicesPopup } from '@/components/add-on-services-popup';
 
 // Service-specific locations for one-way services
 const serviceLocations = {
@@ -430,6 +431,8 @@ export default function OneWayServicePage({ searchParams }: OneWayServicePagePro
     const [selectedDestination, setSelectedDestination] = useState('');
     const [selectedDate, setSelectedDate] = useState<string>('');
     const [selectedTime, setSelectedTime] = useState<string>('');
+    const [showAddOnPopup, setShowAddOnPopup] = useState(false);
+    const [addOnSelections, setAddOnSelections] = useState<any>({});
     const router = useRouter();
     const resolvedSearchParams = use(searchParams);
     const pickupTime = resolvedSearchParams?.pickup === 'later' ? 'later' : 'now';
@@ -445,7 +448,97 @@ export default function OneWayServicePage({ searchParams }: OneWayServicePagePro
             setSelectedTime(storedTime);
             setCurrentPickupTime('later');
         }
+
+        // Check if this is an "Order pickup" scenario - show add-on popup
+        // This happens when user comes from a pickup order CTA
+        const isFromOrderPickup = sessionStorage.getItem('isOrderPickup') === 'true';
+        const hasShownAddOnPopup = sessionStorage.getItem('hasShownAddOnPopup') === 'true';
+        
+        if (isFromOrderPickup) {
+            // For order pickup, set up the destination automatically
+            const orderPickupDetails = sessionStorage.getItem('orderPickupDetails');
+            if (orderPickupDetails) {
+                try {
+                    const details = JSON.parse(orderPickupDetails);
+                    setSelectedDestination(details.destination);
+                    setSearchQuery(details.destination);
+                } catch (error) {
+                    console.error('Error parsing order pickup details:', error);
+                }
+            }
+            
+            // Show the add-on popup
+            if (!hasShownAddOnPopup) {
+                setShowAddOnPopup(true);
+                sessionStorage.setItem('hasShownAddOnPopup', 'true');
+            }
+        }
     }, []);
+
+    const handleAddOnPopupClose = () => {
+        setShowAddOnPopup(false);
+        
+        // For order pickup scenarios, proceed to confirm-booking even if no add-ons selected
+        const isFromOrderPickup = sessionStorage.getItem('isOrderPickup') === 'true';
+        if (isFromOrderPickup) {
+            const orderPickupDetails = sessionStorage.getItem('orderPickupDetails');
+            if (orderPickupDetails) {
+                try {
+                    const details = JSON.parse(orderPickupDetails);
+                    const searchParams = new URLSearchParams({
+                        vehicleId: details.vehicleId,
+                        destination: details.destination,
+                        pickupLocation: details.pickupLocation
+                    });
+                    
+                    // Set the flag that this is a one-way trip
+                    sessionStorage.setItem('isRoundTrip', 'false');
+                    sessionStorage.setItem('isOneWayService', 'true');
+                    
+                    router.push(`/confirm-booking?${searchParams.toString()}`);
+                } catch (error) {
+                    console.error('Error processing order pickup details:', error);
+                }
+            }
+        }
+    };
+
+    const handleAddOnSelections = (selections: any) => {
+        setAddOnSelections(selections);
+        setShowAddOnPopup(false);
+        
+        // Store the selections in sessionStorage for use in confirm-booking
+        if (selections.carWash) {
+            sessionStorage.setItem('selectedCarWash', JSON.stringify(selections.carWash));
+        }
+        if (selections.fuelFill) {
+            sessionStorage.setItem('selectedFuelFill', JSON.stringify(selections.fuelFill));
+        }
+        
+        // For order pickup scenarios, automatically proceed to confirm-booking
+        const isFromOrderPickup = sessionStorage.getItem('isOrderPickup') === 'true';
+        if (isFromOrderPickup) {
+            const orderPickupDetails = sessionStorage.getItem('orderPickupDetails');
+            if (orderPickupDetails) {
+                try {
+                    const details = JSON.parse(orderPickupDetails);
+                    const searchParams = new URLSearchParams({
+                        vehicleId: details.vehicleId,
+                        destination: details.destination,
+                        pickupLocation: details.pickupLocation
+                    });
+                    
+                    // Set the flag that this is a one-way trip
+                    sessionStorage.setItem('isRoundTrip', 'false');
+                    sessionStorage.setItem('isOneWayService', 'true');
+                    
+                    router.push(`/confirm-booking?${searchParams.toString()}`);
+                } catch (error) {
+                    console.error('Error processing order pickup details:', error);
+                }
+            }
+        }
+    };
 
     const handleDestinationSelect = (destination: any) => {
         const destinationName = destination.type === 'business' 
@@ -671,6 +764,13 @@ export default function OneWayServicePage({ searchParams }: OneWayServicePagePro
                     </div>
                 )}
             </div>
+
+            {/* Add-on Services Popup */}
+            <AddOnServicesPopup
+                isOpen={showAddOnPopup}
+                onClose={handleAddOnPopupClose}
+                onContinue={handleAddOnSelections}
+            />
         </div>
     );
 }

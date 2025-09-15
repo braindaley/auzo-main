@@ -147,6 +147,8 @@ export default function DriverRequestedPage() {
         sessionStorage.removeItem('selectedDate');
         sessionStorage.removeItem('selectedTime');
         sessionStorage.removeItem('isRoundTrip');
+        sessionStorage.removeItem('selectedCarWash');
+        sessionStorage.removeItem('selectedFuelFill');
         
         router.push('/home');
     };
@@ -185,6 +187,8 @@ export default function DriverRequestedPage() {
         sessionStorage.removeItem('selectedDate');
         sessionStorage.removeItem('selectedTime');
         sessionStorage.removeItem('isRoundTrip');
+        sessionStorage.removeItem('selectedCarWash');
+        sessionStorage.removeItem('selectedFuelFill');
         
         router.push('/home');
     };

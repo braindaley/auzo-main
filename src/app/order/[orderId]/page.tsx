@@ -570,13 +570,19 @@ export default function OrderPage({ params }: OrderPageProps) {
                         <Button 
                             className="w-full h-12 text-base font-semibold"
                             onClick={() => {
-                                // Navigate to confirm-booking with reversed locations
-                                const searchParams = new URLSearchParams({
+                                // Set order pickup flag for add-on popup
+                                sessionStorage.setItem('isOrderPickup', 'true');
+                                sessionStorage.removeItem('hasShownAddOnPopup'); // Reset popup flag
+                                
+                                // Store pickup details for later use in confirm-booking
+                                sessionStorage.setItem('orderPickupDetails', JSON.stringify({
                                     vehicleId: order.vehicleInfo?.id || 'default',
                                     destination: order.pickupLocation || 'Current Location',
                                     pickupLocation: order.dropoffLocation
-                                });
-                                router.push(`/confirm-booking?${searchParams.toString()}`);
+                                }));
+                                
+                                // Navigate to one-way-service to show add-on popup first
+                                router.push('/one-way-service');
                             }}
                         >
                             <Package className="w-4 h-4 mr-2" />

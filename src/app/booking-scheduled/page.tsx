@@ -127,6 +127,8 @@ export default function BookingScheduledPage() {
         sessionStorage.removeItem('selectedServiceOption');
         sessionStorage.removeItem('selectedCardId');
         sessionStorage.removeItem('driverNotes');
+        sessionStorage.removeItem('selectedCarWash');
+        sessionStorage.removeItem('selectedFuelFill');
         
         router.push('/home');
     };

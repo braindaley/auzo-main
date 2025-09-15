@@ -104,6 +104,19 @@ export default function SelectServiceOptionsPage({ searchParams }: SelectService
         }
     }, [resolvedSearchParams]);
 
+    // Check if this is a promotional oil change
+    const isPromotionalOilChange = typeof window !== 'undefined' && sessionStorage.getItem('isPromotionalOilChange') === 'true';
+    const promotionalDiscount = typeof window !== 'undefined' ? parseInt(sessionStorage.getItem('promotionalDiscount') || '0') : 0;
+
+    // Function to calculate discounted price
+    const getDiscountedPrice = (originalPrice: string) => {
+        if (!isPromotionalOilChange) return originalPrice;
+        
+        const price = parseInt(originalPrice.replace('$', ''));
+        const discountedPrice = price - promotionalDiscount;
+        return `$${discountedPrice}`;
+    };
+
     const handleServiceSelect = (category: ServiceCategory) => {
         setActiveCategory(category);
         setSelectedService(category.id);
@@ -246,7 +259,15 @@ export default function SelectServiceOptionsPage({ searchParams }: SelectService
                                             )}
                                         </div>
                                         <div className="ml-4">
-                                            <p className="text-lg font-bold text-primary">{option.price}</p>
+                                            {isPromotionalOilChange && activeCategory?.id === 'oil-change' ? (
+                                                <div className="text-right">
+                                                    <p className="text-sm text-gray-400 line-through">{option.price}</p>
+                                                    <p className="text-lg font-bold text-primary">{getDiscountedPrice(option.price)}</p>
+                                                    <p className="text-xs text-green-600 font-medium">$10 off!</p>
+                                                </div>
+                                            ) : (
+                                                <p className="text-lg font-bold text-primary">{option.price}</p>
+                                            )}
                                         </div>
                                     </div>
                                     {selectedOption?.id === option.id && (

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, Suspense } from 'react';
-import { ArrowLeft, MapPin, Car, Calendar, Clock, DollarSign, CreditCard, Wrench, MessageSquare } from 'lucide-react';
+import { ArrowLeft, MapPin, Car, Calendar, Clock, DollarSign, CreditCard, Wrench, MessageSquare, Fuel } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -34,6 +34,8 @@ function ConfirmBookingContent() {
     const [driverNotes, setDriverNotes] = useState<string>('');
     const [willMeetDriver, setWillMeetDriver] = useState<boolean>(false);
     const [isOrderPickup, setIsOrderPickup] = useState<boolean>(false);
+    const [selectedCarWash, setSelectedCarWash] = useState<any>(null);
+    const [selectedFuelFill, setSelectedFuelFill] = useState<any>(null);
     const deliveryFee = 14.90;
 
     useEffect(() => {
@@ -113,6 +115,36 @@ function ConfirmBookingContent() {
             } catch {
                 // Handle parsing errors gracefully
             }
+        }
+
+        // Get add-on services - only for one-way services, not round trips
+        const roundTripFlag = sessionStorage.getItem('isRoundTrip');
+        const isRoundTripService = roundTripFlag === 'true';
+        
+        if (!isRoundTripService) {
+            // Only load add-on services for one-way bookings
+            const carWash = sessionStorage.getItem('selectedCarWash');
+            const fuelFill = sessionStorage.getItem('selectedFuelFill');
+            if (carWash) {
+                try {
+                    setSelectedCarWash(JSON.parse(carWash));
+                } catch {
+                    // Handle parsing errors gracefully
+                }
+            }
+            if (fuelFill) {
+                try {
+                    setSelectedFuelFill(JSON.parse(fuelFill));
+                } catch {
+                    // Handle parsing errors gracefully
+                }
+            }
+        } else {
+            // Clear any cached add-on services for round trip flows
+            sessionStorage.removeItem('selectedCarWash');
+            sessionStorage.removeItem('selectedFuelFill');
+            setSelectedCarWash(null);
+            setSelectedFuelFill(null);
         }
 
         // Load user's credit cards
@@ -237,18 +269,29 @@ function ConfirmBookingContent() {
     };
 
     const calculateServiceCost = () => {
-        if (!selectedServiceOption?.price) return 0;
+        let totalCost = 0;
         
-        // Extract numeric value from price string (e.g., "$70" -> 70)
-        const priceStr = selectedServiceOption.price.replace(/[^0-9.]/g, '');
-        const price = parseFloat(priceStr);
-        
-        // For fuel, we'll just show the per-gallon price, not calculate total
-        if (selectedServiceOption.price.includes('gallon')) {
-            return 0; // Fuel cost will be calculated at fill-up
+        // Original service cost
+        if (selectedServiceOption?.price) {
+            const priceStr = selectedServiceOption.price.replace(/[^0-9.]/g, '');
+            const price = parseFloat(priceStr);
+            
+            // For fuel, we'll just show the per-gallon price, not calculate total
+            if (!selectedServiceOption.price.includes('gallon')) {
+                totalCost += isNaN(price) ? 0 : price;
+            }
         }
         
-        return isNaN(price) ? 0 : price;
+        // Add car wash cost
+        if (selectedCarWash?.price) {
+            const carWashPriceStr = selectedCarWash.price.replace(/[^0-9.]/g, '');
+            const carWashPrice = parseFloat(carWashPriceStr);
+            totalCost += isNaN(carWashPrice) ? 0 : carWashPrice;
+        }
+        
+        // Fuel fill cost is calculated at fill-up, so we don't add it here
+        
+        return totalCost;
     };
 
     const calculateTotalCost = () => {
@@ -434,36 +477,90 @@ function ConfirmBookingContent() {
                                         </div>
                                         <div className="text-right">
                                             <p className="text-lg font-semibold text-gray-900">
-                                                ${calculateServiceCost().toFixed(2)}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                {/* Total */}
-                                <div className="border-t pt-3">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-start gap-3">
-                                            <div className="w-6" />
-                                            <div>
-                                                <p className="text-sm font-bold text-gray-900">Total</p>
-                                            </div>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="text-xl font-bold text-primary">
-                                                ${calculateTotalCost()}
+                                                ${((() => {
+                                                    const priceStr = selectedServiceOption.price.replace(/[^0-9.]/g, '');
+                                                    const price = parseFloat(priceStr);
+                                                    return selectedServiceOption.price.includes('gallon') ? 0 : (isNaN(price) ? 0 : price);
+                                                })()).toFixed(2)}
                                             </p>
                                         </div>
                                     </div>
                                 </div>
                             </>
                         )}
+
+                        {/* Car Wash Add-on */}
+                        {selectedCarWash && (
+                            <div className="border-t pt-3">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-start gap-3">
+                                        <Car className="w-6 h-6 text-gray-600" />
+                                        <div>
+                                            <p className="text-xs text-gray-500 leading-none mb-0.5">Car-wash</p>
+                                            <p className="text-sm text-gray-900 font-medium leading-tight">
+                                                {selectedCarWash.name}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-lg font-semibold text-gray-900">
+                                            ${(() => {
+                                                const priceStr = selectedCarWash.price.replace(/[^0-9.]/g, '');
+                                                const price = parseFloat(priceStr);
+                                                return (isNaN(price) ? 0 : price).toFixed(2);
+                                            })()}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Fuel Fill Add-on */}
+                        {selectedFuelFill && (
+                            <div className="border-t pt-3">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-start gap-3">
+                                        <Fuel className="w-6 h-6 text-gray-600" />
+                                        <div>
+                                            <p className="text-xs text-gray-500 leading-none mb-0.5">Fuel fill</p>
+                                            <p className="text-sm text-gray-900 font-medium leading-tight">
+                                                {selectedFuelFill.name} {selectedFuelFill.price}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-lg font-semibold text-gray-900">
+                                            TBD
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Total */}
+                        {(calculateServiceCost() > 0 || selectedCarWash || selectedFuelFill) && (
+                            <div className="border-t pt-3">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-start gap-3">
+                                        <div className="w-6" />
+                                        <div>
+                                            <p className="text-sm font-bold text-gray-900">Total</p>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-xl font-bold text-primary">
+                                            ${calculateTotalCost()}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                         
                         {/* Fuel Note */}
-                        {isRoundTrip && selectedServiceOption && selectedServiceOption.price?.includes('gallon') && (
+                        {((isRoundTrip && selectedServiceOption && selectedServiceOption.price?.includes('gallon')) || selectedFuelFill) && (
                             <div className="border-t pt-3">
                                 <p className="text-xs text-gray-500 italic">
-                                    * Fuel cost ({selectedServiceOption.price}) will be calculated based on gallons filled
+                                    * Fuel cost will be calculated based on gallons filled. Price per gallon is estimated and may change.
                                 </p>
                             </div>
                         )}

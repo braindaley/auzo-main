@@ -12,24 +12,50 @@ const quickLubeLocations = [
     {
         id: 1,
         type: 'business',
-        businessName: 'Jiffy Lube',
-        address: '123 Main St',
-        city: 'San Francisco, CA',
+        businessName: 'Oil Stop',
+        address: '3045 Bristol St',
+        city: 'Costa Mesa, CA',
         distance: '0.8 mi',
         lastVisited: '2 hours ago',
         serviceType: 'quick lube',
-        hasAuzoService: true
+        hasAuzoService: true,
+        provider: 'oilstop'
     },
     {
         id: 2,
         type: 'business', 
-        businessName: 'Valvoline Instant Oil Change',
-        address: '456 Market St',
-        city: 'San Francisco, CA',
+        businessName: 'Oil Stop',
+        address: '1234 Main St',
+        city: 'Newport Beach, CA',
         distance: '1.2 mi',
         lastVisited: '1 day ago',
         serviceType: 'quick lube',
-        hasAuzoService: true
+        hasAuzoService: true,
+        provider: 'oilstop'
+    },
+    {
+        id: 3,
+        type: 'business',
+        businessName: 'Jiffy Lube',
+        address: '123 Main St',
+        city: 'San Francisco, CA',
+        distance: '2.1 mi',
+        lastVisited: '3 days ago',
+        serviceType: 'quick lube',
+        hasAuzoService: true,
+        provider: 'jiffy-lube'
+    },
+    {
+        id: 4,
+        type: 'business', 
+        businessName: 'Valvoline Instant Oil Change',
+        address: '456 Market St',
+        city: 'San Francisco, CA',
+        distance: '2.5 mi',
+        lastVisited: '1 week ago',
+        serviceType: 'quick lube',
+        hasAuzoService: true,
+        provider: 'valvoline'
     }
 ];
 
@@ -83,7 +109,7 @@ const fuelFillLocations = [
     }
 ];
 
-const getServiceLocations = (serviceType: string) => {
+const getServiceLocations = (serviceType: string, isPromotional: boolean = false) => {
     // For quick lube, car wash, and fuel fill services, only show Auzo Service locations
     const auzoOnlyServices = ['quick lube', 'car wash', 'fuel fill'];
     
@@ -102,8 +128,11 @@ const getServiceLocations = (serviceType: string) => {
             locations = [...quickLubeLocations, ...carWashLocations, ...fuelFillLocations];
     }
     
-    // Apply filtering based on service type
-    if (auzoOnlyServices.includes(serviceType)) {
+    // Apply filtering based on service type and promotional status
+    if (isPromotional && serviceType === 'quick lube') {
+        // For promotional oil change: only show Oil Stop locations
+        return locations.filter(location => location.hasAuzoService && location.provider === 'oilstop');
+    } else if (auzoOnlyServices.includes(serviceType)) {
         // For quick lube, car wash, and fuel fill: only show Auzo Service locations
         return locations.filter(location => location.hasAuzoService);
     } else if (serviceType && !auzoOnlyServices.includes(serviceType)) {
@@ -163,6 +192,9 @@ export default function ServicePage({ searchParams }: ServicePageProps) {
         if (fromExplanation) {
             sessionStorage.removeItem('selectedDestination');
             sessionStorage.removeItem('selectedServiceType');
+            // Clear any cached add-on services when starting fresh
+            sessionStorage.removeItem('selectedCarWash');
+            sessionStorage.removeItem('selectedFuelFill');
             setSelectedDestination('');
             setSearchQuery('');
         } else if (storedDestination && storedServiceType === resolvedSearchParams?.service) {
@@ -237,7 +269,10 @@ export default function ServicePage({ searchParams }: ServicePageProps) {
         }
     };
 
-    const serviceLocations = getServiceLocations(serviceType);
+    // Check if this is a promotional oil change
+    const isPromotionalOilChange = typeof window !== 'undefined' && sessionStorage.getItem('isPromotionalOilChange') === 'true';
+    
+    const serviceLocations = getServiceLocations(serviceType, isPromotionalOilChange);
     const serviceTitle = getServiceTitle(serviceType);
 
     const filteredDestinations = serviceLocations.filter(dest => {
