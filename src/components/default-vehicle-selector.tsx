@@ -59,7 +59,17 @@ export const DefaultVehicleSelector: React.FC<DefaultVehicleSelectorProps> = ({ 
     <div className="mt-4">
       <label className="text-sm font-medium text-gray-700 mb-2 block">Default vehicle</label>
       <div className="flex items-center bg-white border border-gray-300 rounded-lg p-3 gap-3">
-        <Car className="w-5 h-5 text-gray-600" />
+        <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
+          {selectedVehicle?.photos && selectedVehicle.photos[0] ? (
+            <img 
+              src={selectedVehicle.photos[0]} 
+              alt="Vehicle" 
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <Car className="w-4 h-4 text-gray-400" />
+          )}
+        </div>
         <div className="flex-1">
           <Select value={selectedVehicleId} onValueChange={handleVehicleChange}>
             <SelectTrigger className="border-0 h-auto p-0 focus:ring-0 focus:ring-offset-0">
@@ -80,7 +90,17 @@ export const DefaultVehicleSelector: React.FC<DefaultVehicleSelectorProps> = ({ 
               {vehicles.map((vehicle) => (
                 <SelectItem key={vehicle.id} value={vehicle.id}>
                   <div className="flex items-center gap-2">
-                    <Car className="w-4 h-4 text-gray-500" />
+                    <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
+                      {vehicle.photos && vehicle.photos[0] ? (
+                        <img 
+                          src={vehicle.photos[0]} 
+                          alt={`${vehicle.make} ${vehicle.model}`} 
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <Car className="w-3 h-3 text-gray-400" />
+                      )}
+                    </div>
                     <div>
                       <div className="text-sm font-medium">
                         {vehicle.year} {vehicle.make} {vehicle.model}
