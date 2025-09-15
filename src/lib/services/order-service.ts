@@ -41,6 +41,7 @@ export async function createOrder(orderData: Partial<Order>): Promise<string> {
     if (orderData.scheduledTime !== undefined) newOrder.scheduledTime = orderData.scheduledTime;
     if (orderData.customerInfo !== undefined) newOrder.customerInfo = orderData.customerInfo;
     if (orderData.driverInfo !== undefined) newOrder.driverInfo = orderData.driverInfo;
+    if (orderData.isRoundTrip !== undefined) newOrder.isRoundTrip = orderData.isRoundTrip;
 
     const docRef = await addDoc(collection(db, ORDERS_COLLECTION), newOrder);
     console.log('Order created with ID:', docRef.id);

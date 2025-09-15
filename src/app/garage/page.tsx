@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { CarCard, Vehicle } from '@/components/car-card';
 import { vehicleStorage } from '@/lib/vehicle-storage';
 import { transactionStorage, Transaction } from '@/lib/transaction-storage';
+import { OrderStatusLabels } from '@/lib/types/order';
 import { useEffect, useState } from 'react';
 
 const GaragePage = () => {
@@ -76,6 +77,12 @@ const GaragePage = () => {
     };
 
     const getStatusLabel = (status: Transaction['status']) => {
+        // Handle numeric OrderStatus enum values
+        if (typeof status === 'number') {
+            return OrderStatusLabels[status] || 'Unknown';
+        }
+        
+        // Handle legacy string values for backward compatibility
         switch (status) {
             case 'completed':
                 return 'Completed';

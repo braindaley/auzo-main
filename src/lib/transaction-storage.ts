@@ -32,6 +32,11 @@ export interface Transaction {
   driverName?: string;
   driverPhone?: string;
   estimatedArrival?: string;
+  
+  // Rating and tip details (filled when trip is rated)
+  rating?: number;
+  tip?: number;
+  ratedAt?: string;
 }
 
 class TransactionStorage {
@@ -199,6 +204,14 @@ class TransactionStorage {
 
   updateTransactionOrderId(transactionId: string, orderId: string): void {
     this.updateTransaction(transactionId, { orderId });
+  }
+
+  updateTransactionRating(transactionId: string, rating: number, tip: number = 0): void {
+    this.updateTransaction(transactionId, { 
+      rating, 
+      tip: tip > 0 ? tip : undefined, 
+      ratedAt: new Date().toISOString() 
+    });
   }
 
   clearTransactions(): void {

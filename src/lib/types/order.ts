@@ -25,6 +25,7 @@ export interface Order {
   dropoffLocation?: string;
   scheduledDate?: string;
   scheduledTime?: string;
+  isRoundTrip?: boolean;
   vehicleInfo?: {
     make?: string;
     model?: string;
@@ -40,6 +41,9 @@ export interface Order {
     name?: string;
     phone?: string;
     id?: string;
+    rating?: number;
+    tip?: number;
+    ratedAt?: Date | Timestamp;
   };
   billingInfo?: {
     userId: string; // ID of user who placed the order

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
-import { Home, Clock, MapPin, Car, CheckCircle, Truck, Navigation, Package, X } from 'lucide-react';
+import { Home, Clock, MapPin, Car, CheckCircle, Truck, Navigation, Package, X, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -294,6 +294,74 @@ export default function OrderPage({ params }: OrderPageProps) {
                             </div>
                         </div>
                     </div>
+                    
+                    {/* Driver Review Request or Rating Display - Only show when car is delivered */}
+                    {order.status === OrderStatus.CAR_DELIVERED && (
+                        <div className="mt-4 pt-4 border-t border-gray-100">
+                            {order.driverInfo?.rating ? (
+                                // Show submitted rating and tip
+                                <div className="space-y-2">
+                                    <p className="text-sm text-gray-700">
+                                        {order.driverInfo?.name || 'John Smith'} was your driver
+                                    </p>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-sm font-semibold text-gray-900">
+                                            {order.driverInfo.rating}.0
+                                        </span>
+                                        <div className="flex gap-1">
+                                            {[1, 2, 3, 4, 5].map((star) => (
+                                                <Star 
+                                                    key={star}
+                                                    className={`w-4 h-4 ${
+                                                        star <= order.driverInfo!.rating! 
+                                                            ? 'text-yellow-400 fill-current' 
+                                                            : 'text-gray-300'
+                                                    }`}
+                                                />
+                                            ))}
+                                        </div>
+                                        <span className="text-sm text-gray-600">Your Rating</span>
+                                    </div>
+                                    {order.driverInfo.tip && order.driverInfo.tip > 0 && (
+                                        <p className="text-sm text-gray-700">
+                                            Tip: <span className="font-semibold">${order.driverInfo.tip.toFixed(2)}</span>
+                                        </p>
+                                    )}
+                                    <p className="text-xs text-gray-500">
+                                        Rated on {order.driverInfo.ratedAt ? (() => {
+                                            try {
+                                                const date = typeof order.driverInfo.ratedAt === 'string' 
+                                                    ? new Date(order.driverInfo.ratedAt)
+                                                    : order.driverInfo.ratedAt.toDate ? order.driverInfo.ratedAt.toDate()
+                                                    : new Date(order.driverInfo.ratedAt);
+                                                return date.toLocaleDateString();
+                                            } catch (e) {
+                                                return 'today';
+                                            }
+                                        })() : 'today'}
+                                    </p>
+                                </div>
+                            ) : (
+                                // Show review request
+                                <div className="space-y-2">
+                                    <p className="text-sm text-gray-700">
+                                        {order.driverInfo?.name || 'John Smith'} was your driver
+                                    </p>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-sm font-semibold text-gray-900">4.9</span>
+                                        <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                                        <span className="text-sm text-gray-600">Rating</span>
+                                    </div>
+                                    <Button 
+                                        className="w-full mt-3 bg-black hover:bg-gray-800 text-white"
+                                        onClick={() => router.push(`/order/${orderId}/rate`)}
+                                    >
+                                        Rate or Tip
+                                    </Button>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -363,48 +431,125 @@ export default function OrderPage({ params }: OrderPageProps) {
                 <Card className="p-4 bg-white">
                     <h2 className="text-sm font-semibold text-gray-900 mb-3">Order Details</h2>
                     
-                    <div className="space-y-3">
-                        <div className="flex items-start gap-2">
-                            <MapPin className="w-4 h-4 text-gray-400 mt-0.5" />
-                            <div className="flex-1">
-                                <p className="text-xs text-gray-500 mb-1">Pickup Location</p>
-                                <p className="text-sm text-gray-900">{order.pickupLocation || 'Current Location'}</p>
-                            </div>
-                        </div>
-
-                        <div className="flex items-start gap-2">
-                            <Package className="w-4 h-4 text-gray-400 mt-0.5" />
-                            <div className="flex-1">
-                                <p className="text-xs text-gray-500 mb-1">Destination</p>
-                                <p className="text-sm text-gray-900">{order.dropoffLocation || 'AutoZone Pro Service Center'}</p>
-                            </div>
-                        </div>
-
-                        {order.vehicleInfo && (
-                            <div className="flex items-start gap-2">
-                                <Car className="w-4 h-4 text-gray-400 mt-0.5" />
+                    {order.isRoundTrip ? (
+                        /* Full-Service (Round Trip) Layout */
+                        <div className="space-y-2">
+                            <div className="flex items-start gap-3">
+                                <div className="w-6 h-6 flex items-center justify-center">
+                                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                </div>
                                 <div className="flex-1">
-                                    <p className="text-xs text-gray-500 mb-1">Vehicle</p>
-                                    <p className="text-sm text-gray-900">
-                                        {order.vehicleInfo.year} {order.vehicleInfo.make} {order.vehicleInfo.model}
+                                    <p className="text-xs text-gray-500 leading-none mb-1">From</p>
+                                    <p className="text-sm text-gray-900 font-medium leading-tight mb-1">My location</p>
+                                    <p className="text-xs text-gray-600 leading-tight">{order.pickupLocation || '1234 Market Street, San Francisco, CA 94103'}</p>
+                                </div>
+                            </div>
+                            
+                            <div className="border-l border-gray-200 ml-3 h-2"></div>
+                            
+                            <div className="flex items-start gap-3">
+                                <MapPin className="w-6 h-6 text-blue-500" />
+                                <div className="flex-1">
+                                    <p className="text-xs text-gray-500 leading-none mb-1">To</p>
+                                    <p className="text-sm text-gray-900 font-medium leading-tight mb-1">
+                                        {order.dropoffLocation || 'Jiffy Lube'}
                                     </p>
-                                    {order.vehicleInfo.licensePlate && (
-                                        <p className="text-xs text-gray-500">{order.vehicleInfo.licensePlate}</p>
-                                    )}
+                                    <p className="text-xs text-gray-600 leading-tight">
+                                        789 Mission Street, San Francisco, CA 94103
+                                    </p>
+                                    <p className="text-xs text-blue-600 font-medium mt-1">Auzo Service</p>
                                 </div>
                             </div>
-                        )}
 
-                        {order.notes && (
-                            <div className="flex items-start gap-2">
-                                <Clock className="w-4 h-4 text-gray-400 mt-0.5" />
+                            <div className="border-l border-gray-200 ml-3 h-2"></div>
+                            
+                            <div className="flex items-start gap-3">
+                                <div className="w-6 h-6 flex items-center justify-center">
+                                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                </div>
                                 <div className="flex-1">
-                                    <p className="text-xs text-gray-500 mb-1">Notes</p>
-                                    <p className="text-sm text-gray-900">{order.notes}</p>
+                                    <p className="text-xs text-gray-500 leading-none mb-1">Back to</p>
+                                    <p className="text-sm text-gray-900 font-medium leading-tight mb-1">My location</p>
+                                    <p className="text-xs text-gray-600 leading-tight">{order.pickupLocation || '1234 Market Street, San Francisco, CA 94103'}</p>
                                 </div>
                             </div>
-                        )}
-                    </div>
+
+                            {order.vehicleInfo && (
+                                <>
+                                    <div className="border-t border-gray-100 pt-3 mt-4">
+                                        <div className="flex items-start gap-2">
+                                            <Car className="w-4 h-4 text-gray-400 mt-0.5" />
+                                            <div className="flex-1">
+                                                <p className="text-xs text-gray-500 mb-1">Vehicle</p>
+                                                <p className="text-sm text-gray-900">
+                                                    {order.vehicleInfo.year} {order.vehicleInfo.make} {order.vehicleInfo.model}
+                                                </p>
+                                                {order.vehicleInfo.licensePlate && (
+                                                    <p className="text-xs text-gray-500">{order.vehicleInfo.licensePlate}</p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+
+                            {order.notes && (
+                                <div className="border-t border-gray-100 pt-3 mt-4">
+                                    <div className="flex items-start gap-2">
+                                        <Clock className="w-4 h-4 text-gray-400 mt-0.5" />
+                                        <div className="flex-1">
+                                            <p className="text-xs text-gray-500 mb-1">Notes</p>
+                                            <p className="text-sm text-gray-900">{order.notes}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        /* Regular One-Way Layout */
+                        <div className="space-y-3">
+                            <div className="flex items-start gap-2">
+                                <MapPin className="w-4 h-4 text-gray-400 mt-0.5" />
+                                <div className="flex-1">
+                                    <p className="text-xs text-gray-500 mb-1">Pickup Location</p>
+                                    <p className="text-sm text-gray-900">{order.pickupLocation || 'Current Location'}</p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-start gap-2">
+                                <Package className="w-4 h-4 text-gray-400 mt-0.5" />
+                                <div className="flex-1">
+                                    <p className="text-xs text-gray-500 mb-1">Destination</p>
+                                    <p className="text-sm text-gray-900">{order.dropoffLocation || 'AutoZone Pro Service Center'}</p>
+                                </div>
+                            </div>
+
+                            {order.vehicleInfo && (
+                                <div className="flex items-start gap-2">
+                                    <Car className="w-4 h-4 text-gray-400 mt-0.5" />
+                                    <div className="flex-1">
+                                        <p className="text-xs text-gray-500 mb-1">Vehicle</p>
+                                        <p className="text-sm text-gray-900">
+                                            {order.vehicleInfo.year} {order.vehicleInfo.make} {order.vehicleInfo.model}
+                                        </p>
+                                        {order.vehicleInfo.licensePlate && (
+                                            <p className="text-xs text-gray-500">{order.vehicleInfo.licensePlate}</p>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
+                            {order.notes && (
+                                <div className="flex items-start gap-2">
+                                    <Clock className="w-4 h-4 text-gray-400 mt-0.5" />
+                                    <div className="flex-1">
+                                        <p className="text-xs text-gray-500 mb-1">Notes</p>
+                                        <p className="text-sm text-gray-900">{order.notes}</p>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </Card>
 
 

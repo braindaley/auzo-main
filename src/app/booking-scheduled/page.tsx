@@ -100,6 +100,7 @@ export default function BookingScheduledPage() {
                             status: OrderStatus.SCHEDULED, // Set status as scheduled
                             scheduledDate: storedDate,
                             scheduledTime: storedTime,
+                            isRoundTrip: roundTripFlag === 'true',
                         };
 
                         const newOrderId = await createOrder(orderData);

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, use } from 'react';
-import { ArrowLeft, MapPin, Car, Clock, DollarSign, User, Phone, Wrench, Settings, PaintBucket, Gauge, CircleDot, X } from 'lucide-react';
+import { ArrowLeft, MapPin, Car, Clock, DollarSign, User, Phone, Wrench, Settings, PaintBucket, Gauge, CircleDot, X, Star } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -343,21 +343,152 @@ export default function TransactionDetailPage({ params }: TransactionDetailPageP
                     </Card>
                 )}
 
-                {/* Cost Information */}
-                <Card className="p-4 bg-white">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-start gap-3">
-                            <DollarSign className="w-6 h-6 text-gray-600" />
-                            <div>
-                                <p className="text-xs text-gray-500 leading-none mb-0.5">Service Cost</p>
-                                <p className="text-sm text-gray-900 font-medium leading-tight">{transaction.serviceType}</p>
+                {/* Rating and Tip Information (if available) */}
+                {transaction.rating && (
+                    <Card className="p-4 bg-white">
+                        <h2 className="text-sm font-semibold text-gray-900 mb-3">Your Rating</h2>
+                        <div className="space-y-3">
+                            <div className="flex items-center gap-2">
+                                <div className="flex gap-1">
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                        <Star 
+                                            key={star}
+                                            className={`w-4 h-4 ${
+                                                star <= transaction.rating! 
+                                                    ? 'text-yellow-400 fill-current' 
+                                                    : 'text-gray-300'
+                                            }`}
+                                        />
+                                    ))}
+                                </div>
+                                <span className="text-sm font-semibold text-gray-900">
+                                    {transaction.rating}.0
+                                </span>
+                            </div>
+                            {transaction.tip && transaction.tip > 0 && (
+                                <div className="flex items-center gap-2">
+                                    <DollarSign className="w-4 h-4 text-gray-500" />
+                                    <span className="text-sm text-gray-900">
+                                        Tip: <span className="font-semibold">${transaction.tip.toFixed(2)}</span>
+                                    </span>
+                                </div>
+                            )}
+                            {transaction.ratedAt && (
+                                <p className="text-xs text-gray-500">
+                                    Rated on {new Date(transaction.ratedAt).toLocaleDateString()}
+                                </p>
+                            )}
+                        </div>
+                    </Card>
+                )}
+
+                {/* Service Cost Information (for full-service orders) */}
+                {transaction.serviceType === 'full service' && transaction.specificServiceType && (
+                    <Card className="p-4 bg-white">
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-start gap-3">
+                                    <DollarSign className="w-6 h-6 text-gray-600" />
+                                    <div>
+                                        <p className="text-xs text-gray-500 leading-none mb-0.5">Delivery Fee</p>
+                                        <p className="text-sm text-gray-900 font-medium leading-tight">Round trip service</p>
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-lg font-semibold text-gray-900">$14.90</p>
+                                </div>
+                            </div>
+                            
+                            <div className="border-t pt-3">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-start gap-3">
+                                        {(() => {
+                                            const ServiceIcon = getServiceIcon(transaction.specificServiceType);
+                                            return <ServiceIcon className="w-6 h-6 text-gray-600" />;
+                                        })()}
+                                        <div>
+                                            <p className="text-xs text-gray-500 leading-none mb-0.5">Service</p>
+                                            <p className="text-sm text-gray-900 font-medium leading-tight">
+                                                {formatServiceType(transaction.specificServiceType)}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-lg font-semibold text-gray-900">$70.00</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {transaction.tip && transaction.tip > 0 && (
+                                <div className="border-t pt-3">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-start gap-3">
+                                            <div className="w-6" />
+                                            <div>
+                                                <p className="text-xs text-gray-500 leading-none mb-0.5">Driver tip</p>
+                                                <p className="text-sm text-gray-900 font-medium leading-tight">Thank you!</p>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-lg font-semibold text-gray-900">${transaction.tip.toFixed(2)}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                            
+                            <div className="border-t pt-3">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-start gap-3">
+                                        <div className="w-6" />
+                                        <div>
+                                            <p className="text-sm font-bold text-gray-900">Total</p>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-xl font-bold text-gray-900">
+                                            ${(84.90 + (transaction.tip || 0)).toFixed(2)}
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div className="text-right">
-                            <p className="text-xl font-bold text-gray-900">${transaction.cost.toFixed(2)}</p>
+                    </Card>
+                )}
+
+                {/* Regular Cost Information (for non-full-service orders) */}
+                {transaction.serviceType !== 'full service' && (
+                    <Card className="p-4 bg-white">
+                        <div className="flex items-start gap-3">
+                            <DollarSign className="w-6 h-6 text-gray-600" />
+                            <div className="flex-1">
+                                <p className="text-xs text-gray-500 leading-none mb-2">Service Cost</p>
+                                <div className="space-y-2">
+                                    <div className="flex justify-between items-center">
+                                        <p className="text-sm text-gray-900 font-medium">{transaction.serviceType}</p>
+                                        <p className="text-sm font-semibold text-gray-900">${transaction.cost.toFixed(2)}</p>
+                                    </div>
+                                    {transaction.tip && transaction.tip > 0 && (
+                                        <div className="flex justify-between items-center">
+                                            <p className="text-sm text-gray-700">Driver tip</p>
+                                            <p className="text-sm font-semibold text-gray-900">${transaction.tip.toFixed(2)}</p>
+                                        </div>
+                                    )}
+                                    {transaction.tip && transaction.tip > 0 && (
+                                        <div className="flex justify-between items-center pt-2 border-t border-gray-200">
+                                            <p className="text-sm font-semibold text-gray-900">Total</p>
+                                            <p className="text-xl font-bold text-gray-900">${(transaction.cost + transaction.tip).toFixed(2)}</p>
+                                        </div>
+                                    )}
+                                    {(!transaction.tip || transaction.tip === 0) && (
+                                        <div className="text-right">
+                                            <p className="text-xl font-bold text-gray-900">${transaction.cost.toFixed(2)}</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </Card>
+                    </Card>
+                )}
 
                 {/* Action Buttons */}
                 {(transaction.status === 'scheduled' || transaction.status === 'requested') && (

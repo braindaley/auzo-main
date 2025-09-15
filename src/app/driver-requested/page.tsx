@@ -111,6 +111,7 @@ export default function DriverRequestedPage() {
                             dropoffLocation: dest,
                             vehicleInfo,
                             notes: isScheduled ? `Scheduled for ${storedDate} at ${storedTime}` : 'ASAP Pickup',
+                            isRoundTrip: roundTripFlag === 'true',
                         };
 
                         // Only add scheduled fields if they have values
