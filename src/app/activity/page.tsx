@@ -24,20 +24,43 @@ const ActivityPage = () => {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        // Mock current user for now - this would come from auth context
-        const mockCurrentUser: User = {
-            id: 'owner-user-id',
-            firstName: 'Jane',
-            lastName: 'Smith',
-            phoneNumber: '(555) 987-6543',
-            role: UserRole.OWNER, // Change to MEMBER to test member flow
-            status: 'active' as any,
-            createdAt: new Date(),
-            updatedAt: new Date(),
+        // Get current user from localStorage profile
+        const getUserFromProfile = (): User => {
+            const savedProfile = localStorage.getItem('auzo_user_profile');
+            if (savedProfile) {
+                try {
+                    const profile = JSON.parse(savedProfile);
+                    return {
+                        id: 'owner-user-id',
+                        firstName: profile.firstName || 'User',
+                        lastName: profile.lastName || '',
+                        phoneNumber: profile.phoneNumber || '',
+                        role: UserRole.OWNER, // Change to MEMBER to test member flow
+                        status: 'active' as any,
+                        createdAt: new Date(),
+                        updatedAt: new Date(),
+                    };
+                } catch (error) {
+                    console.error('Failed to parse user profile:', error);
+                }
+            }
+            
+            // Fallback to default user if no profile exists
+            return {
+                id: 'owner-user-id',
+                firstName: 'User',
+                lastName: '',
+                phoneNumber: '',
+                role: UserRole.OWNER,
+                status: 'active' as any,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            };
         };
 
-        setCurrentUser(mockCurrentUser);
-        loadData(mockCurrentUser);
+        const currentUserData = getUserFromProfile();
+        setCurrentUser(currentUserData);
+        loadData(currentUserData);
     }, []);
 
     const loadData = async (user: User) => {
