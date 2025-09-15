@@ -9,6 +9,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { transactionStorage, Transaction } from '@/lib/transaction-storage';
 import { OrderStatus, OrderStatusLabels } from '@/lib/types/order';
+import { DefaultVehicleSelector } from '@/components/default-vehicle-selector';
+import { Vehicle } from '@/components/car-card';
 
 const personalServices: Array<{
     name: string;
@@ -32,6 +34,7 @@ const additionalServices = [
 const HomePage = () => {
     const [pickupTime, setPickupTime] = useState<'now' | 'later'>('now');
     const [latestTransaction, setLatestTransaction] = useState<Transaction | null>(null);
+    const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
     const router = useRouter();
 
     const loadLatestTransaction = () => {
@@ -137,10 +140,12 @@ const HomePage = () => {
 
     return (
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
+                <DefaultVehicleSelector onVehicleChange={setSelectedVehicle} />
+                
                 <div className="mt-4">
                     <label className="text-sm font-medium text-gray-700 mb-2 block">Deliver your car</label>
                     <div className="relative">
-                        <Link href={`/deliver?pickup=${pickupTime}`} className="no-underline">
+                        <Link href={`/deliver?pickup=${pickupTime}${selectedVehicle ? `&vehicleId=${selectedVehicle.id}` : ''}`} className="no-underline">
                             <div className="flex items-center bg-gray-50 border border-gray-300 rounded-lg p-3 gap-3 cursor-pointer hover:bg-gray-100 transition-colors">
                                 <Search className="w-5 h-5 text-gray-400" />
                                 <span className="flex-1 text-gray-400">Where to?</span>
