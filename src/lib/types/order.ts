@@ -41,6 +41,12 @@ export interface Order {
     phone?: string;
     id?: string;
   };
+  billingInfo?: {
+    userId: string; // ID of user who placed the order
+    billedToUserId: string; // ID of user who will be billed (owner or self)
+    paymentMethod: 'credit_card' | 'bill_to_owner';
+    ownerName?: string; // Name of owner for display purposes
+  };
   notes?: string;
   createdAt?: Timestamp | Date;
   updatedAt?: Timestamp | Date;

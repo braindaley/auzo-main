@@ -5,29 +5,49 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useMemo } from 'react';
+import { Suspense, useMemo, useState, useEffect } from 'react';
 
 import Header from '@/components/header';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ArrowLeft, CreditCard } from 'lucide-react';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+import { ArrowLeft, CreditCard, Building2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { Separator } from '@/components/ui/separator';
+import { User, UserRole } from '@/lib/types/user-management';
 
 const paymentSchema = z.object({
-  cardNumber: z.string().min(13, "Please enter a valid card number.").max(19, "Please enter a valid card number."),
-  expiryDate: z.string().regex(/^(0[1-9]|1[0-2])\/?([0-9]{2})$/, "Please use MM/YY format."),
-  cvv: z.string().regex(/^\d{3,4}$/, "Please enter a valid CVV."),
-  nameOnCard: z.string().min(2, "Name is required."),
-  zipCode: z.string().regex(/^\d{5}(?:[-\s]\d{4})?$/, "Please enter a valid ZIP code."),
+  paymentMethod: z.enum(['credit_card', 'bill_to_owner']),
+  cardNumber: z.string().optional(),
+  expiryDate: z.string().optional(),
+  cvv: z.string().optional(),
+  nameOnCard: z.string().optional(),
+  zipCode: z.string().optional(),
+}).refine((data) => {
+  if (data.paymentMethod === 'credit_card') {
+    return data.cardNumber && data.expiryDate && data.cvv && data.nameOnCard && data.zipCode &&
+           data.cardNumber.length >= 13 && data.cardNumber.length <= 19 &&
+           /^(0[1-9]|1[0-2])\/?([0-9]{2})$/.test(data.expiryDate) &&
+           /^\d{3,4}$/.test(data.cvv) &&
+           data.nameOnCard.length >= 2 &&
+           /^\d{5}(?:[-\s]\d{4})?$/.test(data.zipCode);
+  }
+  return true;
+}, {
+  message: "Please fill in all credit card fields when paying with credit card",
+  path: ["cardNumber"]
 });
 
 function PaymentForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [ownerUser, setOwnerUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const totalPrice = parseFloat(searchParams.get('totalPrice') || '0');
   
@@ -46,10 +66,42 @@ function PaymentForm() {
     }));
   }, [searchParams]);
 
+  useEffect(() => {
+    // Mock current user for now - this would come from auth context
+    const mockCurrentUser: User = {
+      id: 'member-user-id',
+      firstName: 'John',
+      lastName: 'Doe', 
+      phoneNumber: '(555) 123-4567',
+      role: UserRole.MEMBER, // Change to OWNER to test owner flow
+      ownerId: 'owner-user-id',
+      status: 'active' as any,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    const mockOwnerUser: User = {
+      id: 'owner-user-id',
+      firstName: 'Jane',
+      lastName: 'Smith',
+      phoneNumber: '(555) 987-6543',
+      role: UserRole.OWNER,
+      status: 'active' as any,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    setCurrentUser(mockCurrentUser);
+    if (mockCurrentUser.role === UserRole.MEMBER && mockCurrentUser.ownerId) {
+      setOwnerUser(mockOwnerUser);
+    }
+    setIsLoading(false);
+  }, []);
 
   const form = useForm<z.infer<typeof paymentSchema>>({
     resolver: zodResolver(paymentSchema),
     defaultValues: {
+      paymentMethod: 'credit_card',
       cardNumber: "",
       expiryDate: "",
       cvv: "",
@@ -58,16 +110,41 @@ function PaymentForm() {
     },
   });
 
+  const paymentMethod = form.watch('paymentMethod');
+
   const onSubmit = (values: z.infer<typeof paymentSchema>) => {
     console.log("Payment details submitted:", values);
+    
+    const billingInfo = {
+      userId: currentUser?.id,
+      billedToUserId: values.paymentMethod === 'bill_to_owner' ? ownerUser?.id : currentUser?.id,
+      paymentMethod: values.paymentMethod,
+      ownerName: values.paymentMethod === 'bill_to_owner' ? `${ownerUser?.firstName} ${ownerUser?.lastName}` : undefined,
+    };
+    
+    console.log("Billing info:", billingInfo);
+    
     toast({
-      title: "Payment Successful!",
-      description: "Your ride has been confirmed.",
+      title: "Order Confirmed!",
+      description: values.paymentMethod === 'bill_to_owner' 
+        ? `Order will be billed to ${ownerUser?.firstName} ${ownerUser?.lastName}`
+        : "Payment processed successfully",
     });
     
     const queryParams = new URLSearchParams(searchParams.toString());
     router.push(`/track-driver?${queryParams.toString()}`);
   };
+
+  if (isLoading) {
+    return (
+      <div className="w-full max-w-md mx-auto space-y-6">
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-2 text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-md mx-auto space-y-6">
@@ -115,9 +192,53 @@ function PaymentForm() {
                     </div>
               </div>
 
-              <FormField
-                control={form.control}
-                name="cardNumber"
+              {/* Payment Method Selection - only show for members */}
+              {currentUser?.role === UserRole.MEMBER && ownerUser && (
+                <FormField
+                  control={form.control}
+                  name="paymentMethod"
+                  render={({ field }) => (
+                    <FormItem className="space-y-3">
+                      <FormLabel>Payment Method</FormLabel>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          className="space-y-3"
+                        >
+                          <div className="flex items-center space-x-2 p-3 border rounded-lg">
+                            <RadioGroupItem value="credit_card" id="credit_card" />
+                            <Label htmlFor="credit_card" className="flex items-center space-x-2 cursor-pointer flex-1">
+                              <CreditCard className="w-4 h-4" />
+                              <span>Pay with Credit Card</span>
+                            </Label>
+                          </div>
+                          <div className="flex items-center space-x-2 p-3 border rounded-lg">
+                            <RadioGroupItem value="bill_to_owner" id="bill_to_owner" />
+                            <Label htmlFor="bill_to_owner" className="flex items-center space-x-2 cursor-pointer flex-1">
+                              <Building2 className="w-4 h-4" />
+                              <div>
+                                <div>Bill to {ownerUser.firstName} {ownerUser.lastName}</div>
+                                <div className="text-xs text-muted-foreground">
+                                  This order will be charged to your owner's account
+                                </div>
+                              </div>
+                            </Label>
+                          </div>
+                        </RadioGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+
+              {/* Credit Card Form - only show when credit card is selected */}
+              {paymentMethod === 'credit_card' && (
+                <div className="space-y-6">
+                  <FormField
+                    control={form.control}
+                    name="cardNumber"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Card Number</FormLabel>
@@ -169,21 +290,39 @@ function PaymentForm() {
                   </FormItem>
                 )}
               />
-               <FormField
-                control={form.control}
-                name="zipCode"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>ZIP / Postal Code</FormLabel>
-                    <FormControl>
-                      <Input placeholder="90210" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                  <FormField
+                    control={form.control}
+                    name="zipCode"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>ZIP / Postal Code</FormLabel>
+                        <FormControl>
+                          <Input placeholder="90210" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
+
+              {/* Bill to Owner Confirmation */}
+              {paymentMethod === 'bill_to_owner' && ownerUser && (
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-center space-x-2 text-blue-900">
+                    <Building2 className="w-5 h-5" />
+                    <div>
+                      <div className="font-medium">Billing to {ownerUser.firstName} {ownerUser.lastName}</div>
+                      <div className="text-sm text-blue-700">
+                        This order will be charged to your owner's account. No payment method required.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <Button type="submit" className="w-full h-12 text-lg">
-                Confirm Payment
+                {paymentMethod === 'bill_to_owner' ? 'Confirm Order' : 'Confirm Payment'}
               </Button>
             </form>
           </Form>

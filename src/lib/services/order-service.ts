@@ -123,3 +123,71 @@ export async function cancelOrder(orderId: string): Promise<void> {
     throw error;
   }
 }
+
+// New functions for member management
+export async function getOrdersForOwner(ownerId: string): Promise<Order[]> {
+  try {
+    const q = query(
+      collection(db, ORDERS_COLLECTION),
+      where('billingInfo.billedToUserId', '==', ownerId),
+      orderBy('createdAt', 'desc')
+    );
+    
+    const querySnapshot = await getDocs(q);
+    const orders: Order[] = [];
+    
+    querySnapshot.forEach((doc) => {
+      orders.push({ id: doc.id, ...doc.data() } as Order);
+    });
+    
+    return orders;
+  } catch (error) {
+    console.error('Error getting orders for owner:', error);
+    throw error;
+  }
+}
+
+export async function getOrdersForMember(memberId: string): Promise<Order[]> {
+  try {
+    const q = query(
+      collection(db, ORDERS_COLLECTION),
+      where('billingInfo.userId', '==', memberId),
+      orderBy('createdAt', 'desc')
+    );
+    
+    const querySnapshot = await getDocs(q);
+    const orders: Order[] = [];
+    
+    querySnapshot.forEach((doc) => {
+      orders.push({ id: doc.id, ...doc.data() } as Order);
+    });
+    
+    return orders;
+  } catch (error) {
+    console.error('Error getting orders for member:', error);
+    throw error;
+  }
+}
+
+export async function getOrdersByMemberForOwner(ownerId: string, memberId: string): Promise<Order[]> {
+  try {
+    const q = query(
+      collection(db, ORDERS_COLLECTION),
+      where('billingInfo.billedToUserId', '==', ownerId),
+      where('billingInfo.userId', '==', memberId),
+      orderBy('createdAt', 'desc')
+    );
+    
+    const querySnapshot = await getDocs(q);
+    const orders: Order[] = [];
+    
+    querySnapshot.forEach((doc) => {
+      orders.push({ id: doc.id, ...doc.data() } as Order);
+    });
+    
+    return orders;
+  } catch (error) {
+    console.error('Error getting orders by member for owner:', error);
+    throw error;
+  }
+}

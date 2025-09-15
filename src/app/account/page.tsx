@@ -38,6 +38,17 @@ const AccountPage = () => {
                         </div>
                     </Link>
                     
+                    <Link href="/account/manage-users" className="block bg-white rounded-xl px-6 py-3 shadow-sm border border-gray-100 hover:bg-gray-50 transition-colors no-underline">
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-lg font-semibold text-gray-900">Manage Users</h3>
+                            <div className="text-gray-400">
+                                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </div>
+                        </div>
+                    </Link>
+                    
                     <Link href="/account/profile" className="block bg-white rounded-xl px-6 py-3 shadow-sm border border-gray-100 hover:bg-gray-50 transition-colors no-underline">
                         <div className="flex items-center justify-between">
                             <h3 className="text-lg font-semibold text-gray-900">Profile Settings</h3>
