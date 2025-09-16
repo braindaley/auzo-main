@@ -118,9 +118,7 @@ function ConfirmBookingContent() {
         }
 
         // Get add-on services - only for one-way services, not round trips
-        const isRoundTripService = roundTripFlag === 'true';
-        
-        if (!isRoundTripService) {
+        if (roundTripFlag !== 'true') {
             // Only load add-on services for one-way bookings
             const carWash = sessionStorage.getItem('selectedCarWash');
             const fuelFill = sessionStorage.getItem('selectedFuelFill');
