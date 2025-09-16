@@ -118,7 +118,6 @@ function ConfirmBookingContent() {
         }
 
         // Get add-on services - only for one-way services, not round trips
-        const roundTripFlag = sessionStorage.getItem('isRoundTrip');
         const isRoundTripService = roundTripFlag === 'true';
         
         if (!isRoundTripService) {

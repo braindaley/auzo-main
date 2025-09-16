@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Car, Droplet, Wrench, Gauge, Cog, Sparkles, PaintBucket, Settings, Search, Calendar, Fuel, Waves, MapPin, Clock } from 'lucide-react';
+import { Car, Droplet, Wrench, Gauge, Cog, Sparkles, PaintBucket, Settings, Search, Calendar, Fuel, Waves, MapPin, Clock, Truck } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { transactionStorage, Transaction } from '@/lib/transaction-storage';
@@ -28,7 +28,8 @@ const additionalServices = [
     { name: "Brake & Muffler Service", icon: Gauge, href: "/service-explanation?service=brake%20%26%20muffler%20service" },
     { name: "Transmission Service", icon: Settings, href: "/service-explanation?service=transmission%20service" },
     { name: "Body & Glass Service", icon: PaintBucket, href: "/service-explanation?service=body%20%26%20glass%20service" },
-    { name: "General Repair Service", icon: Wrench, href: "/service-explanation?service=general%20repair%20service" }
+    { name: "General Repair Service", icon: Wrench, href: "/service-explanation?service=general%20repair%20service" },
+    { name: "Deliver Vehicle", icon: Truck, href: "/deliver?pickup=now" }
 ];
 
 const HomePage = () => {
@@ -142,30 +143,6 @@ const HomePage = () => {
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
                 <DefaultVehicleSelector onVehicleChange={setSelectedVehicle} />
                 
-                <div className="mt-4">
-                    <label className="text-sm font-medium text-gray-700 mb-2 block">Deliver your car</label>
-                    <div className="relative">
-                        <Link href={`/deliver?pickup=${pickupTime}${selectedVehicle ? `&vehicleId=${selectedVehicle.id}` : ''}`} className="no-underline">
-                            <div className="flex items-center bg-gray-50 border border-gray-300 rounded-lg p-3 gap-3 cursor-pointer hover:bg-gray-100 transition-colors">
-                                <Search className="w-5 h-5 text-gray-400" />
-                                <span className="flex-1 text-gray-400">Where to?</span>
-                                <button 
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        setPickupTime(pickupTime === 'now' ? 'later' : 'now');
-                                    }}
-                                    className="flex items-center gap-2 bg-white border border-gray-200 rounded-md px-3 py-1.5 hover:bg-gray-50 transition-colors"
-                                >
-                                    <Calendar className="w-4 h-4 text-gray-600" />
-                                    <span className="text-sm text-gray-700">
-                                        {pickupTime === 'now' ? 'Now' : 'Later'}
-                                    </span>
-                                </button>
-                            </div>
-                        </Link>
-                    </div>
-                </div>
-                
                 {latestTransaction && (
                     <div className="mt-6">
                         <div className="mb-4">
@@ -233,9 +210,14 @@ const HomePage = () => {
                 <div className="mt-6">
                     <h2 className="heading-2 mb-4">Services</h2>
                     <div className="grid grid-cols-4 gap-3">
-                        {additionalServices.map((service) => (
-                            service.href ? (
-                                <Link key={service.name} href={service.href} style={{ textDecoration: 'none' }}>
+                        {additionalServices.map((service) => {
+                            // Special handling for Deliver Vehicle to include vehicle ID
+                            const href = service.name === "Deliver Vehicle" && selectedVehicle 
+                                ? `${service.href}${selectedVehicle ? `&vehicleId=${selectedVehicle.id}` : ''}`
+                                : service.href;
+                            
+                            return service.href ? (
+                                <Link key={service.name} href={href} style={{ textDecoration: 'none' }}>
                                     <button className="w-full h-full min-h-[100px] flex flex-col items-center justify-center p-3 hover:bg-gray-50 rounded-lg transition-colors">
                                         <service.icon className="w-8 h-8 text-gray-700 mb-2" />
                                         <p className="text-xs text-center text-gray-600 leading-tight">{service.name}</p>
@@ -246,8 +228,8 @@ const HomePage = () => {
                                     <service.icon className="w-8 h-8 text-gray-700 mb-2" />
                                     <p className="text-xs text-center text-gray-600 leading-tight">{service.name}</p>
                                 </button>
-                            )
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
 
