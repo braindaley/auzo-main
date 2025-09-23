@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Car, List, MapPin, Clock, ArrowLeft, Users, Filter, User as UserIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { transactionStorage, Transaction } from '@/lib/transaction-storage';
 import { OrderStatus, OrderStatusLabels, Order } from '@/lib/types/order';
 import { User, UserRole } from '@/lib/types/user-management';
 import Link from 'next/link';
@@ -16,7 +15,6 @@ import Link from 'next/link';
 
 const ActivityPage = () => {
     const router = useRouter();
-    const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [orders, setOrders] = useState<Order[]>([]);
     const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [members, setMembers] = useState<User[]>([]);
@@ -24,6 +22,9 @@ const ActivityPage = () => {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
+        // Clear any existing transaction data
+        localStorage.removeItem('auzo_transactions');
+
         // Get current user from localStorage profile
         const getUserFromProfile = (): User => {
             const savedProfile = localStorage.getItem('auzo_user_profile');
@@ -66,10 +67,6 @@ const ActivityPage = () => {
     const loadData = async (user: User) => {
         setIsLoading(true);
         try {
-            // Load legacy transactions
-            transactionStorage.removeDuplicateTransactions();
-            const loadedTransactions = transactionStorage.getTransactions();
-            setTransactions(loadedTransactions);
 
             // Create mock members for prototype
             const mockMembers: User[] = [
@@ -97,69 +94,9 @@ const ActivityPage = () => {
                 }
             ];
 
-            // Create mock orders for prototype
-            const mockOrders: Order[] = [
-                {
-                    id: 'order-1',
-                    status: OrderStatus.CAR_DELIVERED,
-                    pickupLocation: 'Downtown Office',
-                    vehicleInfo: {
-                        year: '2022',
-                        make: 'Tesla',
-                        model: 'Model 3'
-                    },
-                    billingInfo: {
-                        userId: 'member-1',
-                        billedToUserId: user.id,
-                        paymentMethod: 'bill_to_owner',
-                        ownerName: `${user.firstName} ${user.lastName}`
-                    },
-                    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
-                    updatedAt: new Date(),
-                },
-                {
-                    id: 'order-2',
-                    status: OrderStatus.CAR_IN_TRANSIT,
-                    pickupLocation: 'Home Garage',
-                    vehicleInfo: {
-                        year: '2021',
-                        make: 'BMW',
-                        model: 'X5'
-                    },
-                    billingInfo: {
-                        userId: 'member-2',
-                        billedToUserId: user.id,
-                        paymentMethod: 'bill_to_owner',
-                        ownerName: `${user.firstName} ${user.lastName}`
-                    },
-                    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
-                    updatedAt: new Date(),
-                },
-                {
-                    id: 'order-3',
-                    status: OrderStatus.SCHEDULED,
-                    pickupLocation: 'Shopping Center',
-                    vehicleInfo: {
-                        year: '2023',
-                        make: 'Audi',
-                        model: 'Q7'
-                    },
-                    billingInfo: {
-                        userId: user.id,
-                        billedToUserId: user.id,
-                        paymentMethod: 'credit_card'
-                    },
-                    createdAt: new Date(),
-                    updatedAt: new Date(),
-                }
-            ];
-
             if (user.role === UserRole.OWNER) {
                 setMembers(mockMembers);
-                setOrders(mockOrders);
-            } else if (user.role === UserRole.MEMBER) {
-                // Member only sees their own orders
-                setOrders(mockOrders.filter(order => order.billingInfo?.userId === user.id));
+                // No mock orders - will load from API or be empty
             }
         } catch (error) {
             console.error('Error loading data:', error);
@@ -207,79 +144,22 @@ const ActivityPage = () => {
                 filteredOrders = orders.filter(order => order.billingInfo?.userId === userId);
             }
             
-            // For prototype, we'll use the mock data filtering
-            const allMockOrders = [
-                {
-                    id: 'order-1',
-                    status: OrderStatus.CAR_DELIVERED,
-                    pickupLocation: 'Downtown Office',
-                    vehicleInfo: { year: '2022', make: 'Tesla', model: 'Model 3' },
-                    billingInfo: {
-                        userId: 'member-1',
-                        billedToUserId: currentUser.id,
-                        paymentMethod: 'bill_to_owner' as const,
-                        ownerName: `${currentUser.firstName} ${currentUser.lastName}`
-                    },
-                    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-                    updatedAt: new Date(),
-                },
-                {
-                    id: 'order-2',
-                    status: OrderStatus.CAR_IN_TRANSIT,
-                    pickupLocation: 'Home Garage',
-                    vehicleInfo: { year: '2021', make: 'BMW', model: 'X5' },
-                    billingInfo: {
-                        userId: 'member-2',
-                        billedToUserId: currentUser.id,
-                        paymentMethod: 'bill_to_owner' as const,
-                        ownerName: `${currentUser.firstName} ${currentUser.lastName}`
-                    },
-                    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-                    updatedAt: new Date(),
-                },
-                {
-                    id: 'order-3',
-                    status: OrderStatus.SCHEDULED,
-                    pickupLocation: 'Shopping Center',
-                    vehicleInfo: { year: '2023', make: 'Audi', model: 'Q7' },
-                    billingInfo: {
-                        userId: currentUser.id,
-                        billedToUserId: currentUser.id,
-                        paymentMethod: 'credit_card' as const
-                    },
-                    createdAt: new Date(),
-                    updatedAt: new Date(),
-                }
-            ];
-
+            // Filter from existing orders
             if (userId === 'all') {
-                setOrders(allMockOrders);
+                // Show all orders (if any exist from API)
+                setOrders(orders);
             } else {
-                setOrders(allMockOrders.filter(order => order.billingInfo?.userId === userId));
+                // Show filtered orders (if any exist from API)
+                setOrders(orders.filter(order => order.billingInfo?.userId === userId));
             }
         }
     };
 
-    const handleTransactionClick = (transaction: Transaction) => {
-        router.push(`/activity/${transaction.id}?from=activity`);
+
+    const handleOrderClick = (order: Order) => {
+        router.push(`/activity/${order.id}?from=activity`);
     };
 
-    const formatDate = (timestamp: string) => {
-        const date = new Date(timestamp);
-        return date.toLocaleDateString('en-US', { 
-            month: 'short', 
-            day: 'numeric', 
-            year: 'numeric' 
-        });
-    };
-
-    const formatTime = (timestamp: string) => {
-        const date = new Date(timestamp);
-        return date.toLocaleTimeString('en-US', { 
-            hour: 'numeric', 
-            minute: '2-digit' 
-        });
-    };
 
     const getStatusBadgeVariant = (status: OrderStatus) => {
         switch (status) {
@@ -365,7 +245,11 @@ const ActivityPage = () => {
                                     </div>
                                     <div className="space-y-3">
                                         {orders.map((order) => (
-                                            <Card key={order.id} className="cursor-pointer hover:bg-gray-50 transition-colors">
+                                            <Card
+                                                key={order.id}
+                                                className="cursor-pointer hover:bg-gray-50 transition-colors"
+                                                onClick={() => handleOrderClick(order)}
+                                            >
                                                 <CardContent className="p-4">
                                                     <div className="space-y-2">
                                                         <div className="flex items-center justify-between">
@@ -418,53 +302,10 @@ const ActivityPage = () => {
                                 </div>
                             )}
 
-                            {/* Show legacy transactions */}
-                            {transactions.length > 0 && (
-                                <div className="space-y-4">
-                                    <h2 className="text-xl font-semibold">Previous Services</h2>
-                                    <div className="space-y-3">
-                                        {transactions.map((transaction) => (
-                                            <Card 
-                                                key={transaction.id} 
-                                                className="cursor-pointer hover:bg-gray-50 transition-colors"
-                                                onClick={() => handleTransactionClick(transaction)}
-                                            >
-                                                <CardContent className="p-4">
-                                                    <div className="space-y-2">
-                                                        <div className="flex items-center">
-                                                            <Badge variant={getStatusBadgeVariant(transaction.status)}>
-                                                                {getStatusLabel(transaction.status)}
-                                                            </Badge>
-                                                        </div>
-                                                        <div className="flex items-center gap-2">
-                                                            <MapPin className="w-4 h-4 text-gray-500" />
-                                                            <span className="font-medium text-gray-900">
-                                                                {transaction.destination}
-                                                            </span>
-                                                        </div>
-                                                        <div className="flex items-center gap-2">
-                                                            <Car className="w-4 h-4 text-gray-500" />
-                                                            <span className="text-gray-700">
-                                                                {transaction.vehicle.year} {transaction.vehicle.make} {transaction.vehicle.model}
-                                                            </span>
-                                                        </div>
-                                                        <div className="flex items-center gap-2">
-                                                            <Clock className="w-4 h-4 text-gray-500" />
-                                                            <span className="text-gray-600">
-                                                                {formatDate(transaction.timestamp)} at {formatTime(transaction.timestamp)}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                </CardContent>
-                                            </Card>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
                         </>
                     )}
 
-                    {!isLoading && transactions.length === 0 && orders.length === 0 && (
+                    {!isLoading && orders.length === 0 && (
                         <div className="flex flex-col items-center justify-center text-center text-muted-foreground pt-24">
                             <List className="w-16 h-16 mb-4" />
                             <h2 className="text-xl font-bold">No Past Activity</h2>

@@ -16,6 +16,11 @@ const navItems = [
 const BottomNav = () => {
   const pathname = usePathname();
 
+  // Hide on /drive pages as they have their own navigation
+  if (pathname.startsWith('/drive')) {
+    return null;
+  }
+
   return (
     <footer 
       className="sticky bottom-0 z-10 border-t border-l-0 border-r-0 border-b-0" 

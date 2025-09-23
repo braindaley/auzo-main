@@ -97,7 +97,7 @@ export function AddOnServicesPopup({ isOpen, onClose, onContinue }: AddOnService
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-lg shadow-xl w-full mx-auto" style={{ maxWidth: '356px' }}>
                 {/* Header */}
                 <div className="flex items-center justify-between p-4 border-b">
