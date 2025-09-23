@@ -14,7 +14,7 @@ export default function OpeningScreen() {
         </p>
       </div>
 
-      <div className="p-4 pb-safe flex flex-col gap-3 mb-20">
+      <div className="p-4 pb-safe flex flex-col gap-3 mb-8">
         <Link href={"/user-signup"} passHref>
           <Button size="lg" className="w-full h-14">
             Sign up
