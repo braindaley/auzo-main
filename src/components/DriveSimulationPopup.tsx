@@ -35,7 +35,7 @@ const DriveSimulationPopup = ({ onClose, onAccept }: DriveSimulationPopupProps) 
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50 px-5">
+    <div className="fixed inset-0 bg-black bg-opacity-30 flex items-start justify-center pt-16 z-50 px-5">
       <div className="bg-white rounded-lg shadow-lg w-full mx-5 p-6 relative" style={{ maxWidth: '340px' }}>
         {/* Header */}
         <div className="flex justify-between items-start mb-4">
@@ -72,7 +72,7 @@ const DriveSimulationPopup = ({ onClose, onAccept }: DriveSimulationPopupProps) 
           </div>
 
           <div className="flex items-start space-x-2">
-            <div className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></div>
+            <div className="w-2 h-2 bg-transparent mt-2 flex-shrink-0"></div>
             <div>
               <div className="text-sm text-gray-600">20 min (wait with vehicle)</div>
               <div className="text-sm text-black font-medium">Auzo Quick Lube</div>
