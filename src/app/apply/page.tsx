@@ -82,21 +82,21 @@ const ApplyPage = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
-      <main className="flex-1 pb-24 flex flex-col">
-        <div className="flex-1 p-6 w-full flex flex-col">
-          <div className="mb-6">
-            <div className="flex space-x-2">
-              {[1, 2, 3, 4, 5].map((step) => (
-                <div
-                  key={step}
-                  className={`flex-1 h-2 rounded-full ${
-                    step <= currentStep ? 'bg-black' : 'bg-gray-200'
-                  }`}
-                />
-              ))}
-            </div>
+    <div className="flex flex-col h-full bg-gray-50">
+      <main className="flex-1 flex flex-col min-h-0">
+        <div className="p-6 pb-4">
+          <div className="flex space-x-2">
+            {[1, 2, 3, 4, 5].map((step) => (
+              <div
+                key={step}
+                className={`flex-1 h-2 rounded-full ${
+                  step <= currentStep ? 'bg-black' : 'bg-gray-200'
+                }`}
+              />
+            ))}
           </div>
+        </div>
+        <div className="flex-1 px-6 flex flex-col min-h-0">
 
           {currentStep === 1 && (
             <div className="flex-1 flex flex-col">
@@ -149,7 +149,7 @@ const ApplyPage = () => {
                 </p>
               </div>
 
-              <div className="flex space-x-3 mt-auto">
+              <div className="flex space-x-3 mt-6 pb-24 shrink-0">
                 <button
                   onClick={handleBack}
                   className="flex-1 bg-gray-200 text-gray-900 px-8 py-3 rounded-lg font-semibold text-lg hover:bg-gray-300 transition-colors"
@@ -200,7 +200,7 @@ const ApplyPage = () => {
                 </div>
               </div>
 
-              <div className="flex space-x-3 mt-auto">
+              <div className="flex space-x-3 mt-6 pb-24 shrink-0">
                 <button
                   onClick={handleBack}
                   className="flex-1 bg-gray-200 text-gray-900 px-8 py-3 rounded-lg font-semibold text-lg hover:bg-gray-300 transition-colors"
@@ -239,7 +239,7 @@ const ApplyPage = () => {
                 </div>
               </div>
 
-              <div className="flex space-x-3 mt-auto">
+              <div className="flex space-x-3 mt-6 pb-24 shrink-0">
                 <button
                   onClick={handleBack}
                   className="flex-1 bg-gray-200 text-gray-900 px-8 py-3 rounded-lg font-semibold text-lg hover:bg-gray-300 transition-colors"
@@ -304,7 +304,7 @@ const ApplyPage = () => {
                 </div>
               </div>
 
-              <div className="flex flex-col space-y-3 mt-auto">
+              <div className="flex flex-col space-y-3 mt-6 pb-24 shrink-0">
                 <button
                   onClick={handleNext}
                   className="w-full bg-black text-white px-8 py-3 rounded-lg font-semibold text-lg hover:bg-gray-800 transition-colors"
@@ -434,7 +434,7 @@ const ApplyPage = () => {
                 </div>
               </div>
 
-              <div className="flex flex-col space-y-3 mt-auto">
+              <div className="flex flex-col space-y-3 mt-6 pb-24 shrink-0">
                 <button
                   onClick={handleNext}
                   disabled={!formData.cardNumber || !formData.cardholderName || !formData.expiryMonth || !formData.expiryYear || !formData.cvv}
