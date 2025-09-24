@@ -11,6 +11,11 @@ const ApplyPage = () => {
     referralCode: '',
     age: '',
     ssnNumber: '',
+    cardNumber: '',
+    cardholderName: '',
+    expiryMonth: '',
+    expiryYear: '',
+    cvv: '',
   });
   const [zipError, setZipError] = useState('');
 
@@ -32,7 +37,7 @@ const ApplyPage = () => {
       setZipError('');
     }
 
-    if (currentStep === 4) {
+    if (currentStep === 5) {
       router.push('/apply/background-check');
     } else {
       setCurrentStep(currentStep + 1);
@@ -59,9 +64,21 @@ const ApplyPage = () => {
     return limited;
   };
 
+  const formatCardNumber = (value: string) => {
+    const cleaned = value.replace(/\D/g, '');
+    const limited = cleaned.slice(0, 16);
+
+    return limited.replace(/(\d{4})(?=\d)/g, '$1 ');
+  };
+
   const handleSSNChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatSSN(e.target.value);
     setFormData({ ...formData, ssnNumber: formatted });
+  };
+
+  const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatCardNumber(e.target.value);
+    setFormData({ ...formData, cardNumber: formatted });
   };
 
   return (
@@ -70,7 +87,7 @@ const ApplyPage = () => {
         <div className="flex-1 p-6 w-full flex flex-col">
           <div className="mb-6">
             <div className="flex space-x-2">
-              {[1, 2, 3, 4].map((step) => (
+              {[1, 2, 3, 4, 5].map((step) => (
                 <div
                   key={step}
                   className={`flex-1 h-2 rounded-full ${
@@ -293,6 +310,137 @@ const ApplyPage = () => {
                   className="w-full bg-black text-white px-8 py-3 rounded-lg font-semibold text-lg hover:bg-gray-800 transition-colors"
                 >
                   Agree and acknowledge
+                </button>
+                <button
+                  onClick={handleBack}
+                  className="w-full bg-gray-200 text-gray-900 px-8 py-3 rounded-lg font-semibold text-lg hover:bg-gray-300 transition-colors"
+                >
+                  Back
+                </button>
+              </div>
+            </div>
+          )}
+
+          {currentStep === 5 && (
+            <div className="flex-1 flex flex-col">
+              <div className="flex-1 space-y-6 overflow-y-auto">
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900">Payment method</h1>
+                  <p className="text-gray-600 mt-2">
+                    Add your payment method for the $20 refundable deposit
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Card number
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.cardNumber}
+                      onChange={handleCardNumberChange}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                      placeholder="1234 5678 9012 3456"
+                      maxLength={19}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Cardholder name
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.cardholderName}
+                      onChange={(e) => setFormData({ ...formData, cardholderName: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                      placeholder="John Doe"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Month
+                      </label>
+                      <select
+                        value={formData.expiryMonth}
+                        onChange={(e) => setFormData({ ...formData, expiryMonth: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                      >
+                        <option value="">MM</option>
+                        {Array.from({ length: 12 }, (_, i) => {
+                          const month = String(i + 1).padStart(2, '0');
+                          return (
+                            <option key={month} value={month}>
+                              {month}
+                            </option>
+                          );
+                        })}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Year
+                      </label>
+                      <select
+                        value={formData.expiryYear}
+                        onChange={(e) => setFormData({ ...formData, expiryYear: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                      >
+                        <option value="">YYYY</option>
+                        {Array.from({ length: 15 }, (_, i) => {
+                          const year = new Date().getFullYear() + i;
+                          return (
+                            <option key={year} value={String(year)}>
+                              {year}
+                            </option>
+                          );
+                        })}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        CVV
+                      </label>
+                      <input
+                        type="password"
+                        value={formData.cvv}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/\D/g, '').slice(0, 4);
+                          setFormData({ ...formData, cvv: value });
+                        }}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                        placeholder="123"
+                        maxLength={4}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <div className="flex items-start space-x-2">
+                    <svg className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    <div>
+                      <p className="text-green-800 font-medium text-sm">Refundable deposit</p>
+                      <p className="text-green-700 text-sm">This $20 deposit will be refunded after completing your first 5 successful trips.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col space-y-3 mt-auto">
+                <button
+                  onClick={handleNext}
+                  disabled={!formData.cardNumber || !formData.cardholderName || !formData.expiryMonth || !formData.expiryYear || !formData.cvv}
+                  className="w-full bg-black text-white px-8 py-3 rounded-lg font-semibold text-lg hover:bg-gray-800 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                >
+                  Continue to background check
                 </button>
                 <button
                   onClick={handleBack}
