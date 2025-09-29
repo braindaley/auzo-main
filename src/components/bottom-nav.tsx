@@ -21,6 +21,11 @@ const BottomNav = () => {
     return null;
   }
 
+  // Hide on /admin pages
+  if (pathname.startsWith('/admin')) {
+    return null;
+  }
+
   return (
     <footer 
       className="sticky bottom-0 z-10 border-t border-l-0 border-r-0 border-b-0" 
