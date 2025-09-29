@@ -33,6 +33,7 @@ function ConfirmBookingContent() {
     const [selectedServiceOption, setSelectedServiceOption] = useState<any>(null);
     const [driverNotes, setDriverNotes] = useState<string>('');
     const [willMeetDriver, setWillMeetDriver] = useState<boolean>(false);
+    const [keyHandoffMethod, setKeyHandoffMethod] = useState<'meet' | 'other' | ''>('');
     const [isOrderPickup, setIsOrderPickup] = useState<boolean>(false);
     const [selectedCarWash, setSelectedCarWash] = useState<any>(null);
     const [selectedFuelFill, setSelectedFuelFill] = useState<any>(null);
@@ -231,23 +232,29 @@ function ConfirmBookingContent() {
             return;
         }
 
-        // Validate driver meeting or instructions
-        if (!willMeetDriver && !driverNotes.trim()) {
-            alert('Please either confirm you will meet the driver at the vehicle, or provide instructions for key handoff.');
+        // Validate key handoff method is selected
+        if (!keyHandoffMethod) {
+            alert('Please select how you will hand off the keys.');
             return;
         }
-        
+
+        // Validate that if "other" is selected, instructions are provided
+        if (keyHandoffMethod === 'other' && !driverNotes.trim()) {
+            alert('Please provide instructions for key handoff.');
+            return;
+        }
+
         // Store selected card info for next page if needed
         sessionStorage.setItem('selectedCardId', selectedCardId);
-        
-        // Store driver meeting preference
-        sessionStorage.setItem('willMeetDriver', willMeetDriver.toString());
-        
+
+        // Store key handoff method
+        sessionStorage.setItem('keyHandoffMethod', keyHandoffMethod);
+
         // Store driver notes if provided
         if (driverNotes.trim()) {
             sessionStorage.setItem('driverNotes', driverNotes);
         }
-        
+
         // Check if this is a scheduled booking (has date and time)
         if (selectedDate && selectedTime) {
             // For scheduled bookings, go to scheduled confirmation
@@ -589,60 +596,88 @@ function ConfirmBookingContent() {
                     />
                 </Card>
 
-                {/* Notes for Driver Section */}
+                {/* Key Handoff Section */}
                 <Card className="p-3 bg-white">
                     <div className="flex items-start gap-3 mb-3">
                         <MessageSquare className="w-6 h-6 text-gray-600" />
                         <div className="flex-1">
-                            <p className="text-xs text-gray-500 leading-none mb-0.5">Notes for driver</p>
                             <p className="text-sm text-gray-900 font-medium leading-tight">
-                                {willMeetDriver ? 'Optional special instructions' : 'Special instructions (required)'}
+                                How will you hand off the keys?
                             </p>
                         </div>
                     </div>
-                    
+
                     <div className="ml-9 space-y-3">
                         <div className="flex items-start space-x-2">
                             <Checkbox
                                 id="meet-driver"
-                                checked={willMeetDriver}
-                                onCheckedChange={(checked) => setWillMeetDriver(checked as boolean)}
+                                checked={keyHandoffMethod === 'meet'}
+                                onCheckedChange={(checked) => {
+                                    if (checked) {
+                                        setKeyHandoffMethod('meet');
+                                        setDriverNotes('');
+                                    } else {
+                                        setKeyHandoffMethod('');
+                                    }
+                                }}
                                 className="mt-0.5"
                             />
                             <label
                                 htmlFor="meet-driver"
                                 className="text-sm text-gray-700 cursor-pointer select-none"
                             >
-                                I will meet the driver at the vehicle to provide keys
+                                I'll meet the driver
                             </label>
                         </div>
-                        
-                        <div>
-                            <Textarea
-                                placeholder={willMeetDriver 
-                                    ? "Add any special instructions for the driver (e.g., apartment number, parking location, etc.)"
-                                    : "Please provide instructions for key handoff (e.g., keys will be with front desk, in lockbox, etc.)"}
-                                value={driverNotes}
-                                onChange={(e) => setDriverNotes(e.target.value)}
-                                className={`resize-none ${!willMeetDriver && !driverNotes.trim() ? 'border-orange-400' : ''}`}
-                                rows={3}
-                                required={!willMeetDriver}
+
+                        <div className="flex items-start space-x-2">
+                            <Checkbox
+                                id="other-handoff"
+                                checked={keyHandoffMethod === 'other'}
+                                onCheckedChange={(checked) => {
+                                    if (checked) {
+                                        setKeyHandoffMethod('other');
+                                    } else {
+                                        setKeyHandoffMethod('');
+                                        setDriverNotes('');
+                                    }
+                                }}
+                                className="mt-0.5"
                             />
-                            {!willMeetDriver && !driverNotes.trim() && (
-                                <p className="text-xs text-orange-600 mt-1">
-                                    * Required: Please provide key handoff instructions if you won't meet the driver
-                                </p>
-                            )}
+                            <label
+                                htmlFor="other-handoff"
+                                className="text-sm text-gray-700 cursor-pointer select-none"
+                            >
+                                Other
+                            </label>
                         </div>
+
+                        {keyHandoffMethod === 'other' && (
+                            <div>
+                                <Textarea
+                                    placeholder="Please provide instructions for key handoff (e.g., keys will be with front desk, in lockbox, etc.)"
+                                    value={driverNotes}
+                                    onChange={(e) => setDriverNotes(e.target.value)}
+                                    className={`resize-none ${!driverNotes.trim() ? 'border-orange-400' : ''}`}
+                                    rows={3}
+                                    required
+                                />
+                                {!driverNotes.trim() && (
+                                    <p className="text-xs text-orange-600 mt-1">
+                                        * Required: Please provide key handoff instructions
+                                    </p>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </Card>
 
                 {/* Order Auzo Driver Button */}
                 <div className="pt-4">
-                    <Button 
+                    <Button
                         className="w-full h-12 text-base font-semibold"
                         onClick={handleRequestDriver}
-                        disabled={isLoadingCards || (!selectedCardId && creditCards.length === 0) || (!willMeetDriver && !driverNotes.trim())}
+                        disabled={isLoadingCards || (!selectedCardId && creditCards.length === 0) || !keyHandoffMethod || (keyHandoffMethod === 'other' && !driverNotes.trim())}
                     >
                         {isLoadingCards ? 'Loading...' : 'Order Auzo Driver'}
                     </Button>
@@ -651,9 +686,14 @@ function ConfirmBookingContent() {
                             Please add a credit card to continue
                         </p>
                     )}
-                    {!willMeetDriver && !driverNotes.trim() && creditCards.length > 0 && !isLoadingCards && (
+                    {!keyHandoffMethod && creditCards.length > 0 && !isLoadingCards && (
                         <p className="text-xs text-orange-600 mt-2 text-center">
-                            Please confirm driver meeting or provide key handoff instructions
+                            Please select how you will hand off the keys
+                        </p>
+                    )}
+                    {keyHandoffMethod === 'other' && !driverNotes.trim() && !isLoadingCards && (
+                        <p className="text-xs text-orange-600 mt-2 text-center">
+                            Please provide key handoff instructions
                         </p>
                     )}
                 </div>

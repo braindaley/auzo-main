@@ -336,21 +336,24 @@ const OnlineMapPage = () => {
                         <div className="mt-3 space-y-2">
                           {/* Synthetic oil checkbox */}
                           <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2">
-                              <div
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setServiceChecks(prev => ({...prev, syntheticOil: !prev.syntheticOil}));
-                                }}
-                                className={`w-4 h-4 border-2 flex items-center justify-center cursor-pointer ${
-                                  serviceChecks.syntheticOil
-                                    ? 'bg-black border-black'
-                                    : 'bg-transparent border-gray-400'
-                                }`}
-                              >
-                                {serviceChecks.syntheticOil && <Check className="w-3 h-3 text-white" />}
+                            <div className="flex flex-col">
+                              <div className="flex items-center space-x-2">
+                                <div
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setServiceChecks(prev => ({...prev, syntheticOil: !prev.syntheticOil}));
+                                  }}
+                                  className={`w-4 h-4 border-2 flex items-center justify-center cursor-pointer ${
+                                    serviceChecks.syntheticOil
+                                      ? 'bg-black border-black'
+                                      : 'bg-transparent border-gray-400'
+                                  }`}
+                                >
+                                  {serviceChecks.syntheticOil && <Check className="w-3 h-3 text-white" />}
+                                </div>
+                                <span className="text-sm text-gray-600">Synthetic oil</span>
                               </div>
-                              <span className="text-sm text-gray-600">Synthetic oil</span>
+                              <span className="text-xs text-gray-500 ml-6">Not to exceed $99</span>
                             </div>
                           </div>
 

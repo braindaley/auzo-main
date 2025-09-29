@@ -382,6 +382,16 @@ export default function TransactionDetailPage({ params }: TransactionDetailPageP
                     </Card>
                 )}
 
+                {/* Support Link */}
+                <div className="text-center py-2">
+                    <p className="text-sm text-gray-600">
+                        Need help?{' '}
+                        <Link href="/account/support" className="text-blue-600 hover:text-blue-700 font-medium">
+                            Contact support
+                        </Link>
+                    </p>
+                </div>
+
                 {/* Service Cost Information (for full-service orders) */}
                 {transaction.serviceType === 'full service' && transaction.specificServiceType && (
                     <Card className="p-4 bg-white">

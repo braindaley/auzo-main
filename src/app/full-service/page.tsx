@@ -335,7 +335,7 @@ export default function ServicePage({ searchParams }: ServicePageProps) {
                         </button>
                     </div>
                 ) : (
-                    <button 
+                    <button
                         onClick={() => {
                             // Navigate to choose-time page, preserving service parameter
                             const params = new URLSearchParams();
@@ -349,7 +349,7 @@ export default function ServicePage({ searchParams }: ServicePageProps) {
                     >
                         <Calendar className="w-4 h-4 text-gray-600" />
                         <span className="text-sm text-gray-700">
-                            Later
+                            Schedule a service
                         </span>
                     </button>
                 )}

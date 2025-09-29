@@ -10,6 +10,8 @@ const ApplyPage = () => {
     zipCode: '',
     referralCode: '',
     age: '',
+    licenseNumber: '',
+    licenseState: '',
     ssnNumber: '',
     cardNumber: '',
     cardholderName: '',
@@ -37,7 +39,7 @@ const ApplyPage = () => {
       setZipError('');
     }
 
-    if (currentStep === 5) {
+    if (currentStep === 6) {
       router.push('/apply/background-check');
     } else {
       setCurrentStep(currentStep + 1);
@@ -86,7 +88,7 @@ const ApplyPage = () => {
       <main className="flex-1 flex flex-col min-h-0">
         <div className="p-6 pb-4">
           <div className="flex space-x-2">
-            {[1, 2, 3, 4, 5].map((step) => (
+            {[1, 2, 3, 4, 5, 6].map((step) => (
               <div
                 key={step}
                 className={`flex-1 h-2 rounded-full ${

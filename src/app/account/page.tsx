@@ -70,7 +70,18 @@ const AccountPage = () => {
                             </div>
                         </div>
                     </Link>
-                    
+
+                    <Link href="/account/support" className="block bg-white rounded-xl px-6 pt-3 pb-3 shadow-sm border border-gray-100 hover:bg-gray-50 transition-colors no-underline">
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-lg font-semibold text-gray-900 m-0">Support</h3>
+                            <div className="text-gray-400">
+                                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </div>
+                        </div>
+                    </Link>
+
                     <div className="bg-white rounded-xl px-6 pt-3 pb-3 shadow-sm border border-gray-100">
                         <div className="flex items-center justify-between">
                             <h3 className="text-lg font-semibold text-gray-900 m-0">Notifications</h3>

@@ -71,31 +71,58 @@ export default function OrderPage({ params }: OrderPageProps) {
         if (!order) return;
 
         let nextStatus: OrderStatus;
-        switch (order.status) {
-            case OrderStatus.SCHEDULED:
-                nextStatus = OrderStatus.FINDING_DRIVER;
-                break;
-            case OrderStatus.FINDING_DRIVER:
-                nextStatus = OrderStatus.DRIVER_ON_WAY;
-                break;
-            case OrderStatus.DRIVER_ON_WAY:
-                nextStatus = OrderStatus.CAR_IN_TRANSIT;
-                break;
-            case OrderStatus.CAR_IN_TRANSIT:
-                nextStatus = OrderStatus.CAR_DELIVERED;
-                break;
-            case OrderStatus.CAR_DELIVERED:
-            case OrderStatus.CANCELLED:
-                // Already delivered or cancelled, no next status
-                return;
-            default:
-                return;
+
+        if (order.isRoundTrip) {
+            // Round-trip flow (full-service)
+            switch (order.status) {
+                case OrderStatus.SCHEDULED:
+                    nextStatus = OrderStatus.FINDING_DRIVER;
+                    break;
+                case OrderStatus.FINDING_DRIVER:
+                    nextStatus = OrderStatus.DRIVER_ON_WAY;
+                    break;
+                case OrderStatus.DRIVER_ON_WAY:
+                    nextStatus = OrderStatus.CAR_AT_SERVICE;
+                    break;
+                case OrderStatus.CAR_AT_SERVICE:
+                    nextStatus = OrderStatus.DRIVER_RETURNING;
+                    break;
+                case OrderStatus.DRIVER_RETURNING:
+                    nextStatus = OrderStatus.CAR_DELIVERED;
+                    break;
+                case OrderStatus.CAR_DELIVERED:
+                case OrderStatus.CANCELLED:
+                    return;
+                default:
+                    return;
+            }
+        } else {
+            // One-way flow
+            switch (order.status) {
+                case OrderStatus.SCHEDULED:
+                    nextStatus = OrderStatus.FINDING_DRIVER;
+                    break;
+                case OrderStatus.FINDING_DRIVER:
+                    nextStatus = OrderStatus.DRIVER_ON_WAY;
+                    break;
+                case OrderStatus.DRIVER_ON_WAY:
+                    nextStatus = OrderStatus.CAR_IN_TRANSIT;
+                    break;
+                case OrderStatus.CAR_IN_TRANSIT:
+                    nextStatus = OrderStatus.CAR_DELIVERED;
+                    break;
+                case OrderStatus.CAR_DELIVERED:
+                case OrderStatus.CANCELLED:
+                    return;
+                default:
+                    return;
+            }
         }
 
         try {
             await updateOrderStatus(orderId, nextStatus);
             await loadOrder(); // Reload to get updated order
-            
+
             // Sync the transaction status in localStorage
             syncTransactionStatus(nextStatus);
         } catch (error) {
@@ -130,6 +157,10 @@ export default function OrderPage({ params }: OrderPageProps) {
                 return <Car className="w-4 h-4" />;
             case OrderStatus.CAR_IN_TRANSIT:
                 return <Truck className="w-4 h-4" />;
+            case OrderStatus.CAR_AT_SERVICE:
+                return <Package className="w-4 h-4" />;
+            case OrderStatus.DRIVER_RETURNING:
+                return <Car className="w-4 h-4" />;
             case OrderStatus.CAR_DELIVERED:
                 return <CheckCircle className="w-4 h-4" />;
             case OrderStatus.CANCELLED:
@@ -148,6 +179,10 @@ export default function OrderPage({ params }: OrderPageProps) {
             case OrderStatus.DRIVER_ON_WAY:
                 return "default";
             case OrderStatus.CAR_IN_TRANSIT:
+                return "default";
+            case OrderStatus.CAR_AT_SERVICE:
+                return "secondary";
+            case OrderStatus.DRIVER_RETURNING:
                 return "default";
             case OrderStatus.CAR_DELIVERED:
                 return "outline";
@@ -168,6 +203,10 @@ export default function OrderPage({ params }: OrderPageProps) {
                 return "Your driver is on the way";
             case OrderStatus.CAR_IN_TRANSIT:
                 return "Your vehicle is being transported to the destination";
+            case OrderStatus.CAR_AT_SERVICE:
+                return "Your vehicle is being serviced";
+            case OrderStatus.DRIVER_RETURNING:
+                return "Your driver is bringing your vehicle back";
             case OrderStatus.CAR_DELIVERED:
                 return "Your vehicle has been delivered successfully!";
             case OrderStatus.CANCELLED:
@@ -180,11 +219,15 @@ export default function OrderPage({ params }: OrderPageProps) {
     const getArrivalTime = (status: OrderStatus): string | null => {
         switch (status) {
             case OrderStatus.SCHEDULED:
-                return order?.scheduledDate && order?.scheduledTime 
+                return order?.scheduledDate && order?.scheduledTime
                     ? `Scheduled for ${order.scheduledDate} at ${order.scheduledTime}`
                     : "Scheduled service";
             case OrderStatus.CAR_IN_TRANSIT:
                 return "Arrives in 20 minutes";
+            case OrderStatus.CAR_AT_SERVICE:
+                return "Service in progress";
+            case OrderStatus.DRIVER_RETURNING:
+                return "Arrives in 15 minutes";
             case OrderStatus.CAR_DELIVERED:
                 // For demo purposes, show current time as delivery time
                 return `Delivered at ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
@@ -401,27 +444,53 @@ export default function OrderPage({ params }: OrderPageProps) {
                         {/* Show regular progress flow (excluding scheduled and cancelled) */}
                         {order.status !== OrderStatus.SCHEDULED && order.status !== OrderStatus.CANCELLED && (
                             <>
-                                {[OrderStatus.FINDING_DRIVER, OrderStatus.DRIVER_ON_WAY, OrderStatus.CAR_IN_TRANSIT, OrderStatus.CAR_DELIVERED].map((status) => {
-                                    const isCompleted = order.status >= status;
-                                    const isCurrent = order.status === status;
+                                {order.isRoundTrip ? (
+                                    // Round-trip flow
+                                    [OrderStatus.FINDING_DRIVER, OrderStatus.DRIVER_ON_WAY, OrderStatus.CAR_AT_SERVICE, OrderStatus.DRIVER_RETURNING, OrderStatus.CAR_DELIVERED].map((status) => {
+                                        const isCompleted = order.status >= status;
+                                        const isCurrent = order.status === status;
 
-                                    return (
-                                        <div key={status} className="flex items-center gap-3">
-                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                                                isCompleted ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-400'
-                                            }`}>
-                                                {isCompleted ? '✓' : status}
-                                            </div>
-                                            <div className="flex-1">
-                                                <p className={`text-sm ${isCurrent ? 'font-semibold' : ''} ${
-                                                    isCompleted ? 'text-gray-900' : 'text-gray-400'
+                                        return (
+                                            <div key={status} className="flex items-center gap-3">
+                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                                                    isCompleted ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-400'
                                                 }`}>
-                                                    {OrderStatusLabels[status]}
-                                                </p>
+                                                    {isCompleted ? '✓' : status}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className={`text-sm ${isCurrent ? 'font-semibold' : ''} ${
+                                                        isCompleted ? 'text-gray-900' : 'text-gray-400'
+                                                    }`}>
+                                                        {OrderStatusLabels[status]}
+                                                    </p>
+                                                </div>
                                             </div>
-                                        </div>
-                                    );
-                                })}
+                                        );
+                                    })
+                                ) : (
+                                    // One-way flow
+                                    [OrderStatus.FINDING_DRIVER, OrderStatus.DRIVER_ON_WAY, OrderStatus.CAR_IN_TRANSIT, OrderStatus.CAR_DELIVERED].map((status) => {
+                                        const isCompleted = order.status >= status;
+                                        const isCurrent = order.status === status;
+
+                                        return (
+                                            <div key={status} className="flex items-center gap-3">
+                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                                                    isCompleted ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-400'
+                                                }`}>
+                                                    {isCompleted ? '✓' : status}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className={`text-sm ${isCurrent ? 'font-semibold' : ''} ${
+                                                        isCompleted ? 'text-gray-900' : 'text-gray-400'
+                                                    }`}>
+                                                        {OrderStatusLabels[status]}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        );
+                                    })
+                                )}
                             </>
                         )}
                     </div>

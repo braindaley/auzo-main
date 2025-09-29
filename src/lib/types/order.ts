@@ -5,8 +5,10 @@ export enum OrderStatus {
   FINDING_DRIVER = 1,
   DRIVER_ON_WAY = 2,
   CAR_IN_TRANSIT = 3,
-  CAR_DELIVERED = 4,
-  CANCELLED = 5,
+  CAR_AT_SERVICE = 4,
+  DRIVER_RETURNING = 5,
+  CAR_DELIVERED = 6,
+  CANCELLED = 7,
 }
 
 export const OrderStatusLabels: Record<OrderStatus, string> = {
@@ -14,6 +16,8 @@ export const OrderStatusLabels: Record<OrderStatus, string> = {
   [OrderStatus.FINDING_DRIVER]: 'Finding driver',
   [OrderStatus.DRIVER_ON_WAY]: 'Driver on way',
   [OrderStatus.CAR_IN_TRANSIT]: 'Car in transit',
+  [OrderStatus.CAR_AT_SERVICE]: 'Car at service',
+  [OrderStatus.DRIVER_RETURNING]: 'Driver returning',
   [OrderStatus.CAR_DELIVERED]: 'Car delivered',
   [OrderStatus.CANCELLED]: 'Cancelled',
 };

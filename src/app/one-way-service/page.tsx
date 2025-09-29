@@ -663,7 +663,7 @@ export default function OneWayServicePage({ searchParams }: OneWayServicePagePro
                         </button>
                     </div>
                 ) : (
-                    <button 
+                    <button
                         onClick={() => {
                             // Navigate to choose-time page, preserving service parameter
                             const params = new URLSearchParams();
@@ -677,7 +677,7 @@ export default function OneWayServicePage({ searchParams }: OneWayServicePagePro
                     >
                         <Calendar className="w-4 h-4 text-gray-600" />
                         <span className="text-sm text-gray-700">
-                            Later
+                            Schedule a service
                         </span>
                     </button>
                 )}

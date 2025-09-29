@@ -91,6 +91,10 @@ const ServiceExplanationContent = () => {
                                     <p className="text-base text-gray-700">
                                         Up-front pricing included! Note that you will receive a price quote when you order so that you know how much everything will cost up front.
                                     </p>
+
+                                    <p className="text-base text-gray-700">
+                                        Please ensure your vehicle is safe to drive before ordering service.
+                                    </p>
                                 </>
                             );
                         } else {
@@ -99,17 +103,21 @@ const ServiceExplanationContent = () => {
                                     <p className="text-lg font-medium text-gray-900">
                                         Order an Auzo driver for your {formatServiceName(serviceName).toLowerCase()}
                                     </p>
-                                    
+
                                     <p className="text-base text-gray-700">
                                         An Auzo driver will pick up your vehicle and deliver it to your specified location.
                                     </p>
-                                    
+
                                     <p className="text-base text-gray-700">
                                         Note: If an appointment is required, be sure to set that up in advance.
                                     </p>
-                                    
+
                                     <p className="text-base text-gray-700">
                                         For your convenience, once your vehicle's service is completed, order another Auzo driver to bring it home.
+                                    </p>
+
+                                    <p className="text-base text-gray-700">
+                                        Please ensure your vehicle is safe to drive before ordering service.
                                     </p>
                                 </>
                             );
