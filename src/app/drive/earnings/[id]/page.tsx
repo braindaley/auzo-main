@@ -377,10 +377,6 @@ const JobDetailPage = () => {
                     <span className="text-gray-600">Total Distance</span>
                     <span className="font-medium">{job.distance}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Customer</span>
-                    <span className="font-medium">{job.customer}</span>
-                  </div>
                 </div>
               </div>
 

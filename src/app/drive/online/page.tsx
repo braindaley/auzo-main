@@ -26,7 +26,7 @@ const OnlineMapPage = () => {
   const [showPaymentCard, setShowPaymentCard] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState(''); // For showing payment status
   const [showCamera, setShowCamera] = useState(false);
-  const [capturedPhotos, setCapturedPhotos] = useState([]);
+  const [capturedPhotos, setCapturedPhotos] = useState<string[]>([]);
   const [cameraType, setCameraType] = useState(''); // 'vin', 'mileage', or 'receipt'
   const [vinInput, setVinInput] = useState('');
   const [mileageInput, setMileageInput] = useState('');
@@ -186,55 +186,50 @@ const OnlineMapPage = () => {
 
                       {/* Vehicle checklist - only show in pickup state */}
                       {currentStep === 'pickup' && (
-                        <div className="mt-3 space-y-2">
-                          {/* VIN checkbox */}
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2">
-                              <div
-                                className={`w-4 h-4 border-2 flex items-center justify-center ${
-                                  vehicleChecks.vin
-                                    ? 'bg-black border-black'
-                                    : 'bg-transparent border-gray-400'
-                                }`}
-                              >
-                                {vehicleChecks.vin && <Check className="w-3 h-3 text-white" />}
-                              </div>
-                              <span className="text-sm text-gray-600">VIN</span>
-                            </div>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setCameraType('vin');
-                                setShowCamera(true);
-                              }}
-                              className="bg-black text-white px-3 py-1 rounded text-xs font-medium hover:bg-gray-800 transition-colors">
-                              Photo
-                            </button>
+                        <div className="mt-3">
+                          <div className="text-xs text-gray-500 grid grid-cols-3 gap-2 pb-1 border-b border-gray-300">
+                            <div>Task</div>
+                            <div>Status</div>
+                            <div className="text-right">Action</div>
                           </div>
-
-                          {/* Mileage checkbox */}
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2">
-                              <div
-                                className={`w-4 h-4 border-2 flex items-center justify-center ${
-                                  vehicleChecks.mileage
-                                    ? 'bg-black border-black'
-                                    : 'bg-transparent border-gray-400'
-                                }`}
-                              >
-                                {vehicleChecks.mileage && <Check className="w-3 h-3 text-white" />}
+                          <div className="space-y-1 pt-2">
+                            {/* VIN row */}
+                            <div className="grid grid-cols-3 gap-2 items-center text-sm py-1">
+                              <div className="text-gray-600">VIN</div>
+                              <div className="text-xs">
+                                {vehicleChecks.vin ? 'Complete' : 'Pending'}
                               </div>
-                              <span className="text-sm text-gray-600">Mileage</span>
+                              <div className="text-right">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setCameraType('vin');
+                                    setShowCamera(true);
+                                  }}
+                                  className="bg-black text-white px-3 py-1 rounded text-xs font-medium hover:bg-gray-800 transition-colors">
+                                  Photo
+                                </button>
+                              </div>
                             </div>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setCameraType('mileage');
-                                setShowCamera(true);
-                              }}
-                              className="bg-black text-white px-3 py-1 rounded text-xs font-medium hover:bg-gray-800 transition-colors">
-                              Photo
-                            </button>
+
+                            {/* Mileage row */}
+                            <div className="grid grid-cols-3 gap-2 items-center text-sm py-1">
+                              <div className="text-gray-600">Mileage</div>
+                              <div className="text-xs">
+                                {vehicleChecks.mileage ? 'Complete' : 'Pending'}
+                              </div>
+                              <div className="text-right">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setCameraType('mileage');
+                                    setShowCamera(true);
+                                  }}
+                                  className="bg-black text-white px-3 py-1 rounded text-xs font-medium hover:bg-gray-800 transition-colors">
+                                  Photo
+                                </button>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       )}
@@ -242,74 +237,67 @@ const OnlineMapPage = () => {
                       {/* Delivery checklist - only show in deliveryDetails state */}
                       {currentStep === 'deliveryDetails' && (
                         <>
-                        <div className="mt-3 space-y-2">
-                          {/* VIN checkbox */}
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2">
-                              <div
-                                className={`w-4 h-4 border-2 flex items-center justify-center ${
-                                  deliveryChecks.vin
-                                    ? 'bg-black border-black'
-                                    : 'bg-transparent border-gray-400'
-                                }`}
-                              >
-                                {deliveryChecks.vin && <Check className="w-3 h-3 text-white" />}
-                              </div>
-                              <span className="text-sm text-gray-600">Vehicle Image</span>
-                            </div>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setCameraType('deliveryVin');
-                                setShowCamera(true);
-                              }}
-                              className="bg-black text-white px-3 py-1 rounded text-xs font-medium hover:bg-gray-800 transition-colors">
-                              Photo
-                            </button>
+                        <div className="mt-3">
+                          <div className="text-xs text-gray-500 grid grid-cols-3 gap-2 pb-1 border-b border-gray-300">
+                            <div>Task</div>
+                            <div>Status</div>
+                            <div className="text-right">Action</div>
                           </div>
-
-                          {/* Mileage checkbox */}
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2">
-                              <div
-                                className={`w-4 h-4 border-2 flex items-center justify-center ${
-                                  deliveryChecks.mileage
-                                    ? 'bg-black border-black'
-                                    : 'bg-transparent border-gray-400'
-                                }`}
-                              >
-                                {deliveryChecks.mileage && <Check className="w-3 h-3 text-white" />}
+                          <div className="space-y-1 pt-2">
+                            {/* Vehicle Image row */}
+                            <div className="grid grid-cols-3 gap-2 items-center text-sm py-1">
+                              <div className="text-gray-600">Vehicle Image</div>
+                              <div className="text-xs">
+                                {deliveryChecks.vin ? 'Complete' : 'Pending'}
                               </div>
-                              <span className="text-sm text-gray-600">Mileage</span>
+                              <div className="text-right">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setCameraType('deliveryVin');
+                                    setShowCamera(true);
+                                  }}
+                                  className="bg-black text-white px-3 py-1 rounded text-xs font-medium hover:bg-gray-800 transition-colors">
+                                  Photo
+                                </button>
+                              </div>
                             </div>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setCameraType('deliveryMileage');
-                                setShowCamera(true);
-                              }}
-                              className="bg-black text-white px-3 py-1 rounded text-xs font-medium hover:bg-gray-800 transition-colors">
-                              Photo
-                            </button>
-                          </div>
 
-                          {/* Delivered Keys checkbox */}
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2">
-                              <div
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setDeliveryChecks(prev => ({...prev, deliveredKeys: !prev.deliveredKeys}));
-                                }}
-                                className={`w-4 h-4 border-2 flex items-center justify-center cursor-pointer ${
-                                  deliveryChecks.deliveredKeys
-                                    ? 'bg-black border-black'
-                                    : 'bg-transparent border-gray-400'
-                                }`}
-                              >
-                                {deliveryChecks.deliveredKeys && <Check className="w-3 h-3 text-white" />}
+                            {/* Mileage row */}
+                            <div className="grid grid-cols-3 gap-2 items-center text-sm py-1">
+                              <div className="text-gray-600">Mileage</div>
+                              <div className="text-xs">
+                                {deliveryChecks.mileage ? 'Complete' : 'Pending'}
                               </div>
-                              <span className="text-sm text-gray-600">Delivered Keys</span>
+                              <div className="text-right">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setCameraType('deliveryMileage');
+                                    setShowCamera(true);
+                                  }}
+                                  className="bg-black text-white px-3 py-1 rounded text-xs font-medium hover:bg-gray-800 transition-colors">
+                                  Photo
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Delivered Keys row */}
+                            <div className="grid grid-cols-3 gap-2 items-center text-sm py-1">
+                              <div className="text-gray-600">Delivered Keys</div>
+                              <div className="text-xs">
+                                {deliveryChecks.deliveredKeys ? 'Complete' : 'Pending'}
+                              </div>
+                              <div className="text-right">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setDeliveryChecks(prev => ({...prev, deliveredKeys: !prev.deliveredKeys}));
+                                  }}
+                                  className="bg-black text-white px-3 py-1 rounded text-xs font-medium hover:bg-gray-800 transition-colors">
+                                  {deliveryChecks.deliveredKeys ? 'Undo' : 'Done'}
+                                </button>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -333,86 +321,69 @@ const OnlineMapPage = () => {
 
                       {/* Service checklist - only show in serviceDetails */}
                       {currentStep === 'serviceDetails' && (
-                        <div className="mt-3 space-y-2">
-                          {/* Synthetic oil checkbox */}
-                          <div className="flex items-center justify-between">
-                            <div className="flex flex-col">
-                              <div className="flex items-center space-x-2">
-                                <div
-                                  onClick={(e) => {
+                        <div className="mt-3 space-y-3">
+                            {/* Synthetic oil row */}
+                            <div className="flex items-center justify-between py-2 border-b border-gray-200">
+                              <div className="flex items-center space-x-3 flex-1">
+                                <input
+                                  type="checkbox"
+                                  checked={serviceChecks.syntheticOil}
+                                  onChange={(e) => {
                                     e.stopPropagation();
                                     setServiceChecks(prev => ({...prev, syntheticOil: !prev.syntheticOil}));
                                   }}
-                                  className={`w-4 h-4 border-2 flex items-center justify-center cursor-pointer ${
-                                    serviceChecks.syntheticOil
-                                      ? 'bg-black border-black'
-                                      : 'bg-transparent border-gray-400'
-                                  }`}
-                                >
-                                  {serviceChecks.syntheticOil && <Check className="w-3 h-3 text-white" />}
+                                  className="w-5 h-5 rounded border-gray-300 text-black focus:ring-black cursor-pointer"
+                                />
+                                <div className="flex flex-col">
+                                  <span className="text-sm text-gray-900">Synthetic oil</span>
+                                  <span className="text-xs text-gray-500">Max $99</span>
                                 </div>
-                                <span className="text-sm text-gray-600">Synthetic oil</span>
                               </div>
-                              <span className="text-xs text-gray-500 ml-6">Not to exceed $99</span>
+                              <span className={`text-xs font-medium ${serviceChecks.syntheticOil ? 'text-green-600' : 'text-gray-400'}`}>
+                                {serviceChecks.syntheticOil ? 'Complete' : 'Pending'}
+                              </span>
                             </div>
-                          </div>
 
-                          {/* Payment checkbox */}
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2">
-                              <div
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setServiceChecks(prev => ({...prev, payment: !prev.payment}));
-                                }}
-                                className={`w-4 h-4 border-2 flex items-center justify-center cursor-pointer ${
-                                  serviceChecks.payment
-                                    ? 'bg-black border-black'
-                                    : 'bg-transparent border-gray-400'
-                                }`}
-                              >
-                                {serviceChecks.payment && <Check className="w-3 h-3 text-white" />}
+                            {/* Payment row */}
+                            <div className="flex items-center justify-between py-2 border-b border-gray-200">
+                              <div className="flex items-center space-x-3 flex-1">
+                                <div className="text-sm text-gray-900">Payment</div>
                               </div>
-                              <span className="text-sm text-gray-600">Payment</span>
+                              <div className="flex items-center space-x-3">
+                                <span className={`text-xs font-medium ${serviceChecks.payment ? 'text-green-600' : 'text-gray-400'}`}>
+                                  {serviceChecks.payment ? 'Complete' : 'Pending'}
+                                </span>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setShowPaymentCard(true);
+                                  }}
+                                  className="bg-black text-white px-4 py-1.5 rounded text-xs font-medium hover:bg-gray-800 transition-colors">
+                                  Pay
+                                </button>
+                              </div>
                             </div>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setShowPaymentCard(true);
-                              }}
-                              className="bg-black text-white px-3 py-1 rounded text-xs font-medium hover:bg-gray-800 transition-colors">
-                              Pay
-                            </button>
-                          </div>
 
-                          {/* Receipt checkbox */}
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2">
-                              <div
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setServiceChecks(prev => ({...prev, receipt: !prev.receipt}));
-                                }}
-                                className={`w-4 h-4 border-2 flex items-center justify-center cursor-pointer ${
-                                  serviceChecks.receipt
-                                    ? 'bg-black border-black'
-                                    : 'bg-transparent border-gray-400'
-                                }`}
-                              >
-                                {serviceChecks.receipt && <Check className="w-3 h-3 text-white" />}
+                            {/* Receipt row */}
+                            <div className="flex items-center justify-between py-2 border-b border-gray-200">
+                              <div className="flex items-center space-x-3 flex-1">
+                                <div className="text-sm text-gray-900">Receipt</div>
                               </div>
-                              <span className="text-sm text-gray-600">Receipt</span>
+                              <div className="flex items-center space-x-3">
+                                <span className={`text-xs font-medium ${serviceChecks.receipt ? 'text-green-600' : 'text-gray-400'}`}>
+                                  {serviceChecks.receipt ? 'Complete' : 'Pending'}
+                                </span>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setCameraType('receipt');
+                                    setShowCamera(true);
+                                  }}
+                                  className="bg-black text-white px-4 py-1.5 rounded text-xs font-medium hover:bg-gray-800 transition-colors">
+                                  Photo
+                                </button>
+                              </div>
                             </div>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setCameraType('receipt');
-                                setShowCamera(true);
-                              }}
-                              className="bg-black text-white px-3 py-1 rounded text-xs font-medium hover:bg-gray-800 transition-colors">
-                              Photo
-                            </button>
-                          </div>
                         </div>
                       )}
 
@@ -721,27 +692,39 @@ const OnlineMapPage = () => {
         <div className="fixed bg-white z-50 flex flex-col rounded-3xl overflow-hidden" style={{ width: '375px', height: '812px', left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }}>
           <div className="flex-1 p-4">
             {/* Header */}
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center space-x-2">
-                <Camera className="w-6 h-6 text-black" />
-                <h2 className="text-lg font-semibold text-black">
-                  {cameraType === 'vin' || cameraType === 'deliveryVin' ? 'Capture VIN' :
-                   cameraType === 'mileage' || cameraType === 'deliveryMileage' ? 'Capture Mileage' :
-                   'Capture Receipt'}
-                </h2>
+            <div className="mb-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Camera className="w-6 h-6 text-black" />
+                  <h2 className="text-lg font-semibold text-black">
+                    {cameraType === 'vin' || cameraType === 'deliveryVin' ? 'Capture VIN' :
+                     cameraType === 'mileage' || cameraType === 'deliveryMileage' ? 'Capture Mileage' :
+                     'Capture Receipt'}
+                  </h2>
+                </div>
+                <button
+                  onClick={() => setShowCamera(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-6 h-6" />
+                </button>
               </div>
-              <button
-                onClick={() => setShowCamera(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <X className="w-6 h-6" />
-              </button>
+              {(cameraType === 'vin' || cameraType === 'deliveryVin') && (
+                <p className="text-sm text-gray-600 mt-1">
+                  Enter the VIN number below and take a photo
+                </p>
+              )}
+              {(cameraType === 'mileage' || cameraType === 'deliveryMileage') && (
+                <p className="text-sm text-gray-600 mt-1">
+                  Enter the mileage below and take a photo
+                </p>
+              )}
             </div>
 
-            {/* Input field for VIN or Mileage */}
+            {/* Step 1: Enter VIN/Mileage */}
             {(cameraType === 'vin' || cameraType === 'deliveryVin') && (
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">VIN Number</label>
+                <div className="text-sm font-medium text-gray-900 mb-2">Step 1: Enter the VIN</div>
                 <input
                   type="text"
                   value={vinInput}
@@ -754,7 +737,7 @@ const OnlineMapPage = () => {
 
             {(cameraType === 'mileage' || cameraType === 'deliveryMileage') && (
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Mileage</label>
+                <div className="text-sm font-medium text-gray-900 mb-2">Step 1: Enter the mileage</div>
                 <input
                   type="text"
                   value={mileageInput}
@@ -762,6 +745,44 @@ const OnlineMapPage = () => {
                   placeholder="Enter mileage"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
                 />
+              </div>
+            )}
+
+            {/* Step 2: Take photo */}
+            {(cameraType === 'vin' || cameraType === 'deliveryVin' || cameraType === 'mileage' || cameraType === 'deliveryMileage') && (
+              <div className="text-sm font-medium text-gray-900 mb-2">Step 2: Take a photo</div>
+            )}
+
+            {/* Photo Instructions */}
+            {cameraType === 'vin' && (
+              <div className="mb-4 p-3 bg-gray-100 rounded-lg">
+                <p className="text-sm text-gray-700">
+                  Locate the VIN plate on the driver's side door jamb. Ensure all 17 characters are clearly visible and in focus.
+                </p>
+              </div>
+            )}
+
+            {cameraType === 'deliveryVin' && (
+              <div className="mb-4 p-3 bg-gray-100 rounded-lg">
+                <p className="text-sm text-gray-700">
+                  Take a photo of the vehicle exterior showing its current condition. This documents the vehicle state at delivery.
+                </p>
+              </div>
+            )}
+
+            {(cameraType === 'mileage' || cameraType === 'deliveryMileage') && (
+              <div className="mb-4 p-3 bg-gray-100 rounded-lg">
+                <p className="text-sm text-gray-700">
+                  Photograph the odometer reading on the dashboard. Make sure all numbers are clear, in focus, and fully visible.
+                </p>
+              </div>
+            )}
+
+            {cameraType === 'receipt' && (
+              <div className="mb-4 p-3 bg-gray-100 rounded-lg">
+                <p className="text-sm text-gray-700">
+                  Photograph the service receipt showing the total amount paid and services performed. Ensure all text is legible.
+                </p>
               </div>
             )}
 
@@ -813,7 +834,7 @@ const OnlineMapPage = () => {
                   }}
                   className="w-full bg-gray-200 text-black py-2 rounded-lg font-medium hover:bg-gray-300 transition-colors"
                 >
-                  Done ({capturedPhotos.length} photo{capturedPhotos.length !== 1 ? 's' : ''})
+                  Submit Photos
                 </button>
               )}
             </div>
@@ -825,7 +846,11 @@ const OnlineMapPage = () => {
                 <div className="space-y-1">
                   {capturedPhotos.map((photo, index) => (
                     <div key={photo} className="flex items-center justify-between bg-gray-50 p-2 rounded">
-                      <span className="text-xs text-gray-600">Receipt {index + 1}</span>
+                      <span className="text-xs text-gray-600">
+                        {cameraType === 'vin' || cameraType === 'deliveryVin' ? 'VIN' :
+                         cameraType === 'mileage' || cameraType === 'deliveryMileage' ? 'Mileage' :
+                         'Receipt'} {index + 1}
+                      </span>
                       <button
                         onClick={() => {
                           setCapturedPhotos(prev => prev.filter((_, i) => i !== index));

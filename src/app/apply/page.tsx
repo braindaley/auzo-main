@@ -21,6 +21,14 @@ const ApplyPage = () => {
   });
   const [zipError, setZipError] = useState('');
 
+  const US_STATES = [
+    'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
+    'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD',
+    'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
+    'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',
+    'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'
+  ];
+
   const validateZipCode = (zip: string) => {
     const zipRegex = /^\d{5}$/;
     return zipRegex.test(zip);
@@ -224,6 +232,68 @@ const ApplyPage = () => {
             <div className="flex-1 flex flex-col">
               <div className="flex-1 space-y-6">
                 <div>
+                  <h1 className="text-3xl font-bold text-gray-900">Driver's license</h1>
+                  <p className="text-gray-600 mt-2">
+                    Enter your driver's license information
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Driver's license number
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.licenseNumber}
+                      onChange={(e) => setFormData({ ...formData, licenseNumber: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                      placeholder="Enter license number"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      State issued
+                    </label>
+                    <select
+                      value={formData.licenseState}
+                      onChange={(e) => setFormData({ ...formData, licenseState: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                    >
+                      <option value="">Select state</option>
+                      {US_STATES.map((state) => (
+                        <option key={state} value={state}>
+                          {state}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex space-x-3 mt-6 pb-24 shrink-0">
+                <button
+                  onClick={handleBack}
+                  className="flex-1 bg-gray-200 text-gray-900 px-8 py-3 rounded-lg font-semibold text-lg hover:bg-gray-300 transition-colors"
+                >
+                  Back
+                </button>
+                <button
+                  onClick={handleNext}
+                  className="flex-1 bg-black text-white px-8 py-3 rounded-lg font-semibold text-lg hover:bg-gray-800 transition-colors"
+                  disabled={!formData.licenseNumber || !formData.licenseState}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
+
+          {currentStep === 4 && (
+            <div className="flex-1 flex flex-col">
+              <div className="flex-1 space-y-6">
+                <div>
                   <h1 className="text-3xl font-bold text-gray-900">Background check</h1>
                   <p className="text-gray-600 mt-2">
                     Review the following disclosure
@@ -258,7 +328,7 @@ const ApplyPage = () => {
             </div>
           )}
 
-          {currentStep === 4 && (
+          {currentStep === 5 && (
             <div className="flex-1 flex flex-col">
               <div className="flex-1 space-y-6 overflow-y-auto">
                 <div>
@@ -323,7 +393,7 @@ const ApplyPage = () => {
             </div>
           )}
 
-          {currentStep === 5 && (
+          {currentStep === 6 && (
             <div className="flex-1 flex flex-col">
               <div className="flex-1 space-y-6 overflow-y-auto">
                 <div>

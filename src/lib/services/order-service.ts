@@ -125,6 +125,25 @@ export async function cancelOrder(orderId: string): Promise<void> {
   }
 }
 
+export async function rescheduleOrder(
+  orderId: string,
+  newDate: string,
+  newTime: string
+): Promise<void> {
+  try {
+    const docRef = doc(db, ORDERS_COLLECTION, orderId);
+    await updateDoc(docRef, {
+      scheduledDate: newDate,
+      scheduledTime: newTime,
+      updatedAt: serverTimestamp(),
+    });
+    console.log('Order rescheduled successfully');
+  } catch (error) {
+    console.error('Error rescheduling order:', error);
+    throw error;
+  }
+}
+
 // New functions for member management
 export async function getOrdersForOwner(ownerId: string): Promise<Order[]> {
   try {

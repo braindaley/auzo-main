@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect, use } from 'react';
-import { ArrowLeft, MapPin, Car, Clock, DollarSign, User, Phone, Wrench, Settings, PaintBucket, Gauge, CircleDot, X, Star } from 'lucide-react';
+import { ArrowLeft, MapPin, Car, Clock, DollarSign, User, Phone, Wrench, Settings, PaintBucket, Gauge, CircleDot, X, Star, Calendar as CalendarIcon } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,6 +15,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { transactionStorage, Transaction } from '@/lib/transaction-storage';
@@ -29,7 +38,16 @@ export default function TransactionDetailPage({ params }: TransactionDetailPageP
     const searchParams = useSearchParams();
     const [transaction, setTransaction] = useState<Transaction | null>(null);
     const [showCancelDialog, setShowCancelDialog] = useState<boolean>(false);
-    
+    const [showRescheduleDialog, setShowRescheduleDialog] = useState(false);
+    const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+    const [selectedTime, setSelectedTime] = useState<string | null>(null);
+
+    const timeSlots = [
+        '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM',
+        '01:00 PM', '01:30 PM', '02:00 PM', '02:30 PM', '03:00 PM', '03:30 PM',
+        '04:00 PM', '04:30 PM'
+    ];
+
     const from = searchParams.get('from') || 'activity';
     
     const getBackPath = () => {
@@ -85,6 +103,32 @@ export default function TransactionDetailPage({ params }: TransactionDetailPageP
             status: OrderStatus.CANCELLED
         };
         setTransaction(updatedTransaction);
+    };
+
+    const handleRescheduleTransaction = () => {
+        if (!transaction || !selectedDate || !selectedTime) return;
+
+        const formattedDate = selectedDate.toLocaleDateString('en-US', {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric'
+        });
+
+        // Update the transaction with new schedule
+        const updatedTransaction: Transaction = {
+            ...transaction,
+            scheduledDate: formattedDate,
+            scheduledTime: selectedTime
+        };
+
+        // Update in storage
+        transactionStorage.updateTransaction(id, updatedTransaction);
+
+        // Close dialog and update local state
+        setShowRescheduleDialog(false);
+        setTransaction(updatedTransaction);
+        setSelectedDate(undefined);
+        setSelectedTime(null);
     };
 
     if (!transaction) {
@@ -502,14 +546,18 @@ export default function TransactionDetailPage({ params }: TransactionDetailPageP
 
                 {/* Action Buttons */}
                 {(transaction.status === 'scheduled' || transaction.status === 'requested') && (
-                    <div className="pt-4">
-                        <Button 
-                            className="w-full h-12 text-base font-semibold mb-2"
-                            variant="outline"
-                        >
-                            Track Order
-                        </Button>
-                        <Button 
+                    <div className="pt-4 space-y-2">
+                        {transaction.status === 'scheduled' && transaction.isScheduled && (
+                            <Button
+                                variant="outline"
+                                className="w-full h-12 text-base font-semibold"
+                                onClick={() => setShowRescheduleDialog(true)}
+                            >
+                                <CalendarIcon className="w-4 h-4 mr-2" />
+                                Reschedule
+                            </Button>
+                        )}
+                        <Button
                             className="w-full h-12 text-base"
                             variant="destructive"
                             onClick={() => setShowCancelDialog(true)}
@@ -541,6 +589,62 @@ export default function TransactionDetailPage({ params }: TransactionDetailPageP
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+
+            {/* Reschedule Dialog */}
+            <Dialog open={showRescheduleDialog} onOpenChange={setShowRescheduleDialog}>
+                <DialogContent className="max-w-[400px] max-h-[calc(100vh-2rem)] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle>Reschedule Service</DialogTitle>
+                        <DialogDescription>
+                            Choose a new date and time for your service
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div>
+                            <p className="text-sm font-medium mb-2">Current Schedule</p>
+                            <p className="text-sm text-gray-600">
+                                {transaction.scheduledDate} at {transaction.scheduledTime}
+                            </p>
+                        </div>
+                        <div>
+                            <p className="text-sm font-medium mb-2">Select New Date</p>
+                            <Calendar
+                                mode="single"
+                                selected={selectedDate}
+                                onSelect={setSelectedDate}
+                                className="rounded-md border"
+                                disabled={(date) => date < new Date(new Date().setDate(new Date().getDate() - 1))}
+                            />
+                        </div>
+                        <div>
+                            <p className="text-sm font-medium mb-2">Select New Time</p>
+                            <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto">
+                                {timeSlots.map(time => (
+                                    <Button
+                                        key={time}
+                                        variant={selectedTime === time ? "default" : "outline"}
+                                        onClick={() => setSelectedTime(time)}
+                                        className="text-xs"
+                                    >
+                                        {time}
+                                    </Button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setShowRescheduleDialog(false)}>
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={handleRescheduleTransaction}
+                            disabled={!selectedDate || !selectedTime}
+                        >
+                            Confirm Reschedule
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

@@ -2,11 +2,30 @@
 
 import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
-import { Home, Clock, MapPin, Car, CheckCircle, Truck, Navigation, Package, X, Star } from 'lucide-react';
+import { Home, Clock, MapPin, Car, CheckCircle, Truck, Navigation, Package, X, Star, Calendar as CalendarIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { getOrder, updateOrderStatus, cancelOrder } from '@/lib/services/order-service';
+import { Calendar } from '@/components/ui/calendar';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { getOrder, updateOrderStatus, cancelOrder, rescheduleOrder } from '@/lib/services/order-service';
 import { Order, OrderStatus, OrderStatusLabels } from '@/lib/types/order';
 import { transactionStorage, Transaction } from '@/lib/transaction-storage';
 
@@ -21,6 +40,16 @@ export default function OrderPage({ params }: OrderPageProps) {
     const [order, setOrder] = useState<Order | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [showCancelDialog, setShowCancelDialog] = useState(false);
+    const [showRescheduleDialog, setShowRescheduleDialog] = useState(false);
+    const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+    const [selectedTime, setSelectedTime] = useState<string | null>(null);
+
+    const timeSlots = [
+        '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM',
+        '01:00 PM', '01:30 PM', '02:00 PM', '02:30 PM', '03:00 PM', '03:30 PM',
+        '04:00 PM', '04:30 PM'
+    ];
 
     useEffect(() => {
         if (orderId) {
@@ -133,17 +162,38 @@ export default function OrderPage({ params }: OrderPageProps) {
     const handleCancelOrder = async () => {
         if (!order) return;
 
-        const confirmed = confirm('Are you sure you want to cancel this order?');
-        if (!confirmed) return;
+        setShowCancelDialog(false);
 
         try {
             await cancelOrder(orderId);
             await loadOrder(); // Reload to get updated order
-            
+
             // Sync the transaction status in localStorage
             syncTransactionStatus(OrderStatus.CANCELLED);
         } catch (error) {
             console.error('Error cancelling order:', error);
+        }
+    };
+
+    const handleRescheduleOrder = async () => {
+        if (!order || !selectedDate || !selectedTime) return;
+
+        try {
+            const formattedDate = selectedDate.toLocaleDateString('en-US', {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric'
+            });
+
+            await rescheduleOrder(orderId, formattedDate, selectedTime);
+            setShowRescheduleDialog(false);
+            await loadOrder(); // Reload to get updated order
+
+            // Reset selection
+            setSelectedDate(undefined);
+            setSelectedTime(null);
+        } catch (error) {
+            console.error('Error rescheduling order:', error);
         }
     };
 
@@ -636,20 +686,20 @@ export default function OrderPage({ params }: OrderPageProps) {
                 {/* Action Buttons */}
                 <div className="space-y-2 pt-4">
                     {order.status === OrderStatus.CAR_DELIVERED && (
-                        <Button 
+                        <Button
                             className="w-full h-12 text-base font-semibold"
                             onClick={() => {
                                 // Set order pickup flag for add-on popup
                                 sessionStorage.setItem('isOrderPickup', 'true');
                                 sessionStorage.removeItem('hasShownAddOnPopup'); // Reset popup flag
-                                
+
                                 // Store pickup details for later use in confirm-booking
                                 sessionStorage.setItem('orderPickupDetails', JSON.stringify({
                                     vehicleId: order.vehicleInfo?.id || 'default',
                                     destination: order.pickupLocation || 'Current Location',
                                     pickupLocation: order.dropoffLocation
                                 }));
-                                
+
                                 // Navigate to one-way-service to show add-on popup first
                                 router.push('/one-way-service');
                             }}
@@ -658,17 +708,29 @@ export default function OrderPage({ params }: OrderPageProps) {
                             Order Pickup
                         </Button>
                     )}
-                    {order.status === OrderStatus.FINDING_DRIVER && (
-                        <Button 
-                            variant="destructive"
-                            className="w-full h-12 text-base font-semibold"
-                            onClick={handleCancelOrder}
-                        >
-                            <X className="w-4 h-4 mr-2" />
-                            Cancel Service
-                        </Button>
+                    {(order.status === OrderStatus.SCHEDULED || order.status === OrderStatus.FINDING_DRIVER) && (
+                        <>
+                            {order.status === OrderStatus.SCHEDULED && (
+                                <Button
+                                    variant="outline"
+                                    className="w-full h-12 text-base font-semibold"
+                                    onClick={() => setShowRescheduleDialog(true)}
+                                >
+                                    <CalendarIcon className="w-4 h-4 mr-2" />
+                                    Reschedule
+                                </Button>
+                            )}
+                            <Button
+                                variant="destructive"
+                                className="w-full h-12 text-base font-semibold"
+                                onClick={() => setShowCancelDialog(true)}
+                            >
+                                <X className="w-4 h-4 mr-2" />
+                                Cancel Service
+                            </Button>
+                        </>
                     )}
-                    <Button 
+                    <Button
                         className="w-full h-12 text-base font-semibold"
                         onClick={() => router.push('/home')}
                     >
@@ -677,6 +739,83 @@ export default function OrderPage({ params }: OrderPageProps) {
                     </Button>
                 </div>
             </div>
+
+            {/* Cancel Dialog */}
+            <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+                <AlertDialogContent className="max-w-[356px] max-h-[calc(100vh-2rem)] w-full mx-4">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Cancel Service</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to cancel this service? This action cannot be undone and you'll need to create a new order if you change your mind.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Keep Service</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={handleCancelOrder}
+                            className="bg-red-600 text-white hover:bg-red-700"
+                        >
+                            Cancel Service
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            {/* Reschedule Dialog */}
+            <Dialog open={showRescheduleDialog} onOpenChange={setShowRescheduleDialog}>
+                <DialogContent className="max-w-[400px] max-h-[calc(100vh-2rem)] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle>Reschedule Service</DialogTitle>
+                        <DialogDescription>
+                            Choose a new date and time for your service
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div>
+                            <p className="text-sm font-medium mb-2">Current Schedule</p>
+                            <p className="text-sm text-gray-600">
+                                {order.scheduledDate} at {order.scheduledTime}
+                            </p>
+                        </div>
+                        <div>
+                            <p className="text-sm font-medium mb-2">Select New Date</p>
+                            <Calendar
+                                mode="single"
+                                selected={selectedDate}
+                                onSelect={setSelectedDate}
+                                className="rounded-md border"
+                                disabled={(date) => date < new Date(new Date().setDate(new Date().getDate() - 1))}
+                            />
+                        </div>
+                        <div>
+                            <p className="text-sm font-medium mb-2">Select New Time</p>
+                            <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto">
+                                {timeSlots.map(time => (
+                                    <Button
+                                        key={time}
+                                        variant={selectedTime === time ? "default" : "outline"}
+                                        onClick={() => setSelectedTime(time)}
+                                        className="text-xs"
+                                    >
+                                        {time}
+                                    </Button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setShowRescheduleDialog(false)}>
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={handleRescheduleOrder}
+                            disabled={!selectedDate || !selectedTime}
+                        >
+                            Confirm Reschedule
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

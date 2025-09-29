@@ -14,6 +14,15 @@ interface Vehicle {
   purchaseDate?: string;
   mileage?: number;
   photos?: string[];
+  preferredFuelType?: string;
+  preferredOilType?: string;
+  serviceHistory?: Array<{
+    id: string;
+    date: string;
+    serviceType: string;
+    cost: number;
+    orderNumber: string;
+  }>;
 }
 
 interface CarCardProps {

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Car, Trash2, Settings, FileText, Calendar, Image, Gauge, Camera } from 'lucide-react';
+import { ArrowLeft, Car, Trash2, Settings, FileText, Calendar, Image, Gauge, Camera, Fuel, Droplet, History } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,6 +15,7 @@ import { useRouter } from 'next/navigation';
 import { vehicleStorage } from '@/lib/vehicle-storage';
 import { useEffect, useState, use } from 'react';
 import { Vehicle } from '@/components/car-card';
+import { transactionStorage } from '@/lib/transaction-storage';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,7 +41,24 @@ const VehicleDetailPage = ({ params }: VehicleDetailPageProps) => {
     useEffect(() => {
         const foundVehicle = vehicleStorage.getVehicle(vehicleId);
         if (foundVehicle) {
-            setVehicle(foundVehicle);
+            // Load service history from transactions
+            const transactions = transactionStorage.getTransactions();
+            const vehicleTransactions = transactions.filter(
+                t => t.vehicle.id === vehicleId && t.serviceType === 'full service'
+            );
+
+            const serviceHistory = vehicleTransactions.map(t => ({
+                id: t.id,
+                date: t.timestamp,
+                serviceType: t.specificServiceType || t.serviceType,
+                cost: t.cost,
+                orderNumber: t.orderNumber
+            }));
+
+            setVehicle({
+                ...foundVehicle,
+                serviceHistory: serviceHistory.length > 0 ? serviceHistory : foundVehicle.serviceHistory
+            });
         } else {
             router.push('/garage');
         }
@@ -275,6 +293,38 @@ const VehicleDetailPage = ({ params }: VehicleDetailPageProps) => {
                                     />
                                 </div>
 
+                                {/* Preferred Fuel Type */}
+                                <div className="space-y-2">
+                                    <Label htmlFor="preferredFuelType" className="flex items-center gap-2">
+                                        <Fuel className="w-4 h-4" />
+                                        Preferred Fuel Type
+                                    </Label>
+                                    <Input
+                                        id="preferredFuelType"
+                                        type="text"
+                                        value={vehicle?.preferredFuelType || ''}
+                                        onChange={(e) => handleInputChange('preferredFuelType', e.target.value)}
+                                        placeholder="e.g., Regular, Premium, Diesel"
+                                        className="bg-white"
+                                    />
+                                </div>
+
+                                {/* Preferred Oil Type */}
+                                <div className="space-y-2">
+                                    <Label htmlFor="preferredOilType" className="flex items-center gap-2">
+                                        <Droplet className="w-4 h-4" />
+                                        Preferred Oil Type
+                                    </Label>
+                                    <Input
+                                        id="preferredOilType"
+                                        type="text"
+                                        value={vehicle?.preferredOilType || ''}
+                                        onChange={(e) => handleInputChange('preferredOilType', e.target.value)}
+                                        placeholder="e.g., 5W-30, 10W-40, Full Synthetic"
+                                        className="bg-white"
+                                    />
+                                </div>
+
                                 {/* Additional Photo Gallery (excluding profile picture) */}
                                 {vehicle.photos && vehicle.photos.length > 1 && (
                                     <div className="space-y-3">
@@ -285,8 +335,8 @@ const VehicleDetailPage = ({ params }: VehicleDetailPageProps) => {
                                         <div className="grid grid-cols-3 gap-2">
                                             {vehicle.photos.slice(1).map((photo, index) => (
                                                 <div key={index} className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
-                                                    <img 
-                                                        src={photo} 
+                                                    <img
+                                                        src={photo}
                                                         alt={`Vehicle photo ${index + 2}`}
                                                         className="w-full h-full object-cover"
                                                     />
@@ -298,6 +348,49 @@ const VehicleDetailPage = ({ params }: VehicleDetailPageProps) => {
                             </div>
                         </CardContent>
                     </Card>
+
+                    {/* Vehicle Service History */}
+                    {vehicle.serviceHistory && vehicle.serviceHistory.length > 0 && (
+                        <Card className="border-none shadow-none">
+                            <CardHeader className="pb-4">
+                                <CardTitle className="flex items-center gap-2">
+                                    <History className="w-5 h-5" />
+                                    Service History
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="space-y-3">
+                                    {vehicle.serviceHistory.map((service) => (
+                                        <div
+                                            key={service.id}
+                                            className="flex items-start justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                                        >
+                                            <div className="flex-1">
+                                                <p className="font-medium text-sm text-gray-900">
+                                                    {service.serviceType}
+                                                </p>
+                                                <p className="text-xs text-gray-500 mt-1">
+                                                    Order #{service.orderNumber}
+                                                </p>
+                                                <p className="text-xs text-gray-500">
+                                                    {new Date(service.date).toLocaleDateString('en-US', {
+                                                        year: 'numeric',
+                                                        month: 'short',
+                                                        day: 'numeric'
+                                                    })}
+                                                </p>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="font-semibold text-sm text-gray-900">
+                                                    ${service.cost.toFixed(2)}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
                 </div>
             </div>
         </div>
