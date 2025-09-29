@@ -38,13 +38,6 @@ const adminSections = [
     icon: Tag,
     description: 'Manage promotions',
     count: 'promotions'
-  },
-  {
-    name: 'Stripe Cards',
-    href: '/admin/stripe',
-    icon: CreditCard,
-    description: 'Virtual card management',
-    count: 'cards'
   }
 ];
 
@@ -55,8 +48,7 @@ const AdminPage = () => {
     customers: 0,
     drivers: 0,
     applications: 0,
-    promotions: 0,
-    cards: 0
+    promotions: 0
   });
 
   useEffect(() => {
@@ -68,14 +60,12 @@ const AdminPage = () => {
     const drivers = adminStorage.getDrivers();
     const applications = adminStorage.getApplications().filter(a => a.status === 'pending');
     const promotions = adminStorage.getPromotions();
-    const cards = adminStorage.getVirtualCards();
 
     setCounts({
       customers: customers.length,
       drivers: drivers.length,
       applications: applications.length,
-      promotions: promotions.length,
-      cards: cards.length
+      promotions: promotions.length
     });
   }, []);
 

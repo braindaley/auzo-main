@@ -6,6 +6,7 @@ import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 
 const navItems = [
   { name: 'Home', href: '/home', icon: Home },
@@ -15,6 +16,16 @@ const navItems = [
 
 const BottomNav = () => {
   const pathname = usePathname();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Don't render anything until client-side hydration is complete
+  if (!isClient) {
+    return null;
+  }
 
   // Hide on /drive pages as they have their own navigation
   if (pathname.startsWith('/drive')) {
