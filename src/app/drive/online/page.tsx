@@ -30,6 +30,9 @@ const OnlineMapPage = () => {
   const [cameraType, setCameraType] = useState(''); // 'vin', 'mileage', or 'receipt'
   const [vinInput, setVinInput] = useState('');
   const [mileageInput, setMileageInput] = useState('');
+  const [showCapturedPhoto, setShowCapturedPhoto] = useState(false);
+  const [currentPhoto, setCurrentPhoto] = useState('');
+  const [showInputModal, setShowInputModal] = useState(false);
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
@@ -204,7 +207,7 @@ const OnlineMapPage = () => {
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setCameraType('vin');
-                                    setShowCamera(true);
+                                    setShowInputModal(true);
                                   }}
                                   className="bg-black text-white px-3 py-1 rounded text-xs font-medium hover:bg-gray-800 transition-colors">
                                   Photo
@@ -223,7 +226,7 @@ const OnlineMapPage = () => {
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setCameraType('mileage');
-                                    setShowCamera(true);
+                                    setShowInputModal(true);
                                   }}
                                   className="bg-black text-white px-3 py-1 rounded text-xs font-medium hover:bg-gray-800 transition-colors">
                                   Photo
@@ -274,7 +277,7 @@ const OnlineMapPage = () => {
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setCameraType('deliveryMileage');
-                                    setShowCamera(true);
+                                    setShowInputModal(true);
                                   }}
                                   className="bg-black text-white px-3 py-1 rounded text-xs font-medium hover:bg-gray-800 transition-colors">
                                   Photo
@@ -687,186 +690,245 @@ const OnlineMapPage = () => {
         </div>
       )}
 
-      {/* Camera Interface for Receipt Photos */}
-      {showCamera && (
-        <div className="fixed bg-white z-50 flex flex-col rounded-3xl overflow-hidden" style={{ width: '375px', height: '812px', left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }}>
-          <div className="flex-1 p-4">
+      {/* Input Modal for VIN/Mileage Entry */}
+      {showInputModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full p-6" style={{ maxWidth: '356px' }}>
             {/* Header */}
-            <div className="mb-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Camera className="w-6 h-6 text-black" />
-                  <h2 className="text-lg font-semibold text-black">
-                    {cameraType === 'vin' || cameraType === 'deliveryVin' ? 'Capture VIN' :
-                     cameraType === 'mileage' || cameraType === 'deliveryMileage' ? 'Capture Mileage' :
-                     'Capture Receipt'}
-                  </h2>
-                </div>
-                <button
-                  onClick={() => setShowCamera(false)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <X className="w-6 h-6" />
-                </button>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-2">
+                <Camera className="w-6 h-6 text-black" />
+                <h2 className="text-lg font-semibold text-black">
+                  {cameraType === 'vin' || cameraType === 'deliveryVin' ? 'Capture VIN' : 'Capture Mileage'}
+                </h2>
               </div>
-              {(cameraType === 'vin' || cameraType === 'deliveryVin') && (
-                <p className="text-sm text-gray-600 mt-1">
-                  Enter the VIN number below and take a photo
-                </p>
-              )}
-              {(cameraType === 'mileage' || cameraType === 'deliveryMileage') && (
-                <p className="text-sm text-gray-600 mt-1">
-                  Enter the mileage below and take a photo
-                </p>
-              )}
-            </div>
-
-            {/* Step 1: Enter VIN/Mileage */}
-            {(cameraType === 'vin' || cameraType === 'deliveryVin') && (
-              <div className="mb-4">
-                <div className="text-sm font-medium text-gray-900 mb-2">Step 1: Enter the VIN</div>
-                <input
-                  type="text"
-                  value={vinInput}
-                  onChange={(e) => setVinInput(e.target.value)}
-                  placeholder="Enter VIN"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
-                />
-              </div>
-            )}
-
-            {(cameraType === 'mileage' || cameraType === 'deliveryMileage') && (
-              <div className="mb-4">
-                <div className="text-sm font-medium text-gray-900 mb-2">Step 1: Enter the mileage</div>
-                <input
-                  type="text"
-                  value={mileageInput}
-                  onChange={(e) => setMileageInput(e.target.value)}
-                  placeholder="Enter mileage"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
-                />
-              </div>
-            )}
-
-            {/* Step 2: Take photo */}
-            {(cameraType === 'vin' || cameraType === 'deliveryVin' || cameraType === 'mileage' || cameraType === 'deliveryMileage') && (
-              <div className="text-sm font-medium text-gray-900 mb-2">Step 2: Take a photo</div>
-            )}
-
-            {/* Photo Instructions */}
-            {cameraType === 'vin' && (
-              <div className="mb-4 p-3 bg-gray-100 rounded-lg">
-                <p className="text-sm text-gray-700">
-                  Locate the VIN plate on the driver's side door jamb. Ensure all 17 characters are clearly visible and in focus.
-                </p>
-              </div>
-            )}
-
-            {cameraType === 'deliveryVin' && (
-              <div className="mb-4 p-3 bg-gray-100 rounded-lg">
-                <p className="text-sm text-gray-700">
-                  Take a photo of the vehicle exterior showing its current condition. This documents the vehicle state at delivery.
-                </p>
-              </div>
-            )}
-
-            {(cameraType === 'mileage' || cameraType === 'deliveryMileage') && (
-              <div className="mb-4 p-3 bg-gray-100 rounded-lg">
-                <p className="text-sm text-gray-700">
-                  Photograph the odometer reading on the dashboard. Make sure all numbers are clear, in focus, and fully visible.
-                </p>
-              </div>
-            )}
-
-            {cameraType === 'receipt' && (
-              <div className="mb-4 p-3 bg-gray-100 rounded-lg">
-                <p className="text-sm text-gray-700">
-                  Photograph the service receipt showing the total amount paid and services performed. Ensure all text is legible.
-                </p>
-              </div>
-            )}
-
-            {/* Camera Preview Area */}
-            <div className="bg-gray-200 rounded-lg mb-4 flex items-center justify-center" style={{ aspectRatio: '3/2' }}>
-              <div className="text-center">
-                <p className="text-gray-600 text-sm">Camera preview would appear here</p>
-              </div>
-            </div>
-
-            {/* Photos Counter */}
-            <div className="text-center mb-4">
-              <span className="text-sm text-gray-600">
-                Photos captured: {capturedPhotos.length}
-              </span>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="space-y-3">
               <button
                 onClick={() => {
-                  const newPhoto = `${cameraType}_${Date.now()}.jpg`;
-                  setCapturedPhotos(prev => [...prev, newPhoto]);
+                  setShowInputModal(false);
+                  setVinInput('');
+                  setMileageInput('');
+                }}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
 
-                  // Auto-check the corresponding checkbox
-                  if (cameraType === 'vin') {
-                    setVehicleChecks(prev => ({...prev, vin: true}));
-                  } else if (cameraType === 'mileage') {
-                    setVehicleChecks(prev => ({...prev, mileage: true}));
-                  } else if (cameraType === 'receipt') {
-                    setServiceChecks(prev => ({...prev, receipt: true}));
-                  } else if (cameraType === 'deliveryVin') {
-                    setDeliveryChecks(prev => ({...prev, vin: true}));
-                  } else if (cameraType === 'deliveryMileage') {
-                    setDeliveryChecks(prev => ({...prev, mileage: true}));
-                  } else if (cameraType === 'deliveredKeys') {
-                    setDeliveryChecks(prev => ({...prev, deliveredKeys: true}));
+            <p className="text-sm text-gray-600 mb-4">
+              {cameraType === 'vin' || cameraType === 'deliveryVin'
+                ? 'Enter the VIN below and take a photo'
+                : 'Enter the mileage below and take a photo'}
+            </p>
+
+            {/* Step 1: Input Field */}
+            <div className="mb-6">
+              <div className="text-sm font-medium text-gray-900 mb-2">
+                Step 1: Enter the {cameraType === 'vin' || cameraType === 'deliveryVin' ? 'VIN' : 'mileage'}
+              </div>
+              <input
+                type="text"
+                value={cameraType === 'vin' || cameraType === 'deliveryVin' ? vinInput : mileageInput}
+                onChange={(e) => {
+                  if (cameraType === 'vin' || cameraType === 'deliveryVin') {
+                    setVinInput(e.target.value);
+                  } else {
+                    setMileageInput(e.target.value);
                   }
                 }}
-                className="w-full bg-black text-white py-3 rounded-lg font-semibold hover:bg-gray-800 transition-colors"
-              >
-                Capture Photo
-              </button>
+                placeholder={cameraType === 'vin' || cameraType === 'deliveryVin' ? 'Enter VIN' : 'Enter mileage'}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent text-lg"
+                autoFocus
+              />
+            </div>
 
-              {capturedPhotos.length > 0 && (
+            {/* Step 2: Instructions */}
+            <div className="mb-6">
+              <div className="text-sm font-medium text-gray-900 mb-2">Step 2: Take a photo</div>
+              <div className="p-3 bg-gray-100 rounded-lg">
+                <p className="text-sm text-gray-700">
+                  {cameraType === 'vin' && 'Locate the VIN plate on the driver\'s side door jamb. Ensure all 17 characters are clearly visible and in focus.'}
+                  {cameraType === 'deliveryVin' && 'Take a photo of the vehicle exterior showing its current condition. This documents the vehicle state at delivery.'}
+                  {(cameraType === 'mileage' || cameraType === 'deliveryMileage') && 'Photograph the odometer reading on the dashboard. Make sure all numbers are clear, in focus, and fully visible.'}
+                </p>
+              </div>
+            </div>
+
+            {/* Action Button */}
+            <button
+              onClick={() => {
+                const inputValue = (cameraType === 'vin' || cameraType === 'deliveryVin') ? vinInput : mileageInput;
+                if (inputValue) {
+                  setShowInputModal(false);
+                  setShowCamera(true);
+                }
+              }}
+              disabled={!(cameraType === 'vin' || cameraType === 'deliveryVin' ? vinInput : mileageInput)}
+              className={`w-full py-3 rounded-lg font-semibold transition-colors ${
+                (cameraType === 'vin' || cameraType === 'deliveryVin' ? vinInput : mileageInput)
+                  ? 'bg-black text-white hover:bg-gray-800'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }`}
+            >
+              Open Camera
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Fullscreen Camera Interface */}
+      {showCamera && !showCapturedPhoto && (
+        <div className="fixed bg-black z-50 flex flex-col" style={{ width: '375px', height: '812px', left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }}>
+          {/* Camera View */}
+          <div className="flex-1 relative bg-gradient-to-br from-gray-800 via-gray-700 to-gray-900">
+            {/* Simulated camera feed with grid overlay */}
+            <div className="absolute inset-0 opacity-30">
+              <svg className="w-full h-full">
+                <defs>
+                  <pattern id="cameraGrid" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
+                    <path d="M 60 0 L 0 0 0 60" fill="none" stroke="white" strokeWidth="0.5" opacity="0.3"/>
+                  </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#cameraGrid)" />
+              </svg>
+            </div>
+
+            {/* Context overlay at top */}
+            <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/70 to-transparent p-4">
+              <div className="flex items-center justify-between">
                 <button
                   onClick={() => {
                     setShowCamera(false);
+                    setVinInput('');
+                    setMileageInput('');
                   }}
-                  className="w-full bg-gray-200 text-black py-2 rounded-lg font-medium hover:bg-gray-300 transition-colors"
+                  className="text-white hover:text-gray-300"
                 >
-                  Submit Photos
+                  <X className="w-8 h-8" />
                 </button>
-              )}
+                <div className="text-white text-center">
+                  <div className="text-lg font-semibold">
+                    {cameraType === 'vin' || cameraType === 'deliveryVin' ? 'Capture VIN' :
+                     cameraType === 'mileage' || cameraType === 'deliveryMileage' ? 'Capture Mileage' :
+                     'Capture Receipt'}
+                  </div>
+                  {(cameraType === 'mileage' || cameraType === 'deliveryMileage') && mileageInput && (
+                    <div className="text-3xl font-bold mt-2">{mileageInput} mi</div>
+                  )}
+                  {(cameraType === 'vin' || cameraType === 'deliveryVin') && vinInput && (
+                    <div className="text-sm font-mono mt-2 tracking-wider">{vinInput}</div>
+                  )}
+                </div>
+                <div className="w-8" /> {/* Spacer for centering */}
+              </div>
+
+              {/* Instructions */}
+              <div className="mt-4 text-center text-white text-sm bg-black/50 rounded-lg p-3 mx-4">
+                {cameraType === 'vin' && 'Position VIN plate in frame'}
+                {cameraType === 'deliveryVin' && 'Capture vehicle exterior condition'}
+                {(cameraType === 'mileage' || cameraType === 'deliveryMileage') && 'Frame the odometer clearly'}
+                {cameraType === 'receipt' && 'Ensure receipt is clearly visible'}
+              </div>
             </div>
 
-            {/* Photo List */}
-            {capturedPhotos.length > 0 && (
-              <div className="mt-4">
-                <h3 className="text-sm font-medium text-gray-900 mb-2">Captured Photos:</h3>
-                <div className="space-y-1">
-                  {capturedPhotos.map((photo, index) => (
-                    <div key={photo} className="flex items-center justify-between bg-gray-50 p-2 rounded">
-                      <span className="text-xs text-gray-600">
-                        {cameraType === 'vin' || cameraType === 'deliveryVin' ? 'VIN' :
-                         cameraType === 'mileage' || cameraType === 'deliveryMileage' ? 'Mileage' :
-                         'Receipt'} {index + 1}
-                      </span>
-                      <button
-                        onClick={() => {
-                          setCapturedPhotos(prev => prev.filter((_, i) => i !== index));
-                          if (capturedPhotos.length <= 1) {
-                            setServiceChecks(prev => ({...prev, receipt: false}));
-                          }
-                        }}
-                        className="text-red-500 hover:text-red-700 text-xs"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  ))}
+            {/* Center focus indicator */}
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+              <div className="w-64 h-48 border-2 border-white/50 rounded-lg relative">
+                {/* Corner brackets */}
+                <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-white rounded-tl-lg"></div>
+                <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-white rounded-tr-lg"></div>
+                <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-white rounded-bl-lg"></div>
+                <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-white rounded-br-lg"></div>
+              </div>
+            </div>
+
+            {/* Bottom controls */}
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-8">
+              <div className="flex items-center justify-center space-x-12">
+                {/* Photos captured indicator */}
+                <div className="text-white text-center">
+                  <div className="w-12 h-12 rounded-lg border-2 border-white/50 flex items-center justify-center">
+                    <span className="text-sm font-semibold">{capturedPhotos.length}</span>
+                  </div>
+                  <div className="text-xs mt-1 opacity-75">Photos</div>
+                </div>
+
+                {/* Shutter button */}
+                <button
+                  onClick={() => {
+                    const newPhoto = `${cameraType}_${Date.now()}.jpg`;
+                    setCurrentPhoto(newPhoto);
+                    setShowCapturedPhoto(true);
+                  }}
+                  className="w-20 h-20 rounded-full bg-white border-4 border-gray-300 hover:bg-gray-100 transition-all transform active:scale-95"
+                >
+                  <div className="w-full h-full rounded-full border-2 border-black/10"></div>
+                </button>
+
+                {/* Spacer for symmetry */}
+                <div className="w-12 h-12"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Post-Capture Photo Preview */}
+      {showCapturedPhoto && (
+        <div className="fixed bg-black z-50 flex flex-col" style={{ width: '375px', height: '812px', left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }}>
+          {/* Photo preview */}
+          <div className="flex-1 relative bg-gray-900 flex items-center justify-center">
+            {/* Simulated captured photo */}
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-700 via-gray-600 to-gray-800">
+              <div className="text-center text-white">
+                <Camera className="w-24 h-24 mx-auto mb-4 opacity-50" />
+                <div className="text-xl font-semibold">Photo Captured</div>
+                <div className="text-sm opacity-75 mt-2">
+                  {cameraType === 'vin' || cameraType === 'deliveryVin' ? 'VIN Photo' :
+                   cameraType === 'mileage' || cameraType === 'deliveryMileage' ? `${mileageInput} miles` :
+                   'Receipt Photo'}
                 </div>
               </div>
-            )}
+            </div>
+          </div>
+
+          {/* Bottom action buttons */}
+          <div className="bg-black p-6 space-y-3">
+            <button
+              onClick={() => {
+                setCapturedPhotos(prev => [...prev, currentPhoto]);
+
+                // Auto-check the corresponding checkbox
+                if (cameraType === 'vin') {
+                  setVehicleChecks(prev => ({...prev, vin: true}));
+                } else if (cameraType === 'mileage') {
+                  setVehicleChecks(prev => ({...prev, mileage: true}));
+                } else if (cameraType === 'receipt') {
+                  setServiceChecks(prev => ({...prev, receipt: true}));
+                } else if (cameraType === 'deliveryVin') {
+                  setDeliveryChecks(prev => ({...prev, vin: true}));
+                } else if (cameraType === 'deliveryMileage') {
+                  setDeliveryChecks(prev => ({...prev, mileage: true}));
+                }
+
+                setShowCapturedPhoto(false);
+                setShowCamera(false);
+                setCurrentPhoto('');
+                setVinInput('');
+                setMileageInput('');
+              }}
+              className="w-full bg-white text-black py-4 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
+            >
+              Use Photo
+            </button>
+            <button
+              onClick={() => {
+                setShowCapturedPhoto(false);
+                setCurrentPhoto('');
+              }}
+              className="w-full bg-transparent border-2 border-white text-white py-4 rounded-lg font-semibold hover:bg-white/10 transition-colors"
+            >
+              Retake
+            </button>
           </div>
         </div>
       )}
