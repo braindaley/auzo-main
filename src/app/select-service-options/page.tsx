@@ -27,8 +27,8 @@ const serviceCategories: ServiceCategory[] = [
         name: 'Oil Change',
         icon: Droplets,
         options: [
-            { id: 'synthetic', name: 'Synthetic Oil', price: '$70', description: 'High-performance synthetic oil' },
-            { id: 'conventional', name: 'Conventional Oil', price: '$40', description: 'Standard conventional oil' }
+            { id: 'synthetic', name: 'Synthetic Oil', price: '$70-$95', description: 'High-performance synthetic oil' },
+            { id: 'conventional', name: 'Conventional Oil', price: '$40-$60', description: 'Standard conventional oil' }
         ]
     },
     {
@@ -36,9 +36,9 @@ const serviceCategories: ServiceCategory[] = [
         name: 'Car Wash',
         icon: Car,
         options: [
-            { id: 'basic', name: 'Basic Wash', price: '$15', description: 'Exterior wash and dry' },
-            { id: 'premium', name: 'Premium Wash', price: '$25', description: 'Wash, wax, and interior vacuum' },
-            { id: 'deluxe', name: 'Deluxe Wash', price: '$35', description: 'Full detail service' }
+            { id: 'basic', name: 'Basic Wash', price: '$15-$25', description: 'Exterior wash and dry' },
+            { id: 'premium', name: 'Premium Wash', price: '$25-$40', description: 'Wash, wax, and interior vacuum' },
+            { id: 'deluxe', name: 'Deluxe Wash', price: '$35-$55', description: 'Full detail service' }
         ]
     },
     {
@@ -46,10 +46,10 @@ const serviceCategories: ServiceCategory[] = [
         name: 'Fuel Fill',
         icon: Fuel,
         options: [
-            { id: 'regular', name: 'Regular', price: '$3.20/gallon', description: '87 octane' },
-            { id: 'mid-grade', name: 'Mid-Grade', price: '$3.60/gallon', description: '89 octane' },
-            { id: 'premium', name: 'Premium', price: '$4.25/gallon', description: '93 octane' },
-            { id: 'diesel', name: 'Diesel', price: '$3.95/gallon', description: 'Diesel fuel' }
+            { id: 'regular', name: 'Regular', price: '$3.20-$3.50/gallon', description: '87 octane' },
+            { id: 'mid-grade', name: 'Mid-Grade', price: '$3.60-$3.90/gallon', description: '89 octane' },
+            { id: 'premium', name: 'Premium', price: '$4.25-$4.60/gallon', description: '93 octane' },
+            { id: 'diesel', name: 'Diesel', price: '$3.95-$4.30/gallon', description: 'Diesel fuel' }
         ]
     }
 ];
@@ -227,7 +227,7 @@ export default function SelectServiceOptionsPage({ searchParams }: SelectService
                                 Select {activeCategory.name} option
                             </h2>
                             {!resolvedSearchParams?.service && (
-                                <button 
+                                <button
                                     onClick={() => {
                                         setActiveCategory(null);
                                         setSelectedOption(null);
@@ -239,7 +239,11 @@ export default function SelectServiceOptionsPage({ searchParams }: SelectService
                                 </button>
                             )}
                         </div>
-                        
+
+                        <p className="text-sm text-gray-600 mb-4 bg-blue-50 p-3 rounded-lg border border-blue-100">
+                            You'll only be charged the actual service cost by the vendor—no markup added.
+                        </p>
+
                         {activeCategory.options.map((option) => (
                             <Card 
                                 key={option.id}

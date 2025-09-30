@@ -181,7 +181,7 @@ function UserSignupContent() {
       </main>
 
       <Dialog open={isSocialSignupOpen} onOpenChange={setIsSocialSignupOpen}>
-        <DialogContent className="max-w-sm bg-background border-border">
+        <DialogContent className="max-w-[348px] bg-background border-border">
             {socialProvider === 'apple' ? (
                 <>
                 <DialogHeader className="text-center pt-6 pb-4">
