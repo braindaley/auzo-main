@@ -10,6 +10,8 @@ This document provides developer-oriented user stories and detailed success crit
 ## 1.1 Authentication & Onboarding
 
 ### Story 1.1.1: Landing Page
+**Story Points:** 2
+
 **As a** new user
 **I want** to see the app's value proposition and authentication options
 **So that** I can decide to sign up or log in
@@ -25,6 +27,8 @@ This document provides developer-oriented user stories and detailed success crit
 ---
 
 ### Story 1.1.2: User Signup - Phone Entry
+**Story Points:** 5 (Flutter: 3, Backend: 2)
+
 **As a** new user
 **I want** to sign up using my phone number, Apple ID, or Google account
 **So that** I can create an account quickly
@@ -54,6 +58,8 @@ This document provides developer-oriented user stories and detailed success crit
 ---
 
 ### Story 1.1.3: User Signup - Phone Verification
+**Story Points:** 3 (Flutter: 2, Backend: 1)
+
 **As a** user signing up with phone
 **I want** to enter a verification code sent to my phone
 **So that** I can verify my phone number ownership
@@ -75,6 +81,8 @@ This document provides developer-oriented user stories and detailed success crit
 ---
 
 ### Story 1.1.4: User Signup - User Details
+**Story Points:** 2
+
 **As a** new user (phone signup only)
 **I want** to provide my first name, last name, and email
 **So that** I can complete my profile
@@ -93,6 +101,8 @@ This document provides developer-oriented user stories and detailed success crit
 ---
 
 ### Story 1.1.5: User Signup - Terms & Conditions
+**Story Points:** 2
+
 **As a** new user
 **I want** to review and accept terms and conditions
 **So that** I can complete account creation
@@ -113,6 +123,8 @@ This document provides developer-oriented user stories and detailed success crit
 ## 1.2 Home Dashboard
 
 ### Story 1.2.1: Home - Default Vehicle Selector
+**Story Points:** 3
+
 **As a** customer
 **I want** to select a default vehicle from my garage
 **So that** service bookings pre-fill with this vehicle
@@ -133,6 +145,8 @@ This document provides developer-oriented user stories and detailed success crit
 ---
 
 ### Story 1.2.2: Home - Latest Order Display
+**Story Points:** 3
+
 **As a** customer
 **I want** to see my most recent order status
 **So that** I can quickly check its progress
@@ -166,6 +180,8 @@ This document provides developer-oriented user stories and detailed success crit
 ---
 
 ### Story 1.2.3: Home - Service Grid
+**Story Points:** 5
+
 **As a** customer
 **I want** to browse available services
 **So that** I can select the service I need
@@ -195,6 +211,8 @@ This document provides developer-oriented user stories and detailed success crit
 ---
 
 ### Story 1.2.4: Home - Promotions Section
+**Story Points:** 3 (Flutter: 2, Backend: 1)
+
 **As a** customer
 **I want** to see promotional offers
 **So that** I can take advantage of special deals
@@ -219,6 +237,8 @@ This document provides developer-oriented user stories and detailed success crit
 ## 1.3 Service Explanation
 
 ### Story 1.3.1: Service Explanation Page
+**Story Points:** 3
+
 **As a** customer
 **I want** to understand what a service includes
 **So that** I can make an informed decision before booking
@@ -249,6 +269,8 @@ This document provides developer-oriented user stories and detailed success crit
 ## 1.4 Service Location Selection
 
 ### Story 1.4.1: Full-Service Location Selection (Round Trip)
+**Story Points:** 8 (Flutter: 6, Backend: 2)
+
 **As a** customer booking a full-service
 **I want** to select an Auzo Service location
 **So that** my vehicle can be serviced with round-trip delivery
@@ -293,6 +315,8 @@ This document provides developer-oriented user stories and detailed success crit
 ---
 
 ### Story 1.4.2: One-Way Service Location Selection
+**Story Points:** 8 (Flutter: 6, Backend: 2)
+
 **As a** customer booking a one-way service
 **I want** to select a service center destination
 **So that** my vehicle can be delivered there
@@ -342,6 +366,8 @@ This document provides developer-oriented user stories and detailed success crit
 ---
 
 ### Story 1.4.3: Deliver Vehicle Location Selection
+**Story Points:** 5
+
 **As a** customer
 **I want** to deliver my vehicle to any location
 **So that** I can drop it off where needed
@@ -383,6 +409,8 @@ This document provides developer-oriented user stories and detailed success crit
 ## 1.5 Time Scheduling
 
 ### Story 1.5.1: Choose Date and Time
+**Story Points:** 5
+
 **As a** customer
 **I want** to schedule my service for a specific date and time
 **So that** I can plan around my schedule
@@ -420,6 +448,8 @@ This document provides developer-oriented user stories and detailed success crit
 ## 1.6 Vehicle Selection
 
 ### Story 1.6.1: Select Vehicle for Service
+**Story Points:** 3
+
 **As a** customer
 **I want** to select which vehicle needs service
 **So that** the driver knows which car to pick up
@@ -451,6 +481,8 @@ This document provides developer-oriented user stories and detailed success crit
 ## 1.7 Service Options Selection (Round Trip Only)
 
 ### Story 1.7.1: Select Service Package
+**Story Points:** 5 (Flutter: 3, Backend: 2)
+
 **As a** customer booking a round-trip service
 **I want** to select a service package
 **So that** I know what work will be performed and the cost
@@ -490,6 +522,8 @@ This document provides developer-oriented user stories and detailed success crit
 ## 1.8 Booking Confirmation
 
 ### Story 1.8.1: Confirm Booking Details
+**Story Points:** 8 (Flutter: 5, Backend: 3)
+
 **As a** customer
 **I want** to review all booking details before confirming
 **So that** I can verify everything is correct
@@ -560,6 +594,8 @@ This document provides developer-oriented user stories and detailed success crit
 ---
 
 ### Story 1.8.2: Driver Requested (ASAP Bookings)
+**Story Points:** 3 (Flutter: 2, Backend: 1)
+
 **As a** customer
 **I want** to see that my driver request is being processed
 **So that** I know the system is finding a driver
@@ -595,6 +631,8 @@ This document provides developer-oriented user stories and detailed success crit
 ---
 
 ### Story 1.8.3: Booking Scheduled
+**Story Points:** 2
+
 **As a** customer
 **I want** confirmation that my scheduled service was booked
 **So that** I know it's in the system
@@ -621,6 +659,8 @@ This document provides developer-oriented user stories and detailed success crit
 ## 1.9 Order Tracking & Management
 
 ### Story 1.9.1: Order Status Page
+**Story Points:** 8 (Flutter: 6, Backend: 2)
+
 **As a** customer
 **I want** to track my order status in real-time
 **So that** I know where my vehicle is and what's happening
@@ -692,6 +732,8 @@ This document provides developer-oriented user stories and detailed success crit
 ---
 
 ### Story 1.9.2: Cancel Order
+**Story Points:** 3 (Flutter: 2, Backend: 1)
+
 **As a** customer
 **I want** to cancel my service
 **So that** I can make changes or don't need it anymore
@@ -719,6 +761,8 @@ This document provides developer-oriented user stories and detailed success crit
 ---
 
 ### Story 1.9.3: Reschedule Order
+**Story Points:** 3 (Flutter: 2, Backend: 1)
+
 **As a** customer
 **I want** to change my scheduled service time
 **So that** I can adjust to schedule changes
@@ -750,6 +794,8 @@ This document provides developer-oriented user stories and detailed success crit
 ---
 
 ### Story 1.9.4: Rate Driver and Add Tip
+**Story Points:** 5 (Flutter: 3, Backend: 2)
+
 **As a** customer
 **I want** to rate my driver and optionally add a tip
 **So that** I can provide feedback and show appreciation
@@ -786,6 +832,8 @@ This document provides developer-oriented user stories and detailed success crit
 ## 1.10 Garage Management
 
 ### Story 1.10.1: View Garage
+**Story Points:** 3
+
 **As a** customer
 **I want** to see all my vehicles
 **So that** I can manage them and see their service history
@@ -819,6 +867,8 @@ This document provides developer-oriented user stories and detailed success crit
 ---
 
 ### Story 1.10.2: Add Vehicle - Multi-Step Flow
+**Story Points:** 8 (Flutter: 5, Backend: 3)
+
 **As a** customer
 **I want** to add a vehicle to my garage
 **So that** I can book services for it
@@ -863,6 +913,8 @@ This document provides developer-oriented user stories and detailed success crit
 ---
 
 ### Story 1.10.3: View Vehicle Details
+**Story Points:** 2
+
 **As a** customer
 **I want** to see detailed information about a specific vehicle
 **So that** I can view its service history and edit it
@@ -897,6 +949,8 @@ This document provides developer-oriented user stories and detailed success crit
 ## 1.11 Payment & Wallet
 
 ### Story 1.11.1: View Wallet
+**Story Points:** 3
+
 **As a** customer
 **I want** to see all my saved payment methods
 **So that** I can manage them
@@ -931,6 +985,8 @@ This document provides developer-oriented user stories and detailed success crit
 ---
 
 ### Story 1.11.2: Add Credit Card
+**Story Points:** 5 (Flutter: 3, Backend: 2)
+
 **As a** customer
 **I want** to add a new payment method
 **So that** I can pay for services
@@ -971,6 +1027,8 @@ This document provides developer-oriented user stories and detailed success crit
 ## 1.12 Account Management
 
 ### Story 1.12.1: Account Settings Hub
+**Story Points:** 2
+
 **As a** customer
 **I want** to access all account settings
 **So that** I can manage my account
@@ -993,6 +1051,8 @@ This document provides developer-oriented user stories and detailed success crit
 ---
 
 ### Story 1.12.2: Activity History
+**Story Points:** 5
+
 **As a** customer
 **I want** to see all my past orders
 **So that** I can review my service history
@@ -1026,6 +1086,8 @@ This document provides developer-oriented user stories and detailed success crit
 ---
 
 ### Story 1.12.3: Manage Users (Account Holder Only)
+**Story Points:** 5 (Flutter: 3, Backend: 2)
+
 **As an** account owner
 **I want** to manage sub-users on my account
 **So that** family members can book services
@@ -1057,6 +1119,8 @@ This document provides developer-oriented user stories and detailed success crit
 ---
 
 ### Story 1.12.4: Profile Settings
+**Story Points:** 3 (Flutter: 2, Backend: 1)
+
 **As a** customer
 **I want** to update my profile information
 **So that** my account details are current
@@ -1086,6 +1150,8 @@ This document provides developer-oriented user stories and detailed success crit
 ---
 
 ### Story 1.12.5: Support / Help Center
+**Story Points:** 3
+
 **As a** customer
 **I want** to get help and support
 **So that** I can resolve issues or ask questions
@@ -1112,6 +1178,8 @@ This document provides developer-oriented user stories and detailed success crit
 ## 2.1 Driver Application
 
 ### Story 2.1.1: Driver Application - Multi-Step Form
+**Story Points:** 13 (Flutter: 8, Backend: 5)
+
 **As a** prospective driver
 **I want** to submit my application to drive
 **So that** I can start earning money
@@ -1200,6 +1268,8 @@ This document provides developer-oriented user stories and detailed success crit
 ## 2.2 Driver Dashboard
 
 ### Story 2.2.1: Driver Home Dashboard
+**Story Points:** 3
+
 **As a** driver
 **I want** to see my earnings and stats
 **So that** I can track my performance
@@ -1227,6 +1297,8 @@ This document provides developer-oriented user stories and detailed success crit
 ---
 
 ### Story 2.2.2: Earnings History
+**Story Points:** 5
+
 **As a** driver
 **I want** to see my earnings history
 **So that** I can track income over time
@@ -1247,6 +1319,8 @@ This document provides developer-oriented user stories and detailed success crit
 ---
 
 ### Story 2.2.3: Trip Details
+**Story Points:** 3
+
 **As a** driver
 **I want** to see details of a completed trip
 **So that** I can review what happened
@@ -1270,6 +1344,8 @@ This document provides developer-oriented user stories and detailed success crit
 ## 2.3 Driver Online - Job Management
 
 ### Story 2.3.1: Online Status & Map View
+**Story Points:** 5
+
 **As a** driver
 **I want** to toggle my online status
 **So that** I can control when I receive job requests
@@ -1292,6 +1368,8 @@ This document provides developer-oriented user stories and detailed success crit
 ---
 
 ### Story 2.3.2: Job Notification & Acceptance
+**Story Points:** 8 (Flutter: 5, Backend: 3)
+
 **As a** driver
 **I want** to receive and accept job requests
 **So that** I can start earning
@@ -1335,6 +1413,8 @@ This document provides developer-oriented user stories and detailed success crit
 ## 2.4 Driver Pickup Tasks
 
 ### Story 2.4.1: Navigate to Pickup
+**Story Points:** 5
+
 **As a** driver
 **I want** directions to the pickup location
 **So that** I can find the customer's vehicle
@@ -1367,6 +1447,8 @@ This document provides developer-oriented user stories and detailed success crit
 ---
 
 ### Story 2.4.2: Arrival Notification
+**Story Points:** 3 (Flutter: 2, Backend: 1)
+
 **As a** driver
 **I want** to notify the customer I've arrived
 **So that** they know I'm waiting for them
@@ -1398,6 +1480,8 @@ This document provides developer-oriented user stories and detailed success crit
 ---
 
 ### Story 2.4.3: VIN Capture
+**Story Points:** 8 (Flutter: 5, Backend: 3)
+
 **As a** driver
 **I want** to capture the vehicle's VIN
 **So that** we have a record of the correct vehicle
@@ -1440,6 +1524,8 @@ This document provides developer-oriented user stories and detailed success crit
 ---
 
 ### Story 2.4.4: Mileage Capture
+**Story Points:** 5 (Flutter: 3, Backend: 2)
+
 **As a** driver
 **I want** to capture the vehicle's mileage
 **So that** we have a record of starting mileage
@@ -1480,6 +1566,8 @@ This document provides developer-oriented user stories and detailed success crit
 ---
 
 ### Story 2.4.5: Exterior Video Capture
+**Story Points:** 8 (Flutter: 5, Backend: 3)
+
 **As a** driver
 **I want** to record a video of the vehicle exterior
 **So that** we document pre-service condition
@@ -1521,6 +1609,8 @@ This document provides developer-oriented user stories and detailed success crit
 ---
 
 ### Story 2.4.6: Complete Pickup & Navigate to Service
+**Story Points:** 3
+
 **As a** driver
 **I want** to proceed after completing all pickup tasks
 **So that** I can continue to the service location
@@ -1557,6 +1647,8 @@ This document provides developer-oriented user stories and detailed success crit
 ## 2.5 Driver Service Tasks (Round Trip Only)
 
 ### Story 2.5.1: Navigate to Service Location
+**Story Points:** 2
+
 **As a** driver
 **I want** directions to the service location
 **So that** I can get the vehicle serviced
@@ -1578,6 +1670,8 @@ This document provides developer-oriented user stories and detailed success crit
 ---
 
 ### Story 2.5.2: Service Task Checklist
+**Story Points:** 8 (Flutter: 5, Backend: 3)
+
 **As a** driver
 **I want** to complete service tasks
 **So that** I ensure proper service delivery
@@ -1640,6 +1734,8 @@ This document provides developer-oriented user stories and detailed success crit
 ---
 
 ### Story 2.5.3: Complete Service & Navigate to Delivery
+**Story Points:** 2
+
 **As a** driver
 **I want** to proceed after service completion
 **So that** I can return the vehicle to the customer
@@ -1675,6 +1771,8 @@ This document provides developer-oriented user stories and detailed success crit
 ## 2.6 Driver Delivery Tasks
 
 ### Story 2.6.1: Navigate to Delivery
+**Story Points:** 2
+
 **As a** driver
 **I want** directions to the delivery location
 **So that** I can return the vehicle to the customer
@@ -1694,6 +1792,8 @@ This document provides developer-oriented user stories and detailed success crit
 ---
 
 ### Story 2.6.2: Delivery Task Checklist
+**Story Points:** 5 (Flutter: 3, Backend: 2)
+
 **As a** driver
 **I want** to complete delivery verification tasks
 **So that** we document vehicle return condition
@@ -1743,6 +1843,8 @@ This document provides developer-oriented user stories and detailed success crit
 ---
 
 ### Story 2.6.3: Complete Job
+**Story Points:** 5 (Flutter: 3, Backend: 2)
+
 **As a** driver
 **I want** to finish the job and see my earnings
 **So that** I know I completed it successfully
@@ -1794,6 +1896,8 @@ This document provides developer-oriented user stories and detailed success crit
 ## 3.1 Admin Dashboard
 
 ### Story 3.1.1: Admin Dashboard Overview
+**Story Points:** 5 (Flutter: 3, Backend: 2)
+
 **As an** admin
 **I want** to see an overview of the system
 **So that** I can monitor operations
@@ -1830,6 +1934,8 @@ This document provides developer-oriented user stories and detailed success crit
 ## 3.2 Customer Management
 
 ### Story 3.2.1: View Customers
+**Story Points:** 3
+
 **As an** admin
 **I want** to see all customers
 **So that** I can manage accounts
@@ -1854,6 +1960,8 @@ This document provides developer-oriented user stories and detailed success crit
 ---
 
 ### Story 3.2.2: View Customer Details
+**Story Points:** 3 (Flutter: 2, Backend: 1)
+
 **As an** admin
 **I want** to see detailed customer information
 **So that** I can assist with support issues
@@ -1886,6 +1994,8 @@ This document provides developer-oriented user stories and detailed success crit
 ## 3.3 Driver Management
 
 ### Story 3.3.1: View Drivers
+**Story Points:** 3
+
 **As an** admin
 **I want** to see all drivers
 **So that** I can monitor driver fleet
@@ -1911,6 +2021,8 @@ This document provides developer-oriented user stories and detailed success crit
 ---
 
 ### Story 3.3.2: View Driver Details
+**Story Points:** 5 (Flutter: 3, Backend: 2)
+
 **As an** admin
 **I want** to see detailed driver information
 **So that** I can manage driver accounts
@@ -1953,6 +2065,8 @@ This document provides developer-oriented user stories and detailed success crit
 ## 3.4 Application Management
 
 ### Story 3.4.1: View Driver Applications
+**Story Points:** 3
+
 **As an** admin
 **I want** to review pending driver applications
 **So that** I can approve or reject applicants
@@ -1974,6 +2088,8 @@ This document provides developer-oriented user stories and detailed success crit
 ---
 
 ### Story 3.4.2: Review Application Details
+**Story Points:** 8 (Flutter: 4, Backend: 4)
+
 **As an** admin
 **I want** to review complete application details
 **So that** I can make approval decisions
@@ -2018,6 +2134,8 @@ This document provides developer-oriented user stories and detailed success crit
 ## 3.5 Promotions Management
 
 ### Story 3.5.1: View Promotions
+**Story Points:** 3
+
 **As an** admin
 **I want** to see all active promotions
 **So that** I can manage marketing offers
@@ -2040,6 +2158,8 @@ This document provides developer-oriented user stories and detailed success crit
 ---
 
 ### Story 3.5.2: Create/Edit Promotion
+**Story Points:** 8 (Flutter: 5, Backend: 3)
+
 **As an** admin (Advanced Ops)
 **I want** to create or edit promotions
 **So that** I can offer deals to customers
@@ -2081,6 +2201,8 @@ This document provides developer-oriented user stories and detailed success crit
 ## 3.6 Admin Data Access & Integration
 
 ### Story 3.6.1: Order Data Visibility
+**Story Points:** 5 (Flutter: 3, Backend: 2)
+
 **As an** admin
 **I want** to access all order data
 **So that** I can troubleshoot and analyze operations
@@ -2119,6 +2241,8 @@ This document provides developer-oriented user stories and detailed success crit
 ---
 
 ### Story 3.6.2: Driver Performance Analytics
+**Story Points:** 5 (Flutter: 3, Backend: 2)
+
 **As an** admin
 **I want** to view driver performance metrics
 **So that** I can identify top performers and issues
@@ -2141,6 +2265,8 @@ This document provides developer-oriented user stories and detailed success crit
 ---
 
 ### Story 3.6.3: Customer Data Synchronization
+**Story Points:** 3 (Backend: 2, Tech Lead: 1)
+
 **As an** admin
 **I want** to ensure data captured by drivers updates customer records
 **So that** customers see accurate vehicle information
