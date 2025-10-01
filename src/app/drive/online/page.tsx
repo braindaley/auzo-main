@@ -33,6 +33,8 @@ const OnlineMapPage = () => {
   const [showCapturedPhoto, setShowCapturedPhoto] = useState(false);
   const [currentPhoto, setCurrentPhoto] = useState('');
   const [showInputModal, setShowInputModal] = useState(false);
+  const [showArrivalMessage, setShowArrivalMessage] = useState(false);
+  const [arrivalMessage, setArrivalMessage] = useState('I have arrived and will wait for 10 minutes for you to arrive and hand off the keys');
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
@@ -196,6 +198,24 @@ const OnlineMapPage = () => {
                             <div className="text-right">Action</div>
                           </div>
                           <div className="space-y-1 pt-2">
+                            {/* Arrival row */}
+                            <div className="grid grid-cols-3 gap-2 items-center text-sm py-1">
+                              <div className="text-gray-600">Arrival</div>
+                              <div className="text-xs">
+                                Pending
+                              </div>
+                              <div className="text-right">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setShowArrivalMessage(true);
+                                  }}
+                                  className="bg-black text-white px-3 py-1 rounded text-xs font-medium hover:bg-gray-800 transition-colors">
+                                  Notify
+                                </button>
+                              </div>
+                            </div>
+
                             {/* VIN row */}
                             <div className="grid grid-cols-3 gap-2 items-center text-sm py-1">
                               <div className="text-gray-600">VIN</div>
@@ -929,6 +949,65 @@ const OnlineMapPage = () => {
             >
               Retake
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Arrival Message Modal */}
+      {showArrivalMessage && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full p-6" style={{ maxWidth: '356px' }}>
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-black">Notify Customer</h2>
+              <button
+                onClick={() => setShowArrivalMessage(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <p className="text-sm text-gray-600 mb-4">
+              Send a message to the customer to notify them of your arrival
+            </p>
+
+            {/* Message textarea */}
+            <div className="mb-6">
+              <label className="text-sm font-medium text-gray-900 mb-2 block">Message</label>
+              <textarea
+                value={arrivalMessage}
+                onChange={(e) => setArrivalMessage(e.target.value)}
+                rows={5}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent text-sm resize-none"
+                placeholder="Enter your message here..."
+              />
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex space-x-3">
+              <button
+                onClick={() => setShowArrivalMessage(false)}
+                className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  // Here you would send the message to the customer
+                  // For now, just close the modal
+                  setShowArrivalMessage(false);
+                }}
+                disabled={!arrivalMessage.trim()}
+                className={`flex-1 px-4 py-3 rounded-lg font-medium transition-colors ${
+                  arrivalMessage.trim()
+                    ? 'bg-black text-white hover:bg-gray-800'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
+              >
+                Send
+              </button>
+            </div>
           </div>
         </div>
       )}
