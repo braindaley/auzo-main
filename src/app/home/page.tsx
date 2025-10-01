@@ -219,13 +219,13 @@ const HomePage = () => {
                             return service.href ? (
                                 <Link key={service.name} href={href} style={{ textDecoration: 'none' }}>
                                     <button className="w-full h-full min-h-[100px] flex flex-col items-center justify-center p-3 hover:bg-gray-50 rounded-lg transition-colors">
-                                        <service.icon className="w-8 h-8 text-gray-700 mb-2" />
-                                        <p className="text-xs text-center text-gray-600 leading-tight">{service.name}</p>
+                                        <service.icon className="w-6 h-6 text-gray-700 mb-1" />
+                                        <p className="text-xs text-center text-gray-600 leading-tight mb-0">{service.name}</p>
                                     </button>
                                 </Link>
                             ) : (
                                 <button key={service.name} className="w-full h-full min-h-[100px] flex flex-col items-center justify-center p-3 hover:bg-gray-50 rounded-lg transition-colors">
-                                    <service.icon className="w-8 h-8 text-gray-700 mb-2" />
+                                    <service.icon className="w-6 h-6 text-gray-700 mb-1" />
                                     <p className="text-xs text-center text-gray-600 leading-tight">{service.name}</p>
                                 </button>
                             );

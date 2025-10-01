@@ -1,7 +1,7 @@
 
 "use client";
 
-import { Home, Car, List, User } from 'lucide-react';
+import { Home, Car, List, User, Tag } from 'lucide-react';
 import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
 import { usePathname } from 'next/navigation';
@@ -10,6 +10,7 @@ import { useState, useEffect } from 'react';
 
 const navItems = [
   { name: 'Home', href: '/home', icon: Home },
+  { name: 'Promos', href: '/promotions', icon: Tag },
   { name: 'Garage', href: '/garage', icon: Car },
   { name: 'Account', href: '/account', icon: User },
 ];
@@ -50,7 +51,7 @@ const BottomNav = () => {
       }}
     >
       <div className="container mx-auto px-0">
-        <div className="grid grid-cols-3">
+        <div className="grid grid-cols-4">
           {navItems.map((item) => (
             <Link 
               key={item.name} 
