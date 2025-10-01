@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { Navigation, Settings, MapPin, List, ArrowUp, Car, Phone, Check, CreditCard, X, Camera } from 'lucide-react';
+import { Navigation, Settings, MapPin, List, ArrowUp, Car, Phone, Check, CreditCard, X, Camera, Video } from 'lucide-react';
 import DriverNav from '@/components/DriverNav';
 import DriveSimulationPopup from '@/components/DriveSimulationPopup';
 
@@ -16,7 +16,8 @@ const OnlineMapPage = () => {
   });
   const [vehicleChecks, setVehicleChecks] = useState({
     vin: false,
-    mileage: false
+    mileage: false,
+    exterior: false
   });
   const [deliveryChecks, setDeliveryChecks] = useState({
     vin: false,
@@ -35,6 +36,9 @@ const OnlineMapPage = () => {
   const [showInputModal, setShowInputModal] = useState(false);
   const [showArrivalMessage, setShowArrivalMessage] = useState(false);
   const [arrivalMessage, setArrivalMessage] = useState('I have arrived and will wait for 10 minutes for you to arrive and hand off the keys');
+  const [showVideoInstructions, setShowVideoInstructions] = useState(false);
+  const [showVideoCapture, setShowVideoCapture] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
@@ -253,6 +257,24 @@ const OnlineMapPage = () => {
                                 </button>
                               </div>
                             </div>
+
+                            {/* Exterior row */}
+                            <div className="grid grid-cols-3 gap-2 items-center text-sm py-1">
+                              <div className="text-gray-600">Exterior</div>
+                              <div className="text-xs">
+                                {vehicleChecks.exterior ? 'Complete' : 'Pending'}
+                              </div>
+                              <div className="text-right">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setShowVideoInstructions(true);
+                                  }}
+                                  className="bg-black text-white px-3 py-1 rounded text-xs font-medium hover:bg-gray-800 transition-colors">
+                                  Video
+                                </button>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       )}
@@ -421,15 +443,15 @@ const OnlineMapPage = () => {
                         <div className="text-sm font-medium text-gray-500">Next</div>
                         <div className="text-sm text-gray-700 mb-5">Oilstop Drive Thru Oil Change</div>
                         <button
-                          disabled={!vehicleChecks.vin || !vehicleChecks.mileage}
+                          disabled={!vehicleChecks.vin || !vehicleChecks.mileage || !vehicleChecks.exterior}
                           onClick={(e) => {
                             e.stopPropagation();
-                            if (vehicleChecks.vin && vehicleChecks.mileage) {
+                            if (vehicleChecks.vin && vehicleChecks.mileage && vehicleChecks.exterior) {
                               setCurrentStep('service');
                             }
                           }}
                           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                            vehicleChecks.vin && vehicleChecks.mileage
+                            vehicleChecks.vin && vehicleChecks.mileage && vehicleChecks.exterior
                               ? 'bg-black text-white hover:bg-gray-800'
                               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                           }`}>
@@ -1007,6 +1029,168 @@ const OnlineMapPage = () => {
               >
                 Send
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Video Instructions Modal */}
+      {showVideoInstructions && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full p-6" style={{ maxWidth: '356px' }}>
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-2">
+                <Video className="w-6 h-6 text-black" />
+                <h2 className="text-lg font-semibold text-black">Record Exterior Video</h2>
+              </div>
+              <button
+                onClick={() => setShowVideoInstructions(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <p className="text-sm text-gray-600 mb-4">
+              Please record a video of the vehicle&apos;s exterior condition
+            </p>
+
+            {/* Instructions */}
+            <div className="mb-6 space-y-3">
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <h3 className="text-sm font-semibold text-gray-900 mb-2">Instructions:</h3>
+                <ul className="text-sm text-gray-700 space-y-2 list-disc list-inside">
+                  <li>Stand a few feet back from the vehicle</li>
+                  <li>Walk slowly around the entire exterior</li>
+                  <li>Capture all sides: front, both sides, and rear</li>
+                  <li>Highlight any visible damage or scratches</li>
+                  <li>Ensure good lighting for clear footage</li>
+                </ul>
+              </div>
+
+              <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p className="text-xs text-yellow-800">
+                  <strong>Tip:</strong> Keep the camera steady and move slowly for best results
+                </p>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex space-x-3">
+              <button
+                onClick={() => setShowVideoInstructions(false)}
+                className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowVideoInstructions(false);
+                  setShowVideoCapture(true);
+                }}
+                className="flex-1 px-4 py-3 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
+              >
+                Start Recording
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Video Capture Interface */}
+      {showVideoCapture && (
+        <div className="fixed bg-black z-50 flex flex-col" style={{ width: '375px', height: '812px', left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }}>
+          {/* Video View */}
+          <div className="flex-1 relative bg-gradient-to-br from-gray-800 via-gray-700 to-gray-900">
+            {/* Simulated video feed */}
+            <div className="absolute inset-0">
+              <div className="w-full h-full flex items-center justify-center">
+                <div className="text-center text-white">
+                  <Video className="w-32 h-32 mx-auto mb-4 opacity-30" />
+                  {isRecording && (
+                    <div className="animate-pulse">
+                      <div className="w-4 h-4 bg-red-500 rounded-full mx-auto mb-2"></div>
+                      <div className="text-sm">Recording...</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Recording indicator */}
+            {isRecording && (
+              <div className="absolute top-4 left-4 flex items-center space-x-2 bg-red-500 px-3 py-2 rounded-full">
+                <div className="w-3 h-3 bg-white rounded-full animate-pulse"></div>
+                <span className="text-white text-sm font-semibold">REC</span>
+              </div>
+            )}
+
+            {/* Close button */}
+            <div className="absolute top-4 right-4">
+              <button
+                onClick={() => {
+                  setShowVideoCapture(false);
+                  setIsRecording(false);
+                }}
+                className="text-white hover:text-gray-300 bg-black/50 rounded-full p-2"
+              >
+                <X className="w-8 h-8" />
+              </button>
+            </div>
+
+            {/* Instructions overlay */}
+            {!isRecording && (
+              <div className="absolute bottom-32 left-4 right-4">
+                <div className="bg-black/70 rounded-lg p-4 text-center">
+                  <p className="text-white text-sm">
+                    Walk slowly around the vehicle exterior
+                  </p>
+                  <p className="text-gray-300 text-xs mt-1">
+                    Tap the record button to start
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Bottom controls */}
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-8">
+              <div className="flex items-center justify-center space-x-8">
+                {!isRecording ? (
+                  <>
+                    {/* Record button */}
+                    <button
+                      onClick={() => setIsRecording(true)}
+                      className="w-20 h-20 rounded-full bg-red-500 border-4 border-white hover:bg-red-600 transition-all transform active:scale-95 flex items-center justify-center"
+                    >
+                      <Video className="w-8 h-8 text-white" />
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    {/* Stop button */}
+                    <button
+                      onClick={() => {
+                        setIsRecording(false);
+                        setVehicleChecks(prev => ({...prev, exterior: true}));
+                        setTimeout(() => {
+                          setShowVideoCapture(false);
+                        }, 500);
+                      }}
+                      className="w-20 h-20 rounded-full bg-white border-4 border-red-500 hover:bg-gray-100 transition-all transform active:scale-95 flex items-center justify-center"
+                    >
+                      <div className="w-8 h-8 bg-red-500 rounded-sm"></div>
+                    </button>
+                  </>
+                )}
+              </div>
+
+              {isRecording && (
+                <div className="text-center mt-4">
+                  <p className="text-white text-sm">Recording exterior walk-around</p>
+                  <p className="text-gray-300 text-xs mt-1">Tap square to stop</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
