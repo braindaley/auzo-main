@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,15 @@ const ServiceExplanationContent = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const serviceName = searchParams.get('service') || 'service';
+    const isPromotional = searchParams.get('promotional') === 'true';
+
+    useEffect(() => {
+        // Clear promotional flag if not coming from promotional route
+        if (!isPromotional) {
+            sessionStorage.removeItem('isPromotionalOilChange');
+            sessionStorage.removeItem('promotionalDiscount');
+        }
+    }, [isPromotional]);
 
     const formatServiceName = (service: string) => {
         return service.split('%20').join(' ').split(' ')

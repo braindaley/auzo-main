@@ -23,7 +23,7 @@ const quickLubeLocations = [
     },
     {
         id: 2,
-        type: 'business', 
+        type: 'business',
         businessName: 'Oil Stop',
         address: '1234 Main St',
         city: 'Newport Beach, CA',
@@ -47,7 +47,7 @@ const quickLubeLocations = [
     },
     {
         id: 4,
-        type: 'business', 
+        type: 'business',
         businessName: 'Valvoline Instant Oil Change',
         address: '456 Market St',
         city: 'San Francisco, CA',
@@ -56,6 +56,30 @@ const quickLubeLocations = [
         serviceType: 'quick lube',
         hasAuzoService: true,
         provider: 'valvoline'
+    },
+    {
+        id: 5,
+        type: 'business',
+        businessName: 'Take 5 Oil Change',
+        address: '789 Park Ave',
+        city: 'Irvine, CA',
+        distance: '3.1 mi',
+        lastVisited: '2 weeks ago',
+        serviceType: 'quick lube',
+        hasAuzoService: true,
+        provider: 'take5'
+    },
+    {
+        id: 6,
+        type: 'business',
+        businessName: 'Oil Stop',
+        address: '2100 Harbor Blvd',
+        city: 'Costa Mesa, CA',
+        distance: '1.5 mi',
+        lastVisited: '5 days ago',
+        serviceType: 'quick lube',
+        hasAuzoService: true,
+        provider: 'oilstop'
     }
 ];
 
@@ -166,12 +190,19 @@ export default function ServicePage({ searchParams }: ServicePageProps) {
     const [selectedDestination, setSelectedDestination] = useState('');
     const [selectedDate, setSelectedDate] = useState<string>('');
     const [selectedTime, setSelectedTime] = useState<string>('');
+    const [isPromotionalOilChange, setIsPromotionalOilChange] = useState(false);
     const router = useRouter();
     const resolvedSearchParams = use(searchParams);
     const pickupTime = resolvedSearchParams?.pickup === 'later' ? 'later' : 'now';
     const serviceType = resolvedSearchParams?.service ? decodeURIComponent(resolvedSearchParams.service).replace(/%20/g, ' ') : '';
     const [currentPickupTime, setCurrentPickupTime] = useState(pickupTime);
-    
+
+    useEffect(() => {
+        // Check if this is a promotional oil change
+        const isPromo = sessionStorage.getItem('isPromotionalOilChange') === 'true';
+        setIsPromotionalOilChange(isPromo);
+    }, []);
+
     useEffect(() => {
         // Check if we're coming from service explanation page
         const fromExplanation = resolvedSearchParams?.fromExplanation === 'true';
@@ -269,9 +300,6 @@ export default function ServicePage({ searchParams }: ServicePageProps) {
         }
     };
 
-    // Check if this is a promotional oil change
-    const isPromotionalOilChange = typeof window !== 'undefined' && sessionStorage.getItem('isPromotionalOilChange') === 'true';
-    
     const serviceLocations = getServiceLocations(serviceType, isPromotionalOilChange);
     const serviceTitle = getServiceTitle(serviceType);
 
@@ -429,11 +457,18 @@ export default function ServicePage({ searchParams }: ServicePageProps) {
                                     <div className="flex-1 min-w-0">
                                         {destination.type === 'business' ? (
                                             <>
-                                                {destination.hasAuzoService && (
-                                                    <Badge variant="secondary" className="text-[10px] py-0 px-1.5 bg-blue-100 text-blue-700 mb-1 inline-block">
-                                                        Auzo Service
-                                                    </Badge>
-                                                )}
+                                                <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                                                    {destination.hasAuzoService && (
+                                                        <Badge variant="secondary" className="text-[10px] py-0 px-1.5 bg-blue-100 text-blue-700 inline-block">
+                                                            Auzo Service
+                                                        </Badge>
+                                                    )}
+                                                    {destination.provider === 'oilstop' && (
+                                                        <Badge variant="secondary" className="text-[10px] py-0 px-1.5 bg-green-100 text-green-700 inline-block">
+                                                            $10 off Oil Change
+                                                        </Badge>
+                                                    )}
+                                                </div>
                                                 <p className="font-medium text-gray-900 truncate">
                                                     {destination.businessName}
                                                 </p>
