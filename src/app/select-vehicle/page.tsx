@@ -46,8 +46,20 @@ export default function SelectVehiclePage() {
         if (isRoundTrip) {
             // Navigate to service selection for Auzo service
             const serviceType = sessionStorage.getItem('selectedServiceType');
-            if (serviceType) {
-                router.push(`/select-service-options?service=${encodeURIComponent(serviceType)}`);
+
+            // Map service names to the correct format for select-service-options
+            const serviceMapping: Record<string, string> = {
+                'quick lube': 'oil-change',
+                'car wash': 'car-wash',
+                'fuel fill': 'fuel-fill'
+            };
+
+            const mappedServiceType = serviceType ? (serviceMapping[serviceType] || serviceType) : '';
+
+            if (mappedServiceType) {
+                // Store the mapped service type for the select-service-options page
+                sessionStorage.setItem('selectedServiceType', mappedServiceType);
+                router.push(`/select-service-options?service=${encodeURIComponent(serviceType || '')}`);
             } else {
                 router.push('/select-service-options');
             }

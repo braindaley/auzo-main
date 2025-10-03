@@ -273,34 +273,45 @@ function ConfirmBookingContent() {
     };
 
     const calculateServiceCost = () => {
-        let totalCost = 0;
-        
-        // Original service cost
-        if (selectedServiceOption?.price) {
-            const priceStr = selectedServiceOption.price.replace(/[^0-9.]/g, '');
-            const price = parseFloat(priceStr);
-            
-            // For fuel, we'll just show the per-gallon price, not calculate total
-            if (!selectedServiceOption.price.includes('gallon')) {
-                totalCost += isNaN(price) ? 0 : price;
-            }
-        }
-        
-        // Add car wash cost
-        if (selectedCarWash?.price) {
-            const carWashPriceStr = selectedCarWash.price.replace(/[^0-9.]/g, '');
-            const carWashPrice = parseFloat(carWashPriceStr);
-            totalCost += isNaN(carWashPrice) ? 0 : carWashPrice;
-        }
-        
-        // Fuel fill cost is calculated at fill-up, so we don't add it here
-        
-        return totalCost;
+        // For price ranges, we'll return the range string itself
+        // For the Total calculation, we'll show the range plus delivery fee
+        return selectedServiceOption?.price || '';
     };
 
     const calculateTotalCost = () => {
-        const serviceCost = calculateServiceCost();
-        return (deliveryFee + serviceCost).toFixed(2);
+        // For round-trip services with price ranges (like oil changes)
+        if (isRoundTrip && selectedServiceOption?.price && selectedServiceOption.price.includes('-')) {
+            // Extract min and max values from price range
+            const matches = selectedServiceOption.price.match(/\$(\d+(?:\.\d+)?)-\$?(\d+(?:\.\d+)?)/);
+            if (matches) {
+                const minPrice = parseFloat(matches[1]);
+                const maxPrice = parseFloat(matches[2]);
+                const totalMin = deliveryFee + minPrice;
+                const totalMax = deliveryFee + maxPrice;
+                return `$${totalMin.toFixed(2)}-$${totalMax.toFixed(2)}`;
+            }
+        }
+
+        // For fixed prices (backward compatibility)
+        let serviceCost = 0;
+
+        // Only add service cost for round-trip services
+        if (isRoundTrip && selectedServiceOption?.price) {
+            const priceStr = selectedServiceOption.price.replace(/[^0-9.]/g, '');
+            const price = parseFloat(priceStr);
+            if (!selectedServiceOption.price.includes('gallon') && !isNaN(price)) {
+                serviceCost += price;
+            }
+        }
+
+        // Add car wash cost (one-way services only)
+        if (!isRoundTrip && selectedCarWash?.price) {
+            const carWashPriceStr = selectedCarWash.price.replace(/[^0-9.]/g, '');
+            const carWashPrice = parseFloat(carWashPriceStr);
+            serviceCost += isNaN(carWashPrice) ? 0 : carWashPrice;
+        }
+
+        return `$${(deliveryFee + serviceCost).toFixed(2)}`;
     };
 
     const getBackUrl = () => {
@@ -457,7 +468,9 @@ function ConfirmBookingContent() {
                                 <DollarSign className="w-6 h-6 text-gray-600" />
                                 <div>
                                     <p className="text-xs text-gray-500 leading-none mb-0.5">Delivery Fee</p>
-                                    <p className="text-sm text-gray-900 font-medium leading-tight">Round trip service</p>
+                                    <p className="text-sm text-gray-900 font-medium leading-tight">
+                                        {isRoundTrip ? 'Round trip service' : 'One-way delivery'}
+                                    </p>
                                 </div>
                             </div>
                             <div className="text-right">
@@ -466,7 +479,7 @@ function ConfirmBookingContent() {
                         </div>
                         
                         {/* Service Cost (if applicable) */}
-                        {isRoundTrip && selectedServiceOption && calculateServiceCost() > 0 && (
+                        {isRoundTrip && selectedServiceOption && (
                             <>
                                 <div className="border-t pt-3">
                                     <div className="flex items-center justify-between">
@@ -481,11 +494,9 @@ function ConfirmBookingContent() {
                                         </div>
                                         <div className="text-right">
                                             <p className="text-lg font-semibold text-gray-900">
-                                                ${((() => {
-                                                    const priceStr = selectedServiceOption.price.replace(/[^0-9.]/g, '');
-                                                    const price = parseFloat(priceStr);
-                                                    return selectedServiceOption.price.includes('gallon') ? 0 : (isNaN(price) ? 0 : price);
-                                                })()).toFixed(2)}
+                                                {selectedServiceOption.price.includes('gallon')
+                                                    ? selectedServiceOption.price
+                                                    : selectedServiceOption.price}
                                             </p>
                                         </div>
                                     </div>
@@ -542,7 +553,7 @@ function ConfirmBookingContent() {
                         )}
 
                         {/* Total */}
-                        {(calculateServiceCost() > 0 || selectedCarWash || selectedFuelFill) && (
+                        {((isRoundTrip && selectedServiceOption) || selectedCarWash || selectedFuelFill) && (
                             <div className="border-t pt-3">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-start gap-3">

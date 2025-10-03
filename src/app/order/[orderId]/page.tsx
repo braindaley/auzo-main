@@ -111,6 +111,9 @@ export default function OrderPage({ params }: OrderPageProps) {
                     nextStatus = OrderStatus.DRIVER_ON_WAY;
                     break;
                 case OrderStatus.DRIVER_ON_WAY:
+                    nextStatus = OrderStatus.DRIVER_ARRIVED;
+                    break;
+                case OrderStatus.DRIVER_ARRIVED:
                     nextStatus = OrderStatus.CAR_AT_SERVICE;
                     break;
                 case OrderStatus.CAR_AT_SERVICE:
@@ -135,6 +138,9 @@ export default function OrderPage({ params }: OrderPageProps) {
                     nextStatus = OrderStatus.DRIVER_ON_WAY;
                     break;
                 case OrderStatus.DRIVER_ON_WAY:
+                    nextStatus = OrderStatus.DRIVER_ARRIVED;
+                    break;
+                case OrderStatus.DRIVER_ARRIVED:
                     nextStatus = OrderStatus.CAR_IN_TRANSIT;
                     break;
                 case OrderStatus.CAR_IN_TRANSIT:
@@ -205,6 +211,8 @@ export default function OrderPage({ params }: OrderPageProps) {
                 return <Navigation className="w-4 h-4" />;
             case OrderStatus.DRIVER_ON_WAY:
                 return <Car className="w-4 h-4" />;
+            case OrderStatus.DRIVER_ARRIVED:
+                return <CheckCircle className="w-4 h-4" />;
             case OrderStatus.CAR_IN_TRANSIT:
                 return <Truck className="w-4 h-4" />;
             case OrderStatus.CAR_AT_SERVICE:
@@ -228,6 +236,8 @@ export default function OrderPage({ params }: OrderPageProps) {
                 return "secondary";
             case OrderStatus.DRIVER_ON_WAY:
                 return "default";
+            case OrderStatus.DRIVER_ARRIVED:
+                return "secondary";
             case OrderStatus.CAR_IN_TRANSIT:
                 return "default";
             case OrderStatus.CAR_AT_SERVICE:
@@ -251,6 +261,8 @@ export default function OrderPage({ params }: OrderPageProps) {
                 return "We're finding the perfect driver for your vehicle";
             case OrderStatus.DRIVER_ON_WAY:
                 return "Your driver is on the way";
+            case OrderStatus.DRIVER_ARRIVED:
+                return "Your driver has arrived at pickup location";
             case OrderStatus.CAR_IN_TRANSIT:
                 return "Your vehicle is being transported to the destination";
             case OrderStatus.CAR_AT_SERVICE:
@@ -272,6 +284,8 @@ export default function OrderPage({ params }: OrderPageProps) {
                 return order?.scheduledDate && order?.scheduledTime
                     ? `Scheduled for ${order.scheduledDate} at ${order.scheduledTime}`
                     : "Scheduled service";
+            case OrderStatus.DRIVER_ARRIVED:
+                return "Driver waiting at pickup location";
             case OrderStatus.CAR_IN_TRANSIT:
                 return "Arrives in 20 minutes";
             case OrderStatus.CAR_AT_SERVICE:
@@ -496,16 +510,17 @@ export default function OrderPage({ params }: OrderPageProps) {
                             <>
                                 {order.isRoundTrip ? (
                                     // Round-trip flow
-                                    [OrderStatus.FINDING_DRIVER, OrderStatus.DRIVER_ON_WAY, OrderStatus.CAR_AT_SERVICE, OrderStatus.DRIVER_RETURNING, OrderStatus.CAR_DELIVERED].map((status) => {
+                                    [OrderStatus.FINDING_DRIVER, OrderStatus.DRIVER_ON_WAY, OrderStatus.DRIVER_ARRIVED, OrderStatus.CAR_AT_SERVICE, OrderStatus.DRIVER_RETURNING, OrderStatus.CAR_DELIVERED].map((status, index) => {
                                         const isCompleted = order.status >= status;
                                         const isCurrent = order.status === status;
+                                        const stepNumber = index + 1;
 
                                         return (
                                             <div key={status} className="flex items-center gap-3">
                                                 <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
                                                     isCompleted ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-400'
                                                 }`}>
-                                                    {isCompleted ? '✓' : status}
+                                                    {isCompleted ? '✓' : stepNumber}
                                                 </div>
                                                 <div className="flex-1">
                                                     <p className={`text-sm ${isCurrent ? 'font-semibold' : ''} ${
@@ -519,16 +534,17 @@ export default function OrderPage({ params }: OrderPageProps) {
                                     })
                                 ) : (
                                     // One-way flow
-                                    [OrderStatus.FINDING_DRIVER, OrderStatus.DRIVER_ON_WAY, OrderStatus.CAR_IN_TRANSIT, OrderStatus.CAR_DELIVERED].map((status) => {
+                                    [OrderStatus.FINDING_DRIVER, OrderStatus.DRIVER_ON_WAY, OrderStatus.DRIVER_ARRIVED, OrderStatus.CAR_IN_TRANSIT, OrderStatus.CAR_DELIVERED].map((status, index) => {
                                         const isCompleted = order.status >= status;
                                         const isCurrent = order.status === status;
+                                        const stepNumber = index + 1;
 
                                         return (
                                             <div key={status} className="flex items-center gap-3">
                                                 <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
                                                     isCompleted ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-400'
                                                 }`}>
-                                                    {isCompleted ? '✓' : status}
+                                                    {isCompleted ? '✓' : stepNumber}
                                                 </div>
                                                 <div className="flex-1">
                                                     <p className={`text-sm ${isCurrent ? 'font-semibold' : ''} ${

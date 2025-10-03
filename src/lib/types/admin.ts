@@ -28,6 +28,10 @@ export interface CustomerDetail {
     vehicle: string;
     cost: number;
     status: string;
+    refundAmount?: number;
+    refundDate?: Date;
+    refundReason?: string;
+    paymentMethod?: string;
   }[];
   vehicles: {
     id: string;
